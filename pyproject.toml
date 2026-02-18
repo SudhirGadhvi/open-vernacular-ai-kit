@@ -1,0 +1,85 @@
+ [build-system]
+ requires = ["hatchling>=1.22.0"]
+ build-backend = "hatchling.build"
+ 
+ [project]
+ name = "gujarati-codemix-kit"
+ version = "0.1.0"
+ description = "Gujarati-English code-mix + romanized Gujarati normalization toolkit (SDK + CLI + demo)."
+ readme = "README.md"
+ requires-python = ">=3.10"
+ license = { file = "LICENSE" }
+ authors = [
+   { name = "Sudhir Gadhvi" },
+ ]
+ keywords = ["gujarati", "indic", "codemix", "transliteration", "normalization", "sarvam"]
+ classifiers = [
+   "Development Status :: 3 - Alpha",
+   "Intended Audience :: Developers",
+   "License :: OSI Approved :: MIT License",
+   "Programming Language :: Python :: 3",
+   "Programming Language :: Python :: 3 :: Only",
+   "Programming Language :: Python :: 3.10",
+   "Programming Language :: Python :: 3.11",
+   "Programming Language :: Python :: 3.12",
+   "Programming Language :: Python :: 3.13",
+ ]
+ dependencies = [
+   "typer>=0.12.3",
+   "rich>=13.7.1",
+   "regex>=2024.7.24",
+ ]
+ 
+ [project.optional-dependencies]
+ # Optional lightweight ML (latin-token EN vs GU_ROMAN classifier).
+ ml = [
+   "numpy>=1.26.4",
+   "scikit-learn>=1.4.2",
+   "joblib>=1.4.2",
+ ]
+ 
+ # Gujarati normalization + transliteration (recommended for most use cases).
+ indic = [
+   "indic-nlp-library>=0.92",
+   # A lightweight, pure-Python transliteration fallback (ITRANS-style).
+   "indic-transliteration",
+ ]
+ 
+ # Sarvam API integration (demo/app only).
+ sarvam = [
+   "sarvamai>=0.1.0",
+   "python-dotenv>=1.0.1",
+ ]
+ 
+ # Demo UI.
+ demo = [
+   "streamlit>=1.32.0",
+ ]
+ 
+ # Eval harness helpers.
+ eval = [
+   "pandas>=2.2.2",
+   "requests>=2.31.0",
+   "datasets>=2.19.0",
+   "wordfreq>=3.1.1",
+ ]
+ 
+ dev = [
+   "pytest>=8.2.2",
+   "ruff>=0.6.0",
+ ]
+ 
+ [project.scripts]
+ gck = "gujarati_codemix_kit.cli:app"
+ 
+ [tool.hatch.build.targets.wheel]
+ packages = ["src/gujarati_codemix_kit"]
+ 
+ [tool.ruff]
+ line-length = 100
+ target-version = "py310"
+ 
+ [tool.ruff.lint]
+select = ["E", "F", "I"]
+ignore = ["E501"]
+ 

@@ -62,6 +62,9 @@
    "requests>=2.31.0",
    "datasets>=2.19.0",
    "wordfreq>=3.1.1",
+  # Embedding-based evals (retrieval + prompt stability).
+  "transformers",
+  "torch",
  ]
  
  dev = [

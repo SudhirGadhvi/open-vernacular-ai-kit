@@ -20,3 +20,7 @@ venv/
 eval/out/
 *.log
 
+# Local task list (keep private/uncommitted)
+TODO.md
+TODO.txt
+

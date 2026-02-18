@@ -7,13 +7,14 @@ import regex as re
 
 from .normalize import normalize_text
 from .token_lid import Token, TokenLang, tag_tokens, tokenize
-from .transliterate import translit_gu_roman_to_native, transliteration_backend
+from .transliterate import translit_gu_roman_to_native_configured, transliteration_backend
 
 _NO_SPACE_BEFORE = {".", ",", "!", "?", ":", ";", "%", ")", "]", "}", "₹"}
 _NO_SPACE_AFTER = {"(", "[", "{", "₹"}
 _APOSTROPHE = {"'", "’"}
 _JOINERS = {"-", "_", "/", "@"}
 _EMOJI_RE = re.compile(r"\p{Extended_Pictographic}", flags=re.VERSION1)
+_GUJARATI_RE = re.compile(r"[\p{Gujarati}]", flags=re.VERSION1)
 
 
 def _is_emoji(tok: str) -> bool:
@@ -71,7 +72,16 @@ class CodeMixAnalysis:
     transliteration_backend: str
 
 
-def analyze_codemix(text: str, *, topk: int = 1, numerals: str = "keep") -> CodeMixAnalysis:
+def analyze_codemix(
+    text: str,
+    *,
+    topk: int = 1,
+    numerals: str = "keep",
+    preserve_case: bool = True,
+    preserve_numbers: bool = True,
+    aggressive_normalize: bool = False,
+    translit_mode: str = "token",
+) -> CodeMixAnalysis:
     """
     Analyze + render CodeMix in one pass.
 
@@ -79,7 +89,15 @@ def analyze_codemix(text: str, *, topk: int = 1, numerals: str = "keep") -> Code
     Gujarati-roman (Gujlish) tokens that were converted into Gujarati script.
     """
     raw = text or ""
-    norm = normalize_text(raw, numerals=numerals)
+    numerals_eff = numerals
+    if not preserve_numbers:
+        numerals_eff = "ascii"
+
+    norm = normalize_text(raw, numerals=numerals_eff)
+    if not preserve_case:
+        # Keep this simple: lowercasing does not affect Gujarati script, but it makes Latin tokens
+        # (including Gujlish) more consistent for LID/transliteration.
+        norm = norm.lower()
     if not norm:
         return CodeMixAnalysis(
             raw=raw,
@@ -110,12 +128,15 @@ def analyze_codemix(text: str, *, topk: int = 1, numerals: str = "keep") -> Code
         elif tok.lang == TokenLang.GU_ROMAN:
             n_gu_roman += 1
 
-        rendered_tok, did = _render_token_with_info(tok, topk=topk)
-        if did:
-            n_transliterated += 1
-        rendered.append(rendered_tok)
+    rendered, n_transliterated = _render_tagged_tokens(
+        tagged,
+        topk=topk,
+        preserve_case=preserve_case,
+        aggressive_normalize=aggressive_normalize,
+        translit_mode=translit_mode,
+    )
 
-    out = normalize_text(_render_tokens(rendered), numerals=numerals)
+    out = normalize_text(_render_tokens(rendered), numerals=numerals_eff)
     pct = (n_transliterated / n_gu_roman) if n_gu_roman else 0.0
     return CodeMixAnalysis(
         raw=raw,
@@ -131,7 +152,16 @@ def analyze_codemix(text: str, *, topk: int = 1, numerals: str = "keep") -> Code
     )
 
 
-def render_codemix(text: str, *, topk: int = 1, numerals: str = "keep") -> str:
+def render_codemix(
+    text: str,
+    *,
+    topk: int = 1,
+    numerals: str = "keep",
+    preserve_case: bool = True,
+    preserve_numbers: bool = True,
+    aggressive_normalize: bool = False,
+    translit_mode: str = "token",
+) -> str:
     """
     Convert mixed Gujarati/English text into a stable code-mix representation:
 
@@ -139,18 +169,26 @@ def render_codemix(text: str, *, topk: int = 1, numerals: str = "keep") -> str:
     - English stays in Latin
     - Romanized Gujarati tokens are transliterated to Gujarati script if possible
     """
-    text = normalize_text(text, numerals=numerals)
+    numerals_eff = numerals
+    if not preserve_numbers:
+        numerals_eff = "ascii"
+
+    text = normalize_text(text, numerals=numerals_eff)
+    if not preserve_case:
+        text = text.lower()
     if not text:
         return ""
 
     toks = tokenize(text)
     tagged = tag_tokens(toks)
-
-    rendered: list[str] = []
-    for tok in tagged:
-        rendered.append(_render_token(tok, topk=topk))
-
-    return normalize_text(_render_tokens(rendered), numerals=numerals)
+    rendered, _ = _render_tagged_tokens(
+        tagged,
+        topk=topk,
+        preserve_case=preserve_case,
+        aggressive_normalize=aggressive_normalize,
+        translit_mode=translit_mode,
+    )
+    return normalize_text(_render_tokens(rendered), numerals=numerals_eff)
 
 
 def _render_token(tok: Token, *, topk: int) -> str:
@@ -166,10 +204,110 @@ def _render_token_with_info(tok: Token, *, topk: int) -> tuple[str, bool]:
     if tok.lang in {TokenLang.GU_NATIVE, TokenLang.EN}:
         return tok.text, False
     if tok.lang == TokenLang.GU_ROMAN:
-        cands = translit_gu_roman_to_native(tok.text, topk=topk)
+        cands = translit_gu_roman_to_native_configured(
+            tok.text,
+            topk=topk,
+            preserve_case=True,
+            aggressive_normalize=False,
+        )
         if not cands:
             return tok.text, False
         best = cands[0]
         return best, best != tok.text
     return tok.text, False
+
+
+def _render_tagged_tokens(
+    tagged: list[Token],
+    *,
+    topk: int,
+    preserve_case: bool,
+    aggressive_normalize: bool,
+    translit_mode: str,
+) -> tuple[list[str], int]:
+    """
+    Render a token stream; returns (rendered_tokens, n_gu_roman_tokens_transliterated).
+
+    `translit_mode`:
+      - "token": transliterate GU_ROMAN tokens one by one
+      - "sentence": join contiguous GU_ROMAN runs into a phrase and attempt phrase-level translit
+    """
+    if translit_mode not in {"token", "sentence"}:
+        raise ValueError("translit_mode must be one of: token, sentence")
+
+    rendered: list[str] = []
+    n_transliterated = 0
+
+    if translit_mode == "token":
+        for tok in tagged:
+            if tok.lang != TokenLang.GU_ROMAN:
+                rendered.append(tok.text if preserve_case else tok.text.lower())
+                continue
+
+            cands = translit_gu_roman_to_native_configured(
+                tok.text,
+                topk=topk,
+                preserve_case=preserve_case,
+                aggressive_normalize=aggressive_normalize,
+            )
+            if not cands:
+                rendered.append(tok.text if preserve_case else tok.text.lower())
+                continue
+            best = cands[0]
+            rendered.append(best)
+            if best != tok.text and _GUJARATI_RE.search(best):
+                n_transliterated += 1
+
+        return rendered, n_transliterated
+
+    # sentence mode
+    i = 0
+    while i < len(tagged):
+        tok = tagged[i]
+        if tok.lang != TokenLang.GU_ROMAN:
+            rendered.append(tok.text if preserve_case else tok.text.lower())
+            i += 1
+            continue
+
+        j = i
+        run: list[Token] = []
+        while j < len(tagged) and tagged[j].lang == TokenLang.GU_ROMAN:
+            run.append(tagged[j])
+            j += 1
+
+        phrase = " ".join(t.text for t in run)
+        cands = translit_gu_roman_to_native_configured(
+            phrase,
+            topk=topk,
+            preserve_case=preserve_case,
+            aggressive_normalize=aggressive_normalize,
+        )
+        if cands:
+            best = cands[0]
+            if _GUJARATI_RE.search(best):
+                # Tokenize the Gujarati output so spacing/punct render stays consistent.
+                rendered.extend(tokenize(best))
+                n_transliterated += len(run)
+                i = j
+                continue
+
+        # Fallback: token-by-token.
+        for t in run:
+            cands = translit_gu_roman_to_native_configured(
+                t.text,
+                topk=topk,
+                preserve_case=preserve_case,
+                aggressive_normalize=aggressive_normalize,
+            )
+            if not cands:
+                rendered.append(t.text if preserve_case else t.text.lower())
+                continue
+            best = cands[0]
+            rendered.append(best)
+            if best != t.text and _GUJARATI_RE.search(best):
+                n_transliterated += 1
+
+        i = j
+
+    return rendered, n_transliterated
  

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gujarati_codemix_kit.codemix_render import render_codemix
+from gujarati_codemix_kit.codemix_render import analyze_codemix, render_codemix
 from gujarati_codemix_kit.token_lid import TokenLang, detect_token_lang
 
 
@@ -21,5 +21,37 @@ def test_render_codemix_preserves_english_and_gujarati() -> None:
 def test_render_codemix_transliterates_chhe() -> None:
     s = "ready chhe!!!"
     out = render_codemix(s)
+    assert "છે" in out
+
+
+def test_render_codemix_sentence_mode_phrase_exceptions() -> None:
+    s = "maru naam shu che?"
+    out = render_codemix(s, translit_mode="sentence")
+    assert "મારું" in out
+    assert "નામ" in out
+    assert "શું" in out
+    assert "છે" in out
+
+    a = analyze_codemix(s, translit_mode="sentence")
+    assert a.n_gu_roman_tokens == 4
+    assert a.n_gu_roman_transliterated == 4
+
+
+def test_render_codemix_preserve_case_flag() -> None:
+    s = "My PLAN is ready"
+    assert render_codemix(s, preserve_case=True) == "My PLAN is ready"
+    assert render_codemix(s, preserve_case=False) == "my plan is ready"
+
+
+def test_render_codemix_preserve_numbers_flag() -> None:
+    s = "મારો નંબર ૧૨૩ છે"
+    out = render_codemix(s, preserve_numbers=False)
+    assert "123" in out
+
+
+def test_render_codemix_aggressive_normalize_variants() -> None:
+    # Misspelled / over-extended Gujlish vowel runs.
+    s = "ready chheee!!!"
+    out = render_codemix(s, aggressive_normalize=True)
     assert "છે" in out
 

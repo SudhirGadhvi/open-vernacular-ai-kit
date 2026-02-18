@@ -29,6 +29,18 @@ def codemix(
     text: str = typer.Argument(..., help="Input text (may include romanized Gujarati/Gujlish)."),
     topk: int = typer.Option(1, help="Top-K transliteration candidates to consider."),
     numerals: str = typer.Option("keep", help="Numerals: keep (Gujarati digits) or ascii."),
+    translit_mode: str = typer.Option(
+        "token", help="Transliteration mode for Gujlish: token or sentence."
+    ),
+    preserve_case: bool = typer.Option(
+        True, help="Preserve original case for Latin tokens (English + Gujlish)."
+    ),
+    preserve_numbers: bool = typer.Option(
+        True, help="Preserve Gujarati digits (disable to normalize Gujarati digits to ASCII)."
+    ),
+    aggressive_normalize: bool = typer.Option(
+        False, help="Try extra Gujlish spelling variants before transliteration."
+    ),
     stats: bool = typer.Option(
         False,
         "--stats",
@@ -37,7 +49,15 @@ def codemix(
 ) -> None:
     """Render a clean Gujarati-English code-mix string."""
     if stats:
-        a = analyze_codemix(text, topk=topk, numerals=numerals)
+        a = analyze_codemix(
+            text,
+            topk=topk,
+            numerals=numerals,
+            translit_mode=translit_mode,
+            preserve_case=preserve_case,
+            preserve_numbers=preserve_numbers,
+            aggressive_normalize=aggressive_normalize,
+        )
         _console.print(a.codemix)
         sys.stderr.write(
             json.dumps(
@@ -53,7 +73,17 @@ def codemix(
             + "\n"
         )
     else:
-        _console.print(render_codemix(text, topk=topk, numerals=numerals))
+        _console.print(
+            render_codemix(
+                text,
+                topk=topk,
+                numerals=numerals,
+                translit_mode=translit_mode,
+                preserve_case=preserve_case,
+                preserve_numbers=preserve_numbers,
+                aggressive_normalize=aggressive_normalize,
+            )
+        )
 
 
 @app.command()

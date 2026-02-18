@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Optional
 
 import typer
 from rich.console import Console
 
-from .codemix_render import render_codemix
+from .codemix_render import analyze_codemix, render_codemix
 from .normalize import normalize_text
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -17,18 +18,42 @@ _console = Console()
 @app.command()
 def normalize(
     text: str = typer.Argument(..., help="Input text (Gujarati / English / code-mixed)."),
+    numerals: str = typer.Option("keep", help="Numerals: keep (Gujarati digits) or ascii."),
 ) -> None:
     """Normalize punctuation, whitespace, and Gujarati script."""
-    _console.print(normalize_text(text))
+    _console.print(normalize_text(text, numerals=numerals))
 
 
 @app.command()
 def codemix(
     text: str = typer.Argument(..., help="Input text (may include romanized Gujarati/Gujlish)."),
     topk: int = typer.Option(1, help="Top-K transliteration candidates to consider."),
+    numerals: str = typer.Option("keep", help="Numerals: keep (Gujarati digits) or ascii."),
+    stats: bool = typer.Option(
+        False,
+        "--stats",
+        help="Write CodeMix conversion stats to stderr as JSON (stdout remains the rendered string).",
+    ),
 ) -> None:
     """Render a clean Gujarati-English code-mix string."""
-    _console.print(render_codemix(text, topk=topk))
+    if stats:
+        a = analyze_codemix(text, topk=topk, numerals=numerals)
+        _console.print(a.codemix)
+        sys.stderr.write(
+            json.dumps(
+                {
+                    "transliteration_backend": a.transliteration_backend,
+                    "n_tokens": a.n_tokens,
+                    "n_gu_roman_tokens": a.n_gu_roman_tokens,
+                    "n_gu_roman_transliterated": a.n_gu_roman_transliterated,
+                    "pct_gu_roman_transliterated": a.pct_gu_roman_transliterated,
+                },
+                ensure_ascii=True,
+            )
+            + "\n"
+        )
+    else:
+        _console.print(render_codemix(text, topk=topk, numerals=numerals))
 
 
 @app.command()

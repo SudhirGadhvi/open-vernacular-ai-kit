@@ -6,9 +6,7 @@ from typing import Any, Iterable, Optional
 
 import regex as re
 
-from .codemix_render import render_codemix
-from .normalize import normalize_text
-from .token_lid import TokenLang, tag_tokens, tokenize
+from .codemix_render import analyze_codemix
 
 _GUJARATI_RE = re.compile(r"[\p{Gujarati}]")
 
@@ -72,20 +70,9 @@ def _has_gujarati(text: str) -> bool:
 
 def _analyze_one(text: str, *, topk: int = 1) -> dict[str, Any]:
     raw = text
-    norm = normalize_text(raw)
-    out = render_codemix(norm, topk=topk)
-
-    toks = tokenize(norm)
-    tagged = tag_tokens(toks)
-    gu_roman = [t.text for t in tagged if t.lang == TokenLang.GU_ROMAN]
-
-    # How many roman tokens changed after codemix render?
-    changed = 0
-    for t in gu_roman:
-        if t and t in out:
-            # If token remains in output as-is, it's likely not transliterated.
-            continue
-        changed += 1
+    a = analyze_codemix(raw, topk=topk)
+    norm = a.normalized
+    out = a.codemix
 
     return {
         "raw": raw,
@@ -93,9 +80,10 @@ def _analyze_one(text: str, *, topk: int = 1) -> dict[str, Any]:
         "codemix": out,
         "has_gujarati_raw": _has_gujarati(raw),
         "has_gujarati_codemix": _has_gujarati(out),
-        "n_tokens": len(toks),
-        "n_gu_roman_tokens": len(gu_roman),
-        "n_gu_roman_tokens_changed_est": changed,
+        "n_tokens": a.n_tokens,
+        "n_gu_roman_tokens": a.n_gu_roman_tokens,
+        "n_gu_roman_tokens_changed_est": a.n_gu_roman_transliterated,
+        "transliteration_backend": a.transliteration_backend,
     }
 
 

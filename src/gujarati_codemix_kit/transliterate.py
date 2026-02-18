@@ -9,7 +9,7 @@ def _get_xlit_engine():
     # Best-effort: if the AI4Bharat Indic-Xlit python package is installed (it may pull heavy deps),
     # use it. We do not depend on it by default because its transitive deps can be brittle.
     try:
-        from ai4bharat.transliteration import XlitEngine
+        from ai4bharat.transliteration import XlitEngine  # pyright: ignore[reportMissingImports]
     except Exception:
         return None
 
@@ -24,6 +24,24 @@ def _get_sanscript():
     except Exception:
         return None
     return sanscript
+
+
+def transliteration_backend() -> str:
+    """
+    Return which transliteration backend is available (best-effort).
+
+    This is used for product/demo reporting and should stay cheap and side-effect free.
+    """
+    if _get_xlit_engine() is not None:
+        return "ai4bharat"
+    if _get_sanscript() is not None:
+        return "sanscript"
+    return "none"
+
+
+def transliteration_available() -> bool:
+    """True if any transliteration backend is importable."""
+    return transliteration_backend() != "none"
 
 
 def translit_gu_roman_to_native(token: str, *, topk: int = 1) -> Optional[list[str]]:

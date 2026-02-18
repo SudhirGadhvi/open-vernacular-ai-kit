@@ -40,6 +40,18 @@ python3 -m venv .venv
  gck codemix "maru business plan ready chhe!!!"
  ```
  
+Canonical output format:
+
+- Gujarati stays in Gujarati script
+- English stays in Latin
+- Gujlish (romanized Gujarati) tokens are transliterated to Gujarati script when possible
+
+Quick success metric (% Gujlish tokens transliterated):
+
+```bash
+gck codemix --stats "maru business plan ready chhe!!!" 1>/dev/null
+```
+
 Run eval (downloads public Gujlish eval CSVs into `~/.cache/gujarati-codemix-kit`):
 
 ```bash

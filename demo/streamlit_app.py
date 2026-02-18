@@ -5,8 +5,7 @@ from typing import Any
 
 import streamlit as st
 
-from gujarati_codemix_kit.codemix_render import render_codemix
-from gujarati_codemix_kit.normalize import normalize_text
+from gujarati_codemix_kit.codemix_render import analyze_codemix
 
 
 def _try_load_dotenv() -> None:
@@ -92,8 +91,9 @@ def main() -> None:
     default = "maru business plan ready chhe!!!\n\nમારું business plan ready છે!!!"
     raw = st.text_area("Input", value=default, height=180)
 
-    norm = normalize_text(raw, numerals=numerals)
-    codemixed = render_codemix(raw, topk=int(topk))
+    a = analyze_codemix(raw, topk=int(topk), numerals=numerals)
+    norm = a.normalized
+    codemixed = a.codemix
 
     c1, c2, c3 = st.columns(3)
     with c1:
@@ -105,6 +105,12 @@ def main() -> None:
     with c3:
         st.subheader("CodeMix Rendered")
         st.code(codemixed)
+
+    m1, m2, m3, m4 = st.columns(4)
+    m1.metric("Gujlish tokens", a.n_gu_roman_tokens)
+    m2.metric("Transliterated", a.n_gu_roman_transliterated)
+    m3.metric("Conversion rate", f"{a.pct_gu_roman_transliterated * 100:.1f}%")
+    m4.metric("Backend", a.transliteration_backend)
 
     st.divider()
 

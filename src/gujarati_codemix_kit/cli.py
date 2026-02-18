@@ -88,9 +88,33 @@ def codemix(
 
 @app.command()
 def eval(
-    dataset: str = typer.Option("gujlish", help="Eval dataset name (currently: gujlish)."),
+    dataset: str = typer.Option(
+        "gujlish",
+        help="Eval dataset/suite: gujlish, golden_translit, retrieval, prompt_stability.",
+    ),
     report: Optional[Path] = typer.Option(
         None, help="Write a JSON report to this path (directories auto-created)."
+    ),
+    topk: int = typer.Option(1, help="Top-K transliteration candidates (gujlish/golden_translit)."),
+    max_rows: Optional[int] = typer.Option(
+        2000, help="Max rows per split (gujlish). Use 0 for no limit."
+    ),
+    translit_mode: str = typer.Option(
+        "token", help="Transliteration mode: token or sentence (golden_translit)."
+    ),
+    k: int = typer.Option(5, help="Top-k for retrieval recall (retrieval)."),
+    embedding_model: str = typer.Option(
+        "ai4bharat/indic-bert",
+        help=(
+            "HF model for embeddings (retrieval/prompt_stability). "
+            "Note: ai4bharat/indic-bert may be gated on HF (the eval will fall back automatically)."
+        ),
+    ),
+    sarvam_model: str = typer.Option("sarvam-m", help="Sarvam chat model (prompt_stability)."),
+    n_variants: int = typer.Option(10, help="Number of prompt variants (prompt_stability)."),
+    api_key: Optional[str] = typer.Option(None, help="Sarvam API key override (prompt_stability)."),
+    preprocess: bool = typer.Option(
+        True, help="Preprocess text with normalize+codemix before eval (retrieval/prompt_stability)."
     ),
 ) -> None:
     """Run a lightweight, reproducible eval harness (downloads data if needed)."""
@@ -104,7 +128,24 @@ def eval(
         )
         raise typer.Exit(code=2)
 
-    result = run_eval(dataset=dataset)
+    if max_rows == 0:
+        max_rows = None
+    try:
+        result = run_eval(
+            dataset=dataset,
+            topk=topk,
+            max_rows=max_rows,
+            translit_mode=translit_mode,
+            k=k,
+            embedding_model=embedding_model,
+            sarvam_model=sarvam_model,
+            n_variants=n_variants,
+            api_key=api_key,
+            preprocess=preprocess,
+        )
+    except Exception as e:
+        _console.print(f"[red]Eval failed:[/red] {e}")
+        raise typer.Exit(code=1)
     if report:
         report.parent.mkdir(parents=True, exist_ok=True)
         report.write_text(json.dumps(result, ensure_ascii=True, indent=2) + "\n", encoding="utf-8")

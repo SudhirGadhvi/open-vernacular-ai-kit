@@ -483,8 +483,8 @@ def run_prompt_stability_eval(
     # Fail fast with a clear message (otherwise you get a deeper stack trace from sarvam_adapters).
     import os
 
-    key = api_key or os.environ.get("SARVAM_API_KEY")
-    if not key:
+    api_key_value = api_key or os.environ.get("SARVAM_API_KEY")
+    if not api_key_value:
         raise RuntimeError(
             "Missing SARVAM_API_KEY. Set it in your shell (export SARVAM_API_KEY=...) "
             "or pass --api-key."
@@ -496,15 +496,20 @@ def run_prompt_stability_eval(
     outputs: list[str] = []
     used_cache = 0
     for p in prompts:
-        key = _sha256_hex(f"{model}\n{preprocess}\n{p}")
-        path = cache_root / f"{key}.json"
+        cache_key = _sha256_hex(f"{model}\n{preprocess}\n{p}")
+        path = cache_root / f"{cache_key}.json"
         cached = _cache_load_json(path)
-        if cached and cached.get("prompt") == p and cached.get("model") == model:
+        if (
+            cached
+            and cached.get("prompt") == p
+            and cached.get("model") == model
+            and bool(cached.get("preprocess", bool(preprocess))) == bool(preprocess)
+        ):
             outputs.append(str(cached.get("output", "")))
             used_cache += 1
             continue
 
-        out = sarvam_chat(p, model=model, api_key=key, preprocess=preprocess)
+        out = sarvam_chat(p, model=model, api_key=api_key_value, preprocess=preprocess)
         outputs.append(out)
         _cache_write_json(
             path,

@@ -1,4 +1,9 @@
  # Gujarati CodeMix Kit
+
+[![CI](https://github.com/SudhirGadhvi/gujarati-codemix-kit/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SudhirGadhvi/gujarati-codemix-kit/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://sudhirgadhvi.github.io/gujarati-codemix-kit/)
+[![PyPI](https://img.shields.io/pypi/v/gujarati-codemix-kit.svg)](https://pypi.org/project/gujarati-codemix-kit/)
+[![Python](https://img.shields.io/pypi/pyversions/gujarati-codemix-kit.svg)](https://pypi.org/project/gujarati-codemix-kit/)
  
  `gujarati-codemix-kit` is a small SDK + CLI for cleaning up Gujarati-English code-mixed text,
  especially messy WhatsApp-style inputs where Gujarati might appear in:

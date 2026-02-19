@@ -13,6 +13,7 @@ from .dialects import (
     GujaratiDialect,
     normalize_dialect_tagged_tokens,
 )
+from .errors import InvalidConfigError, OfflinePolicyError, OptionalDependencyError
 from .token_lid import Token, TokenLang, tokenize
 
 DialectNormalizerName = Literal["auto", "heuristic", "seq2seq", "none"]
@@ -90,7 +91,7 @@ class Seq2SeqDialectNormalizer:
         # Enforce offline-by-default policy.
         local = _local_model_path(self.model_id_or_path)
         if local is None and not cfg.allow_remote_models:
-            raise RuntimeError(
+            raise OfflinePolicyError(
                 "Remote model downloads are disabled. Provide a local path for "
                 "`dialect_normalizer_model_id_or_path` or set allow_remote_models=True."
             )
@@ -99,7 +100,7 @@ class Seq2SeqDialectNormalizer:
             import torch
             import transformers  # type: ignore
         except Exception as e:  # pragma: no cover
-            raise RuntimeError(
+            raise OptionalDependencyError(
                 "Seq2seq dialect normalizer requires extras. Install: `pip install -e '.[dialect-ml]'`"
             ) from e
         _ = transformers  # silence unused import warnings
@@ -224,7 +225,9 @@ def get_dialect_normalizer(config: CodeMixConfig) -> Optional[DialectNormalizerB
         return HeuristicDialectNormalizer()
     if name == "seq2seq":
         if not cfg.dialect_normalizer_model_id_or_path:
-            raise ValueError("dialect_normalizer_backend='seq2seq' requires dialect_normalizer_model_id_or_path")
+            raise InvalidConfigError(
+                "dialect_normalizer_backend='seq2seq' requires dialect_normalizer_model_id_or_path"
+            )
         return Seq2SeqDialectNormalizer(model_id_or_path=cfg.dialect_normalizer_model_id_or_path)
 
     # auto: rules + optional seq2seq if model configured.

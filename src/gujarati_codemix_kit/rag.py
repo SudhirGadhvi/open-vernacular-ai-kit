@@ -7,6 +7,8 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Any, Callable, Optional, Sequence
 
+from .errors import InvalidConfigError, OfflinePolicyError, OptionalDependencyError
+
 EmbedTextsFn = Callable[[Sequence[str]], list[list[float]]]
 
 
@@ -49,14 +51,14 @@ def _require_torch_and_transformers(context: str) -> tuple[Any, Any]:
     try:
         import torch  # type: ignore
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(
+        raise OptionalDependencyError(
             f"{context} requires torch. Install with: pip install -e '.[rag-embeddings]'"
         ) from e
 
     try:
         from transformers import AutoModel, AutoTokenizer  # type: ignore
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(
+        raise OptionalDependencyError(
             f"{context} requires transformers. Install with: pip install -e '.[rag-embeddings]'"
         ) from e
 
@@ -99,9 +101,9 @@ def make_hf_embedder(
 
     mid = str(model_id_or_path or "").strip()
     if not mid:
-        raise ValueError("model_id_or_path is required")
+        raise InvalidConfigError("model_id_or_path is required")
     if not _is_local_path(mid) and not bool(allow_remote_models):
-        raise RuntimeError(
+        raise OfflinePolicyError(
             "Remote model downloads are disabled. Provide a local path for `model_id_or_path` "
             "or set allow_remote_models=True."
         )
@@ -183,7 +185,7 @@ class RagIndex:
         texts = [d.text for d in docs]
         emb = embed_texts(texts)
         if len(emb) != len(texts):
-            raise ValueError("embed_texts returned embeddings with different length than docs")
+            raise InvalidConfigError("embed_texts returned embeddings with different length than docs")
         emb_norm = [_l2_normalize(v) for v in emb]
         return cls(docs=list(docs), doc_embeddings=emb_norm, embedding_model=embedding_model)
 
@@ -275,6 +277,6 @@ class RagIndex:
         p = Path(path)
         data = json.loads(p.read_text(encoding="utf-8"))
         if not isinstance(data, dict):
-            raise ValueError("Invalid index JSON (expected object at top-level)")
+            raise InvalidConfigError("Invalid index JSON (expected object at top-level)")
         return cls.from_json_dict(data)
 

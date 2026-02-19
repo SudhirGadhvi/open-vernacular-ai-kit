@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any, Iterable, Optional
 
 from .dialect_datasets import packaged_data_path
+from .errors import DownloadError, OptionalDependencyError
 from .rag import RagDocument, RagQuery
 
 
@@ -87,13 +88,16 @@ def _download(url: str, dest: Path) -> None:
     try:
         import requests
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(
+        raise OptionalDependencyError(
             "Downloading RAG datasets requires requests. Install with: pip install -e '.[rag]'"
         ) from e
 
-    r = requests.get(url, timeout=120)
-    r.raise_for_status()
-    dest.write_bytes(r.content)
+    try:
+        r = requests.get(url, timeout=120)
+        r.raise_for_status()
+        dest.write_bytes(r.content)
+    except Exception as e:  # pragma: no cover
+        raise DownloadError(f"Failed to download: {url}") from e
 
 
 def download_gujarat_facts_dataset(

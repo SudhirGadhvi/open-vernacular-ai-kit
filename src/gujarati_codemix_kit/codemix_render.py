@@ -84,6 +84,9 @@ def analyze_codemix(
     preserve_numbers: bool = True,
     aggressive_normalize: bool = False,
     translit_mode: str = "token",
+    translit_backend: str = "auto",
+    user_lexicon_path: Optional[str] = None,
+    fasttext_model_path: Optional[str] = None,
 ) -> CodeMixAnalysis:
     """
     Analyze + render CodeMix in one pass.
@@ -98,6 +101,9 @@ def analyze_codemix(
         preserve_numbers=preserve_numbers,
         aggressive_normalize=aggressive_normalize,
         translit_mode=translit_mode,  # type: ignore[arg-type]
+        translit_backend=translit_backend,  # type: ignore[arg-type]
+        user_lexicon_path=user_lexicon_path,
+        fasttext_model_path=fasttext_model_path,
     )
     return analyze_codemix_with_config(text, config=cfg)
 
@@ -111,6 +117,9 @@ def render_codemix(
     preserve_numbers: bool = True,
     aggressive_normalize: bool = False,
     translit_mode: str = "token",
+    translit_backend: str = "auto",
+    user_lexicon_path: Optional[str] = None,
+    fasttext_model_path: Optional[str] = None,
 ) -> str:
     """
     Convert mixed Gujarati/English text into a stable code-mix representation:
@@ -126,6 +135,9 @@ def render_codemix(
         preserve_numbers=preserve_numbers,
         aggressive_normalize=aggressive_normalize,
         translit_mode=translit_mode,  # type: ignore[arg-type]
+        translit_backend=translit_backend,  # type: ignore[arg-type]
+        user_lexicon_path=user_lexicon_path,
+        fasttext_model_path=fasttext_model_path,
     )
     return render_codemix_with_config(text, config=cfg)
  

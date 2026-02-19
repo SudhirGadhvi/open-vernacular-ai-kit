@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import platform
 import sys
 from importlib import metadata
@@ -43,6 +44,8 @@ def collect_doctor_info() -> dict[str, object]:
         "indic-nlp-library": "indic-nlp-library",
         "indic-transliteration": "indic-transliteration",
         "ai4bharat-transliteration": "ai4bharat-transliteration",
+        "fasttext": "fasttext",
+        "pyyaml": "PyYAML",
         "numpy": "numpy",
         "scikit-learn": "scikit-learn",
         "joblib": "joblib",
@@ -65,6 +68,13 @@ def collect_doctor_info() -> dict[str, object]:
         packages[name] = {"installed": v is not None, "version": v}
 
     lid_model_path = Path(__file__).with_name("_data") / "latin_lid.joblib"
+    ft_candidates: list[Path] = []
+    env = os.getenv("GCK_FASTTEXT_MODEL_PATH")
+    if env:
+        ft_candidates.append(Path(env).expanduser())
+    ft_candidates.append(Path("lid.176.ftz"))
+    ft_candidates.append(Path.home() / ".cache" / "gujarati_codemix_kit" / "lid.176.ftz")
+    ft_model_present = any((p.exists() and p.is_file()) for p in ft_candidates if p)
 
     return {
         "python": {"version": sys.version.split()[0], "executable": sys.executable},
@@ -77,6 +87,8 @@ def collect_doctor_info() -> dict[str, object]:
             "transliteration_backend": transliteration_backend(),
             "indicnlp_importable": _module_importable("indicnlp"),
             "lid_ml_model_present": lid_model_path.exists(),
+            "fasttext_importable": _module_importable("fasttext"),
+            "fasttext_model_present": ft_model_present,
         },
         "packages": packages,
     }

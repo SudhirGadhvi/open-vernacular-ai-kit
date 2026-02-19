@@ -5,6 +5,7 @@ from typing import Literal, Optional
 
 NumeralsMode = Literal["keep", "ascii"]
 TranslitMode = Literal["token", "sentence"]
+TranslitBackend = Literal["auto", "ai4bharat", "sanscript", "none"]
 
 
 @dataclass(frozen=True)
@@ -24,9 +25,14 @@ class CodeMixConfig:
     topk: int = 1
     aggressive_normalize: bool = False
     translit_mode: TranslitMode = "token"
+    translit_backend: TranslitBackend = "auto"
+    user_lexicon_path: Optional[str] = None
 
     # Determinism hook for future stochastic components.
     seed: Optional[int] = None
+
+    # Optional LID signal for Latin tokens (fastText model path for lid.176.ftz).
+    fasttext_model_path: Optional[str] = None
 
     def numerals_effective(self) -> NumeralsMode:
         """
@@ -49,6 +55,8 @@ class CodeMixConfig:
             raise ValueError("numerals must be one of: keep, ascii")
         if self.translit_mode not in ("token", "sentence"):
             raise ValueError("translit_mode must be one of: token, sentence")
+        if self.translit_backend not in ("auto", "ai4bharat", "sanscript", "none"):
+            raise ValueError("translit_backend must be one of: auto, ai4bharat, sanscript, none")
 
         seed = None if self.seed is None else int(self.seed)
         return CodeMixConfig(
@@ -58,7 +66,12 @@ class CodeMixConfig:
             topk=topk,
             aggressive_normalize=bool(self.aggressive_normalize),
             translit_mode=self.translit_mode,
+            translit_backend=self.translit_backend,
+            user_lexicon_path=None if self.user_lexicon_path is None else str(self.user_lexicon_path),
             seed=seed,
+            fasttext_model_path=(
+                None if self.fasttext_model_path is None else str(self.fasttext_model_path)
+            ),
         )
 
     def to_dict(self) -> dict[str, object]:

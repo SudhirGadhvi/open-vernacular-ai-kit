@@ -1,15 +1,34 @@
 from __future__ import annotations
 
+# ruff: noqa: E402
+import hashlib
+import inspect
 import json
 import os
+import sys
+import tempfile
 from dataclasses import asdict
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 import streamlit as st
 
+# Ensure the demo uses the local SDK code when run from the repo, even if an older
+# version of `gujarati_codemix_kit` is installed elsewhere in the environment.
+_REPO_ROOT = Path(__file__).resolve().parents[1]
+_SRC_DIR = _REPO_ROOT / "src"
+if _SRC_DIR.exists():
+    sys.path.insert(0, str(_SRC_DIR))
+    # If Streamlit re-runs the script, `gujarati_codemix_kit` may already be in sys.modules
+    # from an older import path. Drop it so we re-import from local `src/`.
+    for name in list(sys.modules.keys()):
+        if name == "gujarati_codemix_kit" or name.startswith("gujarati_codemix_kit."):
+            sys.modules.pop(name, None)
+
 from gujarati_codemix_kit import __version__ as gck_version
 from gujarati_codemix_kit.codemix_render import analyze_codemix
+from gujarati_codemix_kit.lexicon import load_user_lexicon
 from gujarati_codemix_kit.normalize import normalize_text
 from gujarati_codemix_kit.token_lid import TokenLang, tag_tokens, tokenize
 from gujarati_codemix_kit.transliterate import translit_gu_roman_to_native_configured
@@ -190,10 +209,31 @@ def _examples() -> dict[str, str]:
     }
 
 
-def _transliteration_rows(normalized_text: str, *, topk: int) -> list[dict[str, str]]:
+def _write_uploaded_file_to_tmp(*, filename: str, data: bytes) -> str:
+    # Streamlit reruns the script often; keep a content-addressed copy on disk so we can
+    # pass a stable `user_lexicon_path` to the SDK.
+    h = hashlib.sha1(data).hexdigest()[:14]
+    ext = Path(filename or "").suffix.lower() or ".bin"
+    out_dir = Path(tempfile.gettempdir()) / "gck_demo_uploads"
+    out_dir.mkdir(parents=True, exist_ok=True)
+    p = out_dir / f"{h}{ext}"
+    p.write_bytes(data)
+    return str(p)
+
+
+def _transliteration_rows(
+    normalized_text: str,
+    *,
+    topk: int,
+    aggressive_normalize: bool,
+    translit_backend: str,
+    lexicon: dict[str, str] | None,
+    lexicon_keys: set[str] | None,
+    fasttext_model_path: str | None,
+) -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     toks = tokenize(normalized_text or "")
-    tagged = tag_tokens(toks)
+    tagged = tag_tokens(toks, lexicon_keys=lexicon_keys, fasttext_model_path=fasttext_model_path)
     for tok in tagged:
         if tok.lang != TokenLang.GU_ROMAN:
             continue
@@ -201,7 +241,9 @@ def _transliteration_rows(normalized_text: str, *, topk: int) -> list[dict[str, 
             tok.text,
             topk=topk,
             preserve_case=True,
-            aggressive_normalize=False,
+            aggressive_normalize=aggressive_normalize,
+            exceptions=lexicon,
+            backend=translit_backend,  # type: ignore[arg-type]
         )
         if not cands:
             continue
@@ -211,9 +253,11 @@ def _transliteration_rows(normalized_text: str, *, topk: int) -> list[dict[str, 
     return rows
 
 
-def _lid_counts(text: str) -> dict[str, int]:
+def _lid_counts(
+    text: str, *, lexicon_keys: set[str] | None, fasttext_model_path: str | None
+) -> dict[str, int]:
     toks = tokenize(normalize_text(text or ""))
-    tagged = tag_tokens(toks)
+    tagged = tag_tokens(toks, lexicon_keys=lexicon_keys, fasttext_model_path=fasttext_model_path)
     out = {"gu_native": 0, "gu_roman": 0, "en": 0, "other": 0}
     for t in tagged:
         if t.lang == TokenLang.GU_NATIVE:
@@ -347,6 +391,23 @@ def main() -> None:
         with s1:
             topk = st.number_input("Transliteration top-k", min_value=1, max_value=5, value=1, step=1)
             numerals = st.selectbox("Numerals", options=["keep", "ascii"], index=0)
+            translit_mode = st.selectbox(
+                "Transliteration mode (demo v0.3)",
+                options=["sentence", "token"],
+                index=0,
+                help="Sentence mode unlocks phrase/joiner improvements for Gujlish runs.",
+            )
+            translit_backend = st.selectbox(
+                "Transliteration backend (demo v0.3)",
+                options=["auto", "ai4bharat", "sanscript", "none"],
+                index=0,
+                help="auto picks best available. ai4bharat requires optional install.",
+            )
+            aggressive_normalize = st.checkbox(
+                "Aggressive Gujlish normalization",
+                value=False,
+                help="Try extra Gujlish spelling variants before transliteration.",
+            )
         with s2:
             sarvam_key = st.text_input("SARVAM_API_KEY (optional)", value=os.environ.get("SARVAM_API_KEY", ""), type="password")
             sarvam_enabled = st.checkbox(
@@ -360,8 +421,53 @@ def main() -> None:
             if sarvam_enabled and not _sarvam_available():
                 st.warning("Sarvam SDK not available. Install extras: `pip install -e '.[sarvam]'`.")
 
+        st.markdown("### Advanced (v0.3)")
+        a1, a2 = st.columns(2)
+        with a1:
+            lex_upload = st.file_uploader(
+                "User lexicon (JSON/YAML) to force specific roman→Gujarati mappings",
+                type=["json", "yaml", "yml"],
+                help="Example JSON: {\"mane\": \"મને\", \"kyare\": \"ક્યારે\"}",
+            )
+        with a2:
+            fasttext_model_path = st.text_input(
+                "fastText model path (lid.176.ftz) for optional LID fallback",
+                value=os.environ.get("GCK_FASTTEXT_MODEL_PATH", ""),
+                help="Optional. If provided + fastText installed + file exists, it can help English detection.",
+            )
+
     topk = int(topk)
     max_out = int(max_out)
+
+    lexicon: dict[str, str] | None = None
+    lexicon_path: str | None = None
+    lexicon_keys: set[str] | None = None
+    lexicon_source = "none"
+    if "lex_upload" in locals() and lex_upload is not None:
+        try:
+            data = lex_upload.getvalue()
+            lexicon_path = _write_uploaded_file_to_tmp(filename=lex_upload.name, data=data)
+            lex_res = load_user_lexicon(lexicon_path)
+            lexicon = lex_res.mappings
+            lexicon_keys = set(lexicon.keys()) if lexicon else None
+            lexicon_source = lex_res.source
+            st.caption(f"Lexicon loaded: {len(lexicon)} entries")
+        except Exception as e:
+            st.warning(f"Could not load lexicon: {e}")
+            lexicon = None
+            lexicon_path = None
+            lexicon_keys = None
+            lexicon_source = "error"
+
+    ft_path = (fasttext_model_path or "").strip()
+    if not ft_path:
+        ft_path = None
+    else:
+        try:
+            if not Path(ft_path).expanduser().exists():
+                st.caption("fastText model path set, but file not found (will be ignored).")
+        except Exception:
+            pass
 
     st.markdown("## Live Demo", help="Paste a message, then click Analyze.")
 
@@ -385,7 +491,35 @@ def main() -> None:
 
     # Compute only when the user clicks Analyze (or first load).
     if "gck_last_analysis" not in st.session_state or analyze_clicked:
-        st.session_state["gck_last_analysis"] = analyze_codemix(msg, topk=topk, numerals=numerals)
+        # Keep the demo resilient if an older SDK version is imported in some environments.
+        # We only pass supported kwargs based on signature inspection.
+        desired_kwargs: dict[str, Any] = {
+            "topk": topk,
+            "numerals": numerals,
+            "translit_mode": translit_mode,
+            "translit_backend": translit_backend,
+            "aggressive_normalize": aggressive_normalize,
+            "user_lexicon_path": lexicon_path,
+            "fasttext_model_path": ft_path,
+        }
+        try:
+            supported = set(inspect.signature(analyze_codemix).parameters.keys())
+            filtered = {k: v for k, v in desired_kwargs.items() if k in supported}
+            dropped = sorted(set(desired_kwargs.keys()) - set(filtered.keys()))
+            if dropped:
+                st.warning(
+                    "Some v0.3 demo options aren't supported by the imported SDK. "
+                    f"Ignoring: {', '.join(dropped)}. "
+                    "If you're running from the repo, restart Streamlit to pick up latest code."
+                )
+            st.session_state["gck_last_analysis"] = analyze_codemix(msg, **filtered)
+        except TypeError as e:
+            st.warning(
+                "SDK/demo mismatch while calling analyze_codemix(). "
+                "Restart Streamlit (and ensure editable install / local src is used). "
+                f"Error: {e}"
+            )
+            st.session_state["gck_last_analysis"] = analyze_codemix(msg, topk=topk, numerals=numerals)
 
     a = st.session_state["gck_last_analysis"]
 
@@ -406,11 +540,41 @@ def main() -> None:
     m4.metric("Backend", a.transliteration_backend)
 
     st.markdown("## What Changed")
-    rows = _transliteration_rows(a.normalized, topk=topk)
+    rows = _transliteration_rows(
+        a.normalized,
+        topk=topk,
+        aggressive_normalize=aggressive_normalize,
+        translit_backend=translit_backend,
+        lexicon=lexicon,
+        lexicon_keys=lexicon_keys,
+        fasttext_model_path=ft_path,
+    )
     if rows:
         st.dataframe(rows, width="stretch", hide_index=True)
     else:
         st.info("No Gujlish conversions detected for this input.")
+
+    with st.expander("Token LID (v0.3: confidence + reason)", expanded=False):
+        toks = tokenize(a.normalized or "")
+        tagged = tag_tokens(toks, lexicon_keys=lexicon_keys, fasttext_model_path=ft_path)
+        st.caption(
+            "This is the token-level language ID used by the pipeline. "
+            "Lexicon + optional fastText can influence Latin tokens."
+        )
+        st.dataframe(
+            [
+                {
+                    "token": t.text,
+                    "lang": t.lang.value,
+                    "confidence": round(float(t.confidence), 3),
+                    "reason": t.reason,
+                }
+                for t in tagged[:120]
+            ],
+            width="stretch",
+            hide_index=True,
+        )
+        st.caption(f"Lexicon source: {lexicon_source}")
 
     st.divider()
 
@@ -447,8 +611,8 @@ def main() -> None:
     with impact_right:
         st.subheader("Routing / analytics signal")
         st.caption("Token-level language mix becomes cleaner after Gujlish conversion.")
-        c_before = _lid_counts(a.raw)
-        c_after = _lid_counts(a.codemix)
+        c_before = _lid_counts(a.raw, lexicon_keys=lexicon_keys, fasttext_model_path=ft_path)
+        c_after = _lid_counts(a.codemix, lexicon_keys=lexicon_keys, fasttext_model_path=ft_path)
         st.dataframe(
             [
                 {"Lang": "gu_native", "Before": c_before["gu_native"], "After": c_after["gu_native"], "Delta": c_after["gu_native"] - c_before["gu_native"]},

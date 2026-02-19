@@ -37,6 +37,15 @@ def codemix(
     translit_mode: str = typer.Option(
         "token", help="Transliteration mode for Gujlish: token or sentence."
     ),
+    translit_backend: str = typer.Option(
+        "auto", help="Transliteration backend: auto, ai4bharat, sanscript, none."
+    ),
+    user_lexicon: Optional[Path] = typer.Option(
+        None, "--user-lexicon", help="Path to JSON/YAML file of roman->Gujarati overrides."
+    ),
+    fasttext_model: Optional[Path] = typer.Option(
+        None, "--fasttext-model", help="Optional path to lid.176.ftz (fastText LID model)."
+    ),
     preserve_case: bool = typer.Option(
         True, help="Preserve original case for Latin tokens (English + Gujlish)."
     ),
@@ -57,6 +66,9 @@ def codemix(
         topk=topk,
         numerals=numerals,  # type: ignore[arg-type]
         translit_mode=translit_mode,  # type: ignore[arg-type]
+        translit_backend=translit_backend,  # type: ignore[arg-type]
+        user_lexicon_path=None if user_lexicon is None else str(user_lexicon),
+        fasttext_model_path=None if fasttext_model is None else str(fasttext_model),
         preserve_case=preserve_case,
         preserve_numbers=preserve_numbers,
         aggressive_normalize=aggressive_normalize,

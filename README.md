@@ -4,133 +4,196 @@
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://sudhirgadhvi.github.io/gujarati-codemix-kit/)
 [![PyPI](https://img.shields.io/pypi/v/gujarati-codemix-kit.svg)](https://pypi.org/project/gujarati-codemix-kit/)
 [![Python](https://img.shields.io/pypi/pyversions/gujarati-codemix-kit.svg)](https://pypi.org/project/gujarati-codemix-kit/)
+ 
+ `gujarati-codemix-kit` is a small SDK + CLI for cleaning up Gujarati-English code-mixed text,
+ especially messy WhatsApp-style inputs where Gujarati might appear in:
+ 
+ - Gujarati script (ગુજરાતી)
+ - Romanized Gujarati (Gujlish)
+ - Mixed script in the same sentence
+ 
+ The goal is to normalize text *before* sending it to downstream models (Sarvam-M / Mayura /
+ Sarvam-Translate), and to postprocess certain outputs (e.g., Saaras `codemix`).
 
-`gujarati-codemix-kit` is an SDK + CLI (plus a web demo) for normalizing Gujarati-English code-mixed
-text. It is designed for WhatsApp-style inputs where Gujarati may appear as:
+This repo is alpha-quality but SDK-first: the public API centers on `CodeMixConfig` + `CodeMixPipeline`.
 
-- Gujarati script (ગુજરાતી)
-- Romanized Gujarati (Gujlish)
-- Mixed script in the same sentence
+## Why this exists
 
-Core goal: produce a stable, canonical form before sending text to downstream systems (LLMs, search,
-routing, analytics).
+Real-world Gujarati user text is often "out of distribution" relative to what most language models (or
+retrieval pipelines) expect:
 
-Canonical output format:
+- mixed scripts in one sentence (Gujarati + Latin)
+- romanized Gujarati spellings are inconsistent (`maru`, `maroo`, `mru`, `mare`, ...)
+- tokens are glued (`maru-business`), punctuation is noisy, emoji spacing is chaotic
+- numbers/time formats get merged (`3pm`, `v1.2`, `10k+`)
 
-- Gujarati stays Gujarati script
-- English stays Latin
-- Gujlish tokens are transliterated to Gujarati script when possible
+`gujarati-codemix-kit` aims to provide a repeatable preprocessing step that produces a canonical
+representation:
 
-The project is SDK-first: the stable surface centers on `CodeMixConfig` + `CodeMixPipeline`.
+- Gujarati tokens in Gujarati script
+- English tokens preserved in Latin
+- romanized Gujarati transliterated when the backend is confident
 
-## Install
+## WhatsApp-style hard cases (examples)
 
-From PyPI:
+These are real "shape of text" examples (handwritten / clean-room). Output may vary slightly depending on
+installed optional backends, but the intent stays the same: canonicalize Gujarati + preserve English.
+
+| Input | Output (`gck codemix` default) | Notes |
+| --- | --- | --- |
+| `maru business plan ready chhe!!!` | `મારું business plan ready છે!!` | Romanized Gujarati -> Gujarati script, English preserved |
+| `મારે meeting 3pm ae che, location send kar.` | `મારે meeting 3 pm ae છે, location send kar.` | Keeps English, normalizes spacing around `3 pm` |
+| `aaaj to mastttt chhe 😂😂 office ma` | `aaaj to mastttt છે 😂 😂 office ma` | Keeps uncertain roman tokens, still renders Gujarati `છે` |
+| `maru-business plan v1.2 ready chhe??` | `મારું-business plan v 1.2 ready છે??` | Handles glued tokens and version-ish patterns |
+| `Hu Ahmedabad ma chu, pan project deadline tight chhe` | `હું Ahmedabad ma chu, pan project deadline tight છે` | Mixed: transliterates `Hu`/`chhe`, keeps `Ahmedabad` |
+
+## Public API (small + stable)
+
+If you're using this as a library, prefer these symbols:
+
+- `CodeMixConfig`: config object; supports `from_dict(...)` for structured config.
+- `CodeMixPipeline`: end-to-end pipeline; `run(text)` and `run_many(texts)`.
+- `analyze_codemix(...)`: convenience helper; returns analysis with `.codemix`.
+- `render_codemix(...)`: convenience helper; returns the canonical rendered string.
+- `normalize_text(...)`: normalization helper (pre-pipeline cleanup).
+
+Everything else should be treated as implementation detail unless documented on the docs site.
+ 
+ ## Install
+
+From PyPI (typical usage):
+
+```bash
+pip install "gujarati-codemix-kit[indic,ml]"
+```
+
+For eval harness + demo:
+
+```bash
+pip install "gujarati-codemix-kit[indic,ml,eval,demo]"
+```
+
+From source (development):
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -U pip
+.venv/bin/pip install -e ".[indic,ml,eval,demo,dev,dialect-ml,rag]"
+```
+
+Minimal (CLI + basic heuristics only):
 
 ```bash
 pip install gujarati-codemix-kit
 ```
 
-From source (editable, recommended for dev):
+## Python quickstart (SDK)
 
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -U pip
-.venv/bin/pip install -e ".[dev]"
+```python
+from gujarati_codemix_kit import CodeMixConfig, CodeMixPipeline
+
+cfg = CodeMixConfig(
+    # Keep defaults for most cases; tweak only when you need behavior changes.
+    preserve_numbers=True,
+    preserve_case=True,
+)
+
+pipe = CodeMixPipeline(config=cfg)
+res = pipe.run("maru business plan ready chhe!!!")
+
+print(res.codemix)  # canonical: Gujarati in Gujarati script, English preserved
 ```
+ 
+ ## CLI
+ 
+ Normalize text:
+ 
+ ```bash
+ gck normalize "મારું business plan ready છે!!!"
+ ```
+ 
+ Render clean code-mix (Gujarati tokens in Gujarati script, English preserved):
+ 
+ ```bash
+ gck codemix "maru business plan ready chhe!!!"
+ ```
+ 
+Canonical output format:
 
-Common extras:
+- Gujarati stays in Gujarati script
+- English stays in Latin
+- Gujlish (romanized Gujarati) tokens are transliterated to Gujarati script when possible
 
-```bash
-.venv/bin/pip install -e ".[indic,demo,eval,rag]"
-```
-
-## Webpage Demo (Streamlit)
-
-Run locally:
-
-```bash
-python3 -m venv .venv
-.venv/bin/python -m pip install -U pip
-.venv/bin/pip install -e ".[demo,indic]"
-streamlit run demo/streamlit_app.py
-```
-
-Then open the URL Streamlit prints (usually `http://localhost:8501`).
-
-Optional (to enable Sarvam comparison in the demo):
-
-```bash
-.venv/bin/pip install -e ".[sarvam]"
-export SARVAM_API_KEY="..."
-```
-
-Hosting notes (Streamlit Community Cloud / Spaces) live in `demo/README.md`.
-
-## CLI
-
-Normalize text:
-
-```bash
-gck normalize "મારું business plan ready છે!!!"
-```
-
-Render canonical code-mix:
-
-```bash
-gck codemix "maru business plan ready chhe!!!"
-```
-
-Stats (success metric = % Gujlish tokens transliterated):
+Quick success metric (% Gujlish tokens transliterated):
 
 ```bash
 gck codemix --stats "maru business plan ready chhe!!!" 1>/dev/null
 ```
 
-Eval harness (optional deps):
+## Evaluation / benchmarks (reproducible)
+
+Run eval (downloads public Gujlish eval CSVs into `~/.cache/gujarati-codemix-kit`):
 
 ```bash
 gck eval --dataset gujlish --report eval/out/report.json
-gck eval --dataset retrieval
+```
+
+Dialect evals (uses a tiny packaged JSONL by default, or provide your own):
+
+```bash
 gck eval --dataset dialect_id
 gck eval --dataset dialect_normalization
 ```
 
-## SDK
+Typical workflow if you're integrating with a model:
 
-```python
-from gujarati_codemix_kit import render_codemix
+1) run baseline eval on raw text (or a representative sample)
+2) enable the `codemix` render step
+3) rerun eval and compare reports
 
-print(render_codemix("maru business plan ready chhe!!!", translit_mode="sentence"))
-```
+The eval harness is designed to be versioned and repeatable, so it can serve as a regression guard in CI.
 
-Pipeline API (recommended for repeated use):
+ ## Demo (Streamlit)
+ 
+ ```bash
+ streamlit run demo/streamlit_app.py
+ ```
+ 
+ If you export `SARVAM_API_KEY`, the demo can optionally call Sarvam APIs.
 
-```python
-from gujarati_codemix_kit import CodeMixConfig, CodeMixPipeline
+## RAG Utilities (v0.5)
 
-pipe = CodeMixPipeline(config=CodeMixConfig(translit_mode="sentence"))
-res = pipe.run("hu aaje office jaish!!")
-print(res.codemix)
-```
-
-## RAG Utilities
-
-Optional helpers for tiny curated corpora and demos:
+v0.5 adds small, optional RAG helpers intended for tiny curated corpora and demos:
 
 - `RagIndex`: build a small embeddings index and do top-k retrieval
-- `load_gujarat_facts_tiny()`: packaged mini dataset (docs + queries)
-- `download_gujarat_facts_dataset(...)`: opt-in download helper (URLs required)
+- `load_gujarat_facts_tiny()`: packaged mini dataset (docs + queries) for quick recall evals and demos
+- `download_gujarat_facts_dataset(...)`: opt-in download helper (URLs required; offline-first by default)
 
-HF embeddings (optional):
+To enable HF embedding models:
 
 ```bash
 .venv/bin/pip install -e ".[rag-embeddings]"
 ```
 
-## Dialects (Optional)
+Example (keyword embedder, no ML deps):
 
-Dialect utilities are offline-first and pluggable:
+```python
+from gujarati_codemix_kit import RagIndex, load_gujarat_facts_tiny
+
+ds = load_gujarat_facts_tiny()
+
+def keyword_embed(texts: list[str]) -> list[list[float]]:
+    keys = ["અમદાવાદ", "રાજધાની", "નવરાત્રી", "શિયાળ", "ગિર", "ડાયમંડ"]
+    return [[1.0 if k in (t or "") else 0.0 for k in keys] for t in texts]
+
+idx = RagIndex.build(docs=ds.docs, embed_texts=keyword_embed, embedding_model="keywords")
+hits = idx.search(query="ગુજરાતની રાજધાની કઈ છે?", embed_texts=keyword_embed, topk=3)
+print([h.doc_id for h in hits])
+```
+
+## Dialects (Full SDK)
+
+Dialect support is offline-first and pluggable:
 
 - Dialect ID backends: `heuristic` (default), `transformers` (fine-tuned model), `none`
 - Dialect normalization backends: `heuristic` (rules), `seq2seq` (optional), `auto` (rules + optional seq2seq)
@@ -138,20 +201,27 @@ Dialect utilities are offline-first and pluggable:
 Safety default: remote HuggingFace model downloads are disabled unless you explicitly enable them:
 
 - SDK: `allow_remote_models=False` (default)
-- Demo: “Allow remote model downloads” checkbox (off by default)
+- Demo: "Allow remote model downloads" checkbox (off by default)
 
-## Docs
+Example (heuristic dialect normalization gated by confidence):
 
-Project docs are published at:
+```python
+from gujarati_codemix_kit import analyze_codemix
 
-- https://sudhirgadhvi.github.io/gujarati-codemix-kit/
-
-Build/preview locally:
-
-```bash
-.venv/bin/pip install -e ".[docs]"
-mkdocs serve
+a = analyze_codemix(
+    "kamaad thaalu rakhje",
+    dialect_backend="heuristic",
+    dialect_normalize=True,
+    dialect_min_confidence=0.7,
+)
+print(a.codemix)
 ```
+
+## Offline-first + safety defaults
+
+- Remote model downloads are opt-in (`allow_remote_models=False` by default).
+- Optional heavy dependencies are behind extras, so the base install stays lightweight.
+- Behavior is intended to be deterministic for the same version + config.
 
 ## Training (Optional)
 
@@ -161,9 +231,9 @@ This repo includes simple training scripts (you provide data):
 python3 scripts/train_dialect_id.py --train path/to/dialect_id_train.jsonl --output-dir out/dialect_id
 python3 scripts/train_dialect_normalizer.py --train path/to/dialect_norm_train.jsonl --output-dir out/dialect_norm
 ```
-
-## Disclaimer
-
-The API is intended to be stable, but output quality depends on the available backends, heuristics,
-and the kind of mixed text you process. Dialect components in particular depend on labeled data and
-model choices.
+ 
+ ## Disclaimer
+ 
+This is alpha software. Core code-mix rendering is designed to be stable, but dialect detection and
+normalization are limited by available labeled data and model choices.
+ 

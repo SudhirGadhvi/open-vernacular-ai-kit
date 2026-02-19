@@ -1,12 +1,28 @@
 """Gujarati CodeMix Kit.
 
-Public API is intentionally small. Prefer using `normalize_text()` and `render_codemix()`.
+Public API is intentionally small. Prefer using `CodeMixPipeline` + `CodeMixConfig` for SDK usage.
 """
 
-from .codemix_render import analyze_codemix, render_codemix
+from .codemix_render import (
+    analyze_codemix,
+    analyze_codemix_with_config,
+    render_codemix,
+    render_codemix_with_config,
+)
+from .config import CodeMixConfig
 from .normalize import normalize_text
+from .pipeline import CodeMixPipeline, CodeMixPipelineResult
 
-__all__ = ["analyze_codemix", "normalize_text", "render_codemix"]
+__all__ = [
+    "CodeMixConfig",
+    "CodeMixPipeline",
+    "CodeMixPipelineResult",
+    "analyze_codemix",
+    "analyze_codemix_with_config",
+    "normalize_text",
+    "render_codemix",
+    "render_codemix_with_config",
+]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
  

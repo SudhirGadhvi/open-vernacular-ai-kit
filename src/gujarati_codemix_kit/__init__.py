@@ -19,6 +19,14 @@ from .codemix_render import (
 )
 from .codeswitch import CodeSwitchMetrics, compute_code_switch_metrics
 from .config import CodeMixConfig
+from .dialect_datasets import (
+    DialectIdExample,
+    DialectNormalizationExample,
+    dump_dialect_id_jsonl,
+    dump_dialect_normalization_jsonl,
+    load_dialect_id_jsonl,
+    load_dialect_normalization_jsonl,
+)
 from .dialects import (
     DialectDetection,
     DialectNormalizationResult,
@@ -46,6 +54,12 @@ __all__ = [
     "detect_dialect_from_tokens",
     "detect_dialect_from_tagged_tokens",
     "normalize_dialect_tokens",
+    "DialectIdExample",
+    "DialectNormalizationExample",
+    "load_dialect_id_jsonl",
+    "load_dialect_normalization_jsonl",
+    "dump_dialect_id_jsonl",
+    "dump_dialect_normalization_jsonl",
     "normalize_text",
     "render_codemix",
     "render_codemix_with_config",

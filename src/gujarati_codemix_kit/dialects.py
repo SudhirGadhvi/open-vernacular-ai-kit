@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Iterable, Optional, Sequence
 
+import regex as re
+
 from .token_lid import Token, TokenLang, tokenize
 
 
@@ -12,6 +14,8 @@ class GujaratiDialect(str, Enum):
     STANDARD = "standard"
     KATHIAWADI = "kathiawadi"
     SURATI = "surati"
+    CHAROTAR = "charotar"
+    NORTH_GUJARAT = "north_gujarat"
 
 
 @dataclass(frozen=True)
@@ -26,6 +30,8 @@ class DialectDetection:
     dialect: GujaratiDialect
     scores: dict[str, int]
     markers_found: dict[str, list[str]]
+    backend: str = "heuristic"
+    confidence: float = 0.0
 
 
 @dataclass(frozen=True)
@@ -34,6 +40,7 @@ class DialectNormalizationResult:
     changed: bool
     tokens_in: list[str]
     tokens_out: list[str]
+    backend: str = "heuristic"
 
 
 def _lower_if_latin_token(tok: str) -> str:
@@ -43,6 +50,21 @@ def _lower_if_latin_token(tok: str) -> str:
         return tok.lower()
     except Exception:
         return tok
+
+
+_GUJARATI_RE = re.compile(r"[\p{Gujarati}]", flags=re.VERSION1)
+
+
+def _is_native_pattern(pat: tuple[str, ...]) -> bool:
+    return any(_GUJARATI_RE.search(p or "") for p in pat)
+
+
+def _roman_lang_ok(t: Token) -> bool:
+    return t.lang == TokenLang.GU_ROMAN
+
+
+def _native_lang_ok(t: Token) -> bool:
+    return t.lang == TokenLang.GU_NATIVE
 
 
 # NOTE: These marker words and mappings are intentionally small and easy to extend.
@@ -204,8 +226,10 @@ def detect_dialect_from_tokens(tokens: Sequence[str]) -> DialectDetection:
     markers_found = {"kathiawadi": kath_hits, "surati": sur_hits}
 
     if scores["kathiawadi"] == 0 and scores["surati"] == 0:
+        # If we see Gujarati script but no specific dialect markers, treat as standard Gujarati.
+        has_gu_script = any(_GUJARATI_RE.search(tok or "") for tok in tokens)
         return DialectDetection(
-            dialect=GujaratiDialect.UNKNOWN,
+            dialect=GujaratiDialect.STANDARD if has_gu_script else GujaratiDialect.UNKNOWN,
             scores=scores,
             markers_found=markers_found,
         )
@@ -253,8 +277,10 @@ def detect_dialect_from_tagged_tokens(tagged_tokens: Iterable[Token]) -> Dialect
     markers_found = {"kathiawadi": kath_hits, "surati": sur_hits}
 
     if scores["kathiawadi"] == 0 and scores["surati"] == 0:
+        # If the text contains Gujarati-ish tokens but no markers, call it standard.
+        has_gu = any(t.lang in {TokenLang.GU_NATIVE, TokenLang.GU_ROMAN} for t in tagged_tokens)
         return DialectDetection(
-            dialect=GujaratiDialect.UNKNOWN,
+            dialect=GujaratiDialect.STANDARD if has_gu else GujaratiDialect.UNKNOWN,
             scores=scores,
             markers_found=markers_found,
         )
@@ -288,6 +314,100 @@ def _apply_phrase_rules(tokens: Sequence[str], rules: list[tuple[tuple[str, ...]
             out.append(tokens[i])
             i += 1
     return out
+
+
+def normalize_dialect_tagged_tokens(
+    tagged_tokens: Sequence[Token],
+    *,
+    dialect: Optional[GujaratiDialect] = None,
+) -> DialectNormalizationResult:
+    """
+    Dialect normalization constrained by token LID.
+
+    Key property: we do NOT rewrite tokens tagged as English (or OTHER), even if they
+    coincidentally match a roman marker string.
+    """
+
+    tokens_in = [t.text for t in tagged_tokens]
+    if not tokens_in:
+        d_eff = dialect or GujaratiDialect.UNKNOWN
+        return DialectNormalizationResult(
+            dialect=d_eff,
+            changed=False,
+            tokens_in=[],
+            tokens_out=[],
+        )
+
+    det = detect_dialect_from_tagged_tokens(tagged_tokens) if dialect is None else None
+    d_eff = det.dialect if det is not None else (dialect or GujaratiDialect.UNKNOWN)
+
+    if d_eff not in {GujaratiDialect.KATHIAWADI, GujaratiDialect.SURATI}:
+        return DialectNormalizationResult(
+            dialect=d_eff,
+            changed=False,
+            tokens_in=tokens_in,
+            tokens_out=tokens_in,
+        )
+
+    if d_eff == GujaratiDialect.KATHIAWADI:
+        phrase_rules = _KATHIAWADI_PHRASE_RULES
+        token_rules = _KATHIAWADI_TOKEN_RULES
+        token_rules_native = _KATHIAWADI_TOKEN_RULES_NATIVE
+    else:
+        phrase_rules = _SURATI_PHRASE_RULES
+        token_rules = _SURATI_TOKEN_RULES
+        token_rules_native = _SURATI_TOKEN_RULES_NATIVE
+
+    # Phrase rewrite: we only match when the window is fully Gujarati-ish and the pattern type
+    # agrees with token LID.
+    out: list[str] = []
+    i = 0
+    while i < len(tagged_tokens):
+        applied = False
+        for pat, rep in phrase_rules:
+            n = len(pat)
+            if i + n > len(tagged_tokens):
+                continue
+            win = tagged_tokens[i : i + n]
+
+            pat_is_native = _is_native_pattern(pat)
+            if pat_is_native:
+                if not all(_native_lang_ok(t) for t in win):
+                    continue
+                # Native patterns require exact match.
+                if tuple(t.text for t in win) != pat:
+                    continue
+            else:
+                if not all(_roman_lang_ok(t) for t in win):
+                    continue
+                if tuple((t.text or "").lower() for t in win) != pat:
+                    continue
+
+            out.extend(rep)
+            i += n
+            applied = True
+            break
+
+        if applied:
+            continue
+
+        # Token rewrite: only on Gujarati-ish tokens.
+        t = tagged_tokens[i]
+        if t.lang == TokenLang.GU_NATIVE:
+            out.append(token_rules_native.get(t.text, t.text))
+        elif t.lang == TokenLang.GU_ROMAN:
+            low = (t.text or "").lower()
+            out.append(token_rules.get(low, t.text))
+        else:
+            out.append(t.text)
+        i += 1
+
+    return DialectNormalizationResult(
+        dialect=d_eff,
+        changed=out != tokens_in,
+        tokens_in=tokens_in,
+        tokens_out=out,
+    )
 
 
 def normalize_dialect_tokens(

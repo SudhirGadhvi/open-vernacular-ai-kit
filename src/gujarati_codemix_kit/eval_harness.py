@@ -11,7 +11,14 @@ from typing import Any, Iterable, Optional, Sequence
 import regex as re
 
 from .codemix_render import analyze_codemix, render_codemix
+from .dialect_datasets import (
+    load_dialect_id_jsonl,
+    load_dialect_normalization_jsonl,
+    packaged_data_path,
+)
 from .normalize import normalize_text
+from .rendering import render_tokens
+from .token_lid import tokenize
 from .transliterate import transliteration_backend
 
 _GUJARATI_RE = re.compile(r"[\p{Gujarati}]")
@@ -120,6 +127,210 @@ def _analyze_one(text: str, *, topk: int = 1) -> dict[str, Any]:
 
 def _sha256_hex(s: str) -> str:
     return hashlib.sha256((s or "").encode("utf-8", errors="replace")).hexdigest()
+
+
+def _accuracy(y_true: Sequence[str], y_pred: Sequence[str]) -> float:
+    if not y_true:
+        return 0.0
+    ok = sum(1 for i in range(len(y_true)) if y_true[i] == y_pred[i])
+    return ok / len(y_true)
+
+
+def _macro_f1(y_true: Sequence[str], y_pred: Sequence[str], *, labels: Sequence[str]) -> float:
+    """
+    Simple macro-F1 without external deps.
+    """
+
+    if not labels:
+        return 0.0
+    label_set = list(dict.fromkeys(labels))
+    f1s: list[float] = []
+    for lab in label_set:
+        tp = sum(1 for i in range(len(y_true)) if y_true[i] == lab and y_pred[i] == lab)
+        fp = sum(1 for i in range(len(y_true)) if y_true[i] != lab and y_pred[i] == lab)
+        fn = sum(1 for i in range(len(y_true)) if y_true[i] == lab and y_pred[i] != lab)
+        prec = (tp / (tp + fp)) if (tp + fp) else 0.0
+        rec = (tp / (tp + fn)) if (tp + fn) else 0.0
+        f1 = (2 * prec * rec / (prec + rec)) if (prec + rec) else 0.0
+        f1s.append(f1)
+    return sum(f1s) / len(f1s)
+
+
+def _chrf(hyp: str, ref: str, *, n: int = 6, beta: float = 2.0) -> float:
+    """
+    Tiny chrF-style character n-gram F-score (0..100).
+
+    This is not a full sacrebleu implementation; it's sufficient for regression tracking.
+    """
+
+    h = (hyp or "").strip()
+    r = (ref or "").strip()
+    if not h and not r:
+        return 100.0
+    if not h or not r:
+        return 0.0
+
+    def ngrams(s: str, k: int) -> dict[str, int]:
+        out: dict[str, int] = {}
+        if len(s) < k:
+            return out
+        for i in range(len(s) - k + 1):
+            g = s[i : i + k]
+            out[g] = out.get(g, 0) + 1
+        return out
+
+    scores: list[float] = []
+    for k in range(1, n + 1):
+        hn = ngrams(h, k)
+        rn = ngrams(r, k)
+        if not hn or not rn:
+            scores.append(0.0)
+            continue
+        overlap = 0
+        for g, c in hn.items():
+            overlap += min(c, rn.get(g, 0))
+        prec = overlap / sum(hn.values()) if hn else 0.0
+        rec = overlap / sum(rn.values()) if rn else 0.0
+        if prec == 0.0 and rec == 0.0:
+            scores.append(0.0)
+            continue
+        beta2 = beta * beta
+        f = (1 + beta2) * prec * rec / (beta2 * prec + rec) if (beta2 * prec + rec) else 0.0
+        scores.append(f)
+
+    return 100.0 * (sum(scores) / len(scores))
+
+
+def run_dialect_id_eval(
+    *,
+    dataset_path: Optional[str] = None,
+    dialect_backend: str = "heuristic",
+    dialect_model_id_or_path: Optional[str] = None,
+    allow_remote_models: bool = False,
+    max_rows: Optional[int] = 2000,
+) -> dict[str, Any]:
+    """
+    Evaluate dialect identification on a labeled JSONL file.
+    """
+
+    path = Path(dataset_path) if dataset_path else packaged_data_path("dialect_id_samples.jsonl")
+    if not path.exists():
+        raise RuntimeError(
+            f"Dialect eval dataset not found: {path}. "
+            "Pass --dialect-dataset (CLI) / dialect_dataset_path (SDK) to a JSONL file."
+        )
+    rows = load_dialect_id_jsonl(path)
+    if max_rows is not None:
+        rows = rows[: int(max_rows)]
+
+    y_true: list[str] = []
+    y_pred: list[str] = []
+    examples: list[dict[str, Any]] = []
+
+    for ex in rows:
+        a = analyze_codemix(
+            ex.text,
+            dialect_backend=dialect_backend,
+            dialect_model_id_or_path=dialect_model_id_or_path,
+            allow_remote_models=allow_remote_models,
+        )
+        y_true.append(ex.dialect.value)
+        y_pred.append(a.dialect.dialect.value)
+        if len(examples) < 8:
+            examples.append(
+                {
+                    "text": ex.text,
+                    "dialect_true": ex.dialect.value,
+                    "dialect_pred": a.dialect.dialect.value,
+                    "confidence": float(getattr(a.dialect, "confidence", 0.0)),
+                    "backend": getattr(a.dialect, "backend", "unknown"),
+                }
+            )
+
+    labels = sorted(set(y_true) | set(y_pred))
+    return {
+        "dataset": "dialect_id",
+        "path": str(path),
+        "n_rows": len(rows),
+        "dialect_backend": dialect_backend,
+        "accuracy": _accuracy(y_true, y_pred),
+        "macro_f1": _macro_f1(y_true, y_pred, labels=labels),
+        "labels": labels,
+        "examples": examples,
+    }
+
+
+def run_dialect_normalization_eval(
+    *,
+    dataset_path: Optional[str] = None,
+    dialect_normalizer_backend: str = "heuristic",
+    dialect_normalizer_model_id_or_path: Optional[str] = None,
+    allow_remote_models: bool = False,
+    max_rows: Optional[int] = 2000,
+) -> dict[str, Any]:
+    """
+    Evaluate dialect normalization on a labeled JSONL file.
+
+    We force dialect per-row via `dialect_force` so results are deterministic.
+    """
+
+    path = Path(dataset_path) if dataset_path else packaged_data_path("dialect_norm_samples.jsonl")
+    if not path.exists():
+        raise RuntimeError(
+            f"Dialect normalization eval dataset not found: {path}. "
+            "Pass --dialect-norm-dataset (CLI) / dialect_norm_dataset_path (SDK) to a JSONL file."
+        )
+    rows = load_dialect_normalization_jsonl(path)
+    if max_rows is not None:
+        rows = rows[: int(max_rows)]
+
+    n = len(rows) or 1
+    em_ok = 0
+    chrf_vals: list[float] = []
+    examples: list[dict[str, Any]] = []
+
+    for ex in rows:
+        a = analyze_codemix(
+            ex.input,
+            dialect_force=ex.dialect.value,
+            dialect_normalize=True,
+            dialect_min_confidence=0.0,
+            dialect_normalizer_backend=dialect_normalizer_backend,
+            dialect_normalizer_model_id_or_path=dialect_normalizer_model_id_or_path,
+            allow_remote_models=allow_remote_models,
+        )
+        hyp_toks = list(getattr(a.dialect_normalization, "tokens_out", []))
+        ref_toks = tokenize(ex.expected)
+        if hyp_toks == ref_toks:
+            em_ok += 1
+
+        hyp = render_tokens(hyp_toks)
+        ref = render_tokens(ref_toks)
+        chrf_vals.append(_chrf(hyp, ref))
+
+        if len(examples) < 8:
+            examples.append(
+                {
+                    "input": ex.input,
+                    "dialect": ex.dialect.value,
+                    "expected": ex.expected,
+                    "pred_tokens": hyp_toks,
+                    "pred": hyp,
+                    "backend": getattr(a.dialect_normalization, "backend", "unknown"),
+                    "chrf": chrf_vals[-1],
+                    "exact_match": hyp_toks == ref_toks,
+                }
+            )
+
+    return {
+        "dataset": "dialect_normalization",
+        "path": str(path),
+        "n_rows": len(rows),
+        "dialect_normalizer_backend": dialect_normalizer_backend,
+        "exact_match": em_ok / n,
+        "chrf": sum(chrf_vals) / len(chrf_vals) if chrf_vals else 0.0,
+        "examples": examples,
+    }
 
 
 def _require_torch_and_transformers(context: str) -> tuple[Any, Any]:
@@ -572,6 +783,13 @@ def run_eval(
     n_variants: int = 10,
     api_key: Optional[str] = None,
     preprocess: bool = True,
+    dialect_dataset_path: Optional[str] = None,
+    dialect_norm_dataset_path: Optional[str] = None,
+    dialect_backend: str = "heuristic",
+    dialect_model_id_or_path: Optional[str] = None,
+    dialect_normalizer_backend: str = "heuristic",
+    dialect_normalizer_model_id_or_path: Optional[str] = None,
+    allow_remote_models: bool = False,
 ) -> dict[str, Any]:
     """
     Run a lightweight eval that answers: does codemix rendering produce Gujarati script
@@ -602,9 +820,25 @@ def run_eval(
             api_key=api_key,
             preprocess=preprocess,
         )
+    if dataset in {"dialect_id", "dialect-id"}:
+        return run_dialect_id_eval(
+            dataset_path=dialect_dataset_path,
+            dialect_backend=dialect_backend,
+            dialect_model_id_or_path=dialect_model_id_or_path,
+            allow_remote_models=allow_remote_models,
+            max_rows=max_rows,
+        )
+    if dataset in {"dialect_normalization", "dialect-normalization", "dialect_norm", "dialect-norm"}:
+        return run_dialect_normalization_eval(
+            dataset_path=dialect_norm_dataset_path,
+            dialect_normalizer_backend=dialect_normalizer_backend,
+            dialect_normalizer_model_id_or_path=dialect_normalizer_model_id_or_path,
+            allow_remote_models=allow_remote_models,
+            max_rows=max_rows,
+        )
     if dataset != "gujlish":
         raise ValueError(
-            "Unsupported dataset. Try one of: gujlish, golden_translit, retrieval, prompt_stability"
+            "Unsupported dataset. Try one of: gujlish, golden_translit, retrieval, prompt_stability, dialect_id, dialect_normalization"
         )
 
     cache_dir = _default_cache_dir()

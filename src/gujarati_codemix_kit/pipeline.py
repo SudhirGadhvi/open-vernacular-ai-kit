@@ -8,7 +8,13 @@ import regex as re
 
 from .codeswitch import CodeSwitchMetrics, compute_code_switch_metrics
 from .config import CodeMixConfig
-from .dialects import DialectDetection, detect_dialect_from_tagged_tokens
+from .dialect_backends import get_dialect_backend
+from .dialect_normalizers import get_dialect_normalizer
+from .dialects import (
+    DialectDetection,
+    DialectNormalizationResult,
+    detect_dialect_from_tagged_tokens,
+)
 from .lexicon import LexiconLoadResult, load_user_lexicon
 from .normalize import normalize_text
 from .rendering import render_tokens
@@ -40,8 +46,10 @@ class CodeMixPipelineResult:
     normalized: str
     tokens: list[str]
     tagged_tokens: list[Token]
+    tagged_tokens_effective: list[Token]
     codeswitch: CodeSwitchMetrics
     dialect: DialectDetection
+    dialect_normalization: DialectNormalizationResult
     rendered_tokens: list[str]
     codemix: str
 
@@ -301,6 +309,9 @@ class CodeMixPipeline:
             backend = transliteration_backend_configured(preferred=cfg.translit_backend)
             cs = compute_code_switch_metrics([])
             d = detect_dialect_from_tagged_tokens([])
+            dn = DialectNormalizationResult(
+                dialect=d.dialect, changed=False, tokens_in=[], tokens_out=[], backend="none"
+            )
             _emit(
                 self.on_event,
                 {
@@ -311,6 +322,9 @@ class CodeMixPipeline:
                     "cmi": cs.cmi,
                     "switch_points": cs.n_switch_points,
                     "dialect": d.dialect.value,
+                    "dialect_backend": d.backend,
+                    "dialect_confidence": d.confidence,
+                    "dialect_normalized": False,
                 },
             )
             return CodeMixPipelineResult(
@@ -318,8 +332,10 @@ class CodeMixPipeline:
                 normalized="",
                 tokens=[],
                 tagged_tokens=[],
+                tagged_tokens_effective=[],
                 codeswitch=cs,
                 dialect=d,
+                dialect_normalization=dn,
                 rendered_tokens=[],
                 codemix="",
                 n_tokens=0,
@@ -339,12 +355,58 @@ class CodeMixPipeline:
             on_event=self.on_event,
         )
         cs = compute_code_switch_metrics(tagged)
-        d = detect_dialect_from_tagged_tokens(tagged)
+
+        # Dialect detection is pluggable; default stays offline heuristic.
+        if cfg.dialect_force:
+            forced = str(cfg.dialect_force).strip().lower().replace("-", "_").replace(" ", "_")
+            # Avoid importing GujaratiDialect at module import time; keep it local.
+            from .dialects import GujaratiDialect
+
+            try:
+                forced_dialect = GujaratiDialect(forced)  # type: ignore[arg-type]
+            except Exception:
+                forced_dialect = GujaratiDialect.UNKNOWN
+            d = DialectDetection(
+                dialect=forced_dialect,
+                scores={"forced": 1},
+                markers_found={},
+                backend="forced",
+                confidence=1.0,
+            )
+        else:
+            backend = get_dialect_backend(cfg)
+            if backend is None:
+                d = DialectDetection(
+                    dialect=detect_dialect_from_tagged_tokens(tagged).dialect,
+                    scores={},
+                    markers_found={},
+                    backend="none",
+                    confidence=0.0,
+                )
+            else:
+                d = backend.detect(text=norm, tagged_tokens=tagged, config=cfg)
+
+        normalizer = get_dialect_normalizer(cfg)
+        dn = DialectNormalizationResult(
+            dialect=d.dialect, changed=False, tokens_in=toks, tokens_out=toks, backend="none"
+        )
+        dialect_normalized = False
+        tagged_eff = tagged
+        if cfg.dialect_normalize and normalizer is not None and (d.confidence >= float(cfg.dialect_min_confidence)):
+            dn = normalizer.normalize(tagged_tokens=tagged, dialect=d.dialect, config=cfg)
+            if dn.changed:
+                # Re-tag after dialect normalization so transliteration + metrics see consistent TokenLang.
+                tagged_eff = tag_tokens(
+                    dn.tokens_out,
+                    lexicon_keys=lex_keys,
+                    fasttext_model_path=cfg.fasttext_model_path,
+                )
+                dialect_normalized = True
 
         n_en = 0
         n_gu_native = 0
         n_gu_roman = 0
-        for tok in tagged:
+        for tok in tagged_eff:
             if tok.lang == TokenLang.EN:
                 n_en += 1
             elif tok.lang == TokenLang.GU_NATIVE:
@@ -353,16 +415,16 @@ class CodeMixPipeline:
                 n_gu_roman += 1
 
         rendered, n_transliterated = transliterate_stage(
-            tagged, config=cfg, lexicon=lex, on_event=self.on_event
+            tagged_eff, config=cfg, lexicon=lex, on_event=self.on_event
         )
         out = render_stage(rendered, config=cfg, on_event=self.on_event)
 
-        backend = transliteration_backend_configured(preferred=cfg.translit_backend)
+        backend_name = transliteration_backend_configured(preferred=cfg.translit_backend)
         _emit(
             self.on_event,
             {
                 "stage": "done",
-                "backend": backend,
+                "backend": backend_name,
                 "n_tokens": len(toks),
                 "n_gu_roman_tokens": n_gu_roman,
                 "n_gu_roman_transliterated": n_transliterated,
@@ -370,6 +432,9 @@ class CodeMixPipeline:
                 "cmi": cs.cmi,
                 "switch_points": cs.n_switch_points,
                 "dialect": d.dialect.value,
+                "dialect_backend": d.backend,
+                "dialect_confidence": d.confidence,
+                "dialect_normalized": dialect_normalized,
             },
         )
 
@@ -378,8 +443,10 @@ class CodeMixPipeline:
             normalized=norm,
             tokens=toks,
             tagged_tokens=tagged,
+            tagged_tokens_effective=tagged_eff,
             codeswitch=cs,
             dialect=d,
+            dialect_normalization=dn,
             rendered_tokens=rendered,
             codemix=out,
             n_tokens=len(toks),
@@ -387,6 +454,6 @@ class CodeMixPipeline:
             n_gu_native_tokens=n_gu_native,
             n_gu_roman_tokens=n_gu_roman,
             n_gu_roman_transliterated=n_transliterated,
-            transliteration_backend=backend,
+            transliteration_backend=backend_name,
         )
 

@@ -414,13 +414,13 @@ def main() -> None:
             topk = st.number_input("Transliteration top-k", min_value=1, max_value=5, value=1, step=1)
             numerals = st.selectbox("Numerals", options=["keep", "ascii"], index=0)
             translit_mode = st.selectbox(
-                "Transliteration mode (demo v0.3)",
+                "Transliteration mode",
                 options=["sentence", "token"],
                 index=0,
                 help="Sentence mode unlocks phrase/joiner improvements for Gujlish runs.",
             )
             translit_backend = st.selectbox(
-                "Transliteration backend (demo v0.3)",
+                "Transliteration backend",
                 options=["auto", "ai4bharat", "sanscript", "none"],
                 index=0,
                 help="auto picks best available. ai4bharat requires optional install.",
@@ -443,7 +443,7 @@ def main() -> None:
             if sarvam_enabled and not _sarvam_available():
                 st.warning("Sarvam SDK not available. Install extras: `pip install -e '.[sarvam]'`.")
 
-        st.markdown("### Advanced (v0.3)")
+        st.markdown("### Advanced (v0.3/v0.4.x)")
         a1, a2 = st.columns(2)
         with a1:
             lex_upload = st.file_uploader(
@@ -456,6 +456,58 @@ def main() -> None:
                 "fastText model path (lid.176.ftz) for optional LID fallback",
                 value=os.environ.get("GCK_FASTTEXT_MODEL_PATH", ""),
                 help="Optional. If provided + fastText installed + file exists, it can help English detection.",
+            )
+
+        st.markdown("### Dialects (v0.4.x)")
+        d1, d2 = st.columns(2)
+        with d1:
+            dialect_backend = st.selectbox(
+                "Dialect backend",
+                options=["auto", "heuristic", "transformers", "none"],
+                index=0,
+                help=(
+                    "auto uses Transformers if a model is provided, else heuristic. "
+                    "transformers expects a fine-tuned HF seq-classification model (path or id)."
+                ),
+            )
+            dialect_normalize = st.checkbox(
+                "Apply dialect normalization",
+                value=False,
+                help="Only applies when dialect confidence >= threshold. Never rewrites English tokens.",
+            )
+        with d2:
+            dialect_model_id_or_path = st.text_input(
+                "Dialect model id/path (Transformers)",
+                value="",
+                help="Local path (offline) or HF model id. Only used for backend=transformers or auto.",
+            )
+            dialect_min_confidence = st.slider(
+                "Dialect min confidence",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.70,
+                step=0.05,
+                help="Normalization is gated on this threshold.",
+            )
+
+        n1, n2 = st.columns(2)
+        with n1:
+            dialect_normalizer_backend = st.selectbox(
+                "Dialect normalizer backend",
+                options=["auto", "heuristic", "seq2seq", "none"],
+                index=0,
+                help="auto = rules-first + optional seq2seq if a model is provided.",
+            )
+            allow_remote_models = st.checkbox(
+                "Allow remote model downloads",
+                value=False,
+                help="Off by default. Enable only if you want HF model-id downloads/caching.",
+            )
+        with n2:
+            dialect_normalizer_model_id_or_path = st.text_input(
+                "Dialect normalizer model id/path (seq2seq)",
+                value="",
+                help="Optional. Local path (offline) or HF id for a seq2seq dialect->standard normalizer.",
             )
 
     topk = int(topk)
@@ -541,6 +593,14 @@ def main() -> None:
             "aggressive_normalize": aggressive_normalize,
             "user_lexicon_path": lexicon_path,
             "fasttext_model_path": ft_path,
+            "dialect_backend": dialect_backend,
+            "dialect_model_id_or_path": (dialect_model_id_or_path or "").strip() or None,
+            "dialect_min_confidence": float(dialect_min_confidence),
+            "dialect_normalize": bool(dialect_normalize),
+            "dialect_normalizer_backend": dialect_normalizer_backend,
+            "dialect_normalizer_model_id_or_path": (dialect_normalizer_model_id_or_path or "").strip()
+            or None,
+            "allow_remote_models": bool(allow_remote_models),
         }
         try:
             supported = set(inspect.signature(analyze_codemix).parameters.keys())
@@ -602,10 +662,16 @@ def main() -> None:
         tagged = tag_tokens(toks, lexicon_keys=lexicon_keys, fasttext_model_path=ft_path)
         d = detect_dialect_from_tagged_tokens(tagged)
 
-    c1, c2, c3 = st.columns(3)
+    try:
+        dn = a.dialect_normalization  # type: ignore[attr-defined]
+    except Exception:
+        dn = None
+
+    c1, c2, c3, c4 = st.columns(4)
     c1.metric("CMI", f"{cs.cmi:.1f}")
     c2.metric("Switch points", cs.n_switch_points)
-    c3.metric("Dialect (MVP)", d.dialect.value)
+    c3.metric("Dialect", d.dialect.value)
+    c4.metric("Dialect confidence", f"{getattr(d, 'confidence', 0.0):.2f}")
 
     st.markdown("## What Changed")
     rows = _transliteration_rows(
@@ -646,6 +712,8 @@ def main() -> None:
 
     with st.expander("Code-switching + dialect (v0.4)", expanded=False):
         st.caption("Heuristic metrics to quantify how mixed the input is (Gujarati vs English).")
+        dialect_norm_applied = bool(getattr(dn, "changed", False)) if dn is not None else False
+        dialect_norm_backend = getattr(dn, "backend", "none") if dn is not None else "none"
         st.dataframe(
             [
                 {
@@ -657,6 +725,10 @@ def main() -> None:
                 {"Metric": "English tokens", "Value": int(cs.n_en_tokens)},
                 {"Metric": "Lexical tokens considered", "Value": int(cs.n_tokens_considered)},
                 {"Metric": "Dialect guess", "Value": d.dialect.value},
+                {"Metric": "Dialect backend", "Value": getattr(d, "backend", "heuristic")},
+                {"Metric": "Dialect confidence", "Value": round(float(getattr(d, "confidence", 0.0)), 3)},
+                {"Metric": "Dialect normalized", "Value": dialect_norm_applied},
+                {"Metric": "Dialect normalizer backend", "Value": dialect_norm_backend},
             ],
             width="stretch",
             hide_index=True,
@@ -664,6 +736,12 @@ def main() -> None:
         if getattr(d, "markers_found", None):
             st.caption("Dialect markers found (debug):")
             st.json(d.markers_found)
+        if dn is not None and getattr(dn, "changed", False):
+            st.caption("Dialect normalization output (debug):")
+            try:
+                st.code(" ".join(list(getattr(dn, "tokens_out", []))[:80]))
+            except Exception:
+                pass
 
     with st.expander("Batch helpers (CSV / JSONL) (v0.4)", expanded=False):
         st.caption("Upload a file, run preprocessing, download enriched output.")

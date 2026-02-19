@@ -8,9 +8,8 @@ from typing import Any, Iterable, Optional
 
 import regex as re
 
-from .codeswitch import compute_code_switch_metrics
 from .config import CodeMixConfig
-from .dialects import GujaratiDialect, detect_dialect_from_tagged_tokens
+from .dialects import GujaratiDialect
 from .pipeline import CodeMixPipeline
 
 
@@ -189,11 +188,9 @@ def process_csv_batch(
                     res = pipe.run(txt)
                     row[output_column] = res.codemix
                     if add_metrics:
-                        cs = compute_code_switch_metrics(res.tagged_tokens)
-                        d = detect_dialect_from_tagged_tokens(res.tagged_tokens)
-                        row["cmi"] = f"{cs.cmi:.2f}"
-                        row["switch_points"] = str(cs.n_switch_points)
-                        row["dialect"] = d.dialect.value
+                        row["cmi"] = f"{res.codeswitch.cmi:.2f}"
+                        row["switch_points"] = str(res.codeswitch.n_switch_points)
+                        row["dialect"] = res.dialect.dialect.value
                 except Exception:
                     n_err += 1
                     row[output_column] = ""
@@ -251,11 +248,9 @@ def process_jsonl_batch(
                 res = pipe.run(txt)
                 rec[output_key] = res.codemix
                 if add_metrics:
-                    cs = compute_code_switch_metrics(res.tagged_tokens)
-                    d = detect_dialect_from_tagged_tokens(res.tagged_tokens)
-                    rec["cmi"] = cs.cmi
-                    rec["switch_points"] = cs.n_switch_points
-                    rec["dialect"] = d.dialect.value
+                    rec["cmi"] = res.codeswitch.cmi
+                    rec["switch_points"] = res.codeswitch.n_switch_points
+                    rec["dialect"] = res.dialect.dialect.value
                 f_out.write(json.dumps(rec, ensure_ascii=True) + "\n")
                 n_out += 1
             except Exception:

@@ -9,6 +9,8 @@
  
  The goal is to normalize text *before* sending it to downstream models (Sarvam-M / Mayura /
  Sarvam-Translate), and to postprocess certain outputs (e.g., Saaras `codemix`).
+
+This repo is alpha-quality but SDK-first: the public API centers on `CodeMixConfig` + `CodeMixPipeline`.
  
  ## Install
  
@@ -17,7 +19,7 @@
  ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -U pip
-.venv/bin/pip install -e ".[indic,ml,eval,demo,dev]"
+.venv/bin/pip install -e ".[indic,ml,eval,demo,dev,dialect-ml]"
  ```
  
  Minimal (CLI + basic heuristics only):
@@ -58,6 +60,13 @@ Run eval (downloads public Gujlish eval CSVs into `~/.cache/gujarati-codemix-kit
 gck eval --dataset gujlish --report eval/out/report.json
 ```
 
+Dialect evals (uses a tiny packaged JSONL by default, or provide your own):
+
+```bash
+gck eval --dataset dialect_id
+gck eval --dataset dialect_normalization
+```
+
  ## Demo (Streamlit)
  
  ```bash
@@ -65,9 +74,44 @@ gck eval --dataset gujlish --report eval/out/report.json
  ```
  
  If you export `SARVAM_API_KEY`, the demo can optionally call Sarvam APIs.
+
+## Dialects (Full SDK)
+
+Dialect support is offline-first and pluggable:
+
+- Dialect ID backends: `heuristic` (default), `transformers` (fine-tuned model), `none`
+- Dialect normalization backends: `heuristic` (rules), `seq2seq` (optional), `auto` (rules + optional seq2seq)
+
+Safety default: remote HuggingFace model downloads are disabled unless you explicitly enable them:
+
+- SDK: `allow_remote_models=False` (default)
+- Demo: "Allow remote model downloads" checkbox (off by default)
+
+Example (heuristic dialect normalization gated by confidence):
+
+```python
+from gujarati_codemix_kit import analyze_codemix
+
+a = analyze_codemix(
+    "kamaad thaalu rakhje",
+    dialect_backend="heuristic",
+    dialect_normalize=True,
+    dialect_min_confidence=0.7,
+)
+print(a.codemix)
+```
+
+## Training (Optional)
+
+This repo includes simple training scripts (you provide data):
+
+```bash
+python3 scripts/train_dialect_id.py --train path/to/dialect_id_train.jsonl --output-dir out/dialect_id
+python3 scripts/train_dialect_normalizer.py --train path/to/dialect_norm_train.jsonl --output-dir out/dialect_norm
+```
  
  ## Disclaimer
  
- This is an early MVP. Token-level language ID and romanized Gujarati handling is heuristic-first
- with an optional lightweight ML classifier.
+This is alpha software. Core code-mix rendering is designed to be stable, but dialect detection and
+normalization are limited by available labeled data and model choices.
  

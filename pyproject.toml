@@ -59,6 +59,13 @@ fasttext = [
 lexicon = [
   "PyYAML>=6.0.1",
 ]
+
+# Dialect ML backends (optional; users provide fine-tuned weights).
+dialect-ml = [
+  "transformers",
+  "torch",
+  "sentencepiece",
+]
  
  # Sarvam API integration (demo/app only).
  sarvam = [

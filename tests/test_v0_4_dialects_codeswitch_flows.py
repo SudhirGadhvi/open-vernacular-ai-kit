@@ -9,7 +9,14 @@ from gujarati_codemix_kit.app_flows import (
     process_jsonl_batch,
 )
 from gujarati_codemix_kit.codeswitch import compute_code_switch_metrics
-from gujarati_codemix_kit.dialects import GujaratiDialect, normalize_dialect_tokens
+from gujarati_codemix_kit.config import CodeMixConfig
+from gujarati_codemix_kit.dialect_backends import TransformersDialectBackend
+from gujarati_codemix_kit.dialect_normalizers import Seq2SeqDialectNormalizer
+from gujarati_codemix_kit.dialects import (
+    GujaratiDialect,
+    normalize_dialect_tagged_tokens,
+    normalize_dialect_tokens,
+)
 from gujarati_codemix_kit.token_lid import Token, TokenLang, tokenize
 
 
@@ -36,6 +43,33 @@ def test_dialect_normalization_kathiawadi_token() -> None:
     # We expect at least "kamaad" -> "દરવાજો" when Kathiawadi is detected.
     if res.dialect == GujaratiDialect.KATHIAWADI:
         assert "દરવાજો" in res.tokens_out
+
+
+def test_dialect_normalization_never_rewrites_english_tokens() -> None:
+    # "asal" is in the Kathiawadi token rules, but as an English token it must NOT be rewritten.
+    tagged = [Token(text="asal", lang=TokenLang.EN)]
+    res = normalize_dialect_tagged_tokens(tagged, dialect=GujaratiDialect.KATHIAWADI)
+    assert res.tokens_out == ["asal"]
+
+
+def test_offline_policy_blocks_remote_transformers_models() -> None:
+    cfg = CodeMixConfig(allow_remote_models=False)
+    backend = TransformersDialectBackend(model_id_or_path="some-hf-org/some-model")
+    try:
+        backend.detect(text="hello", tagged_tokens=[], config=cfg)
+        assert False, "Expected RuntimeError"
+    except RuntimeError:
+        assert True
+
+
+def test_offline_policy_blocks_remote_seq2seq_models() -> None:
+    cfg = CodeMixConfig(allow_remote_models=False)
+    norm = Seq2SeqDialectNormalizer(model_id_or_path="some-hf-org/some-model")
+    try:
+        norm.normalize(tagged_tokens=[], dialect=GujaratiDialect.KATHIAWADI, config=cfg)
+        assert False, "Expected RuntimeError"
+    except RuntimeError:
+        assert True
 
 
 def test_clean_whatsapp_chat_text_strips_system_and_media() -> None:

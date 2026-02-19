@@ -27,6 +27,12 @@ export SARVAM_API_KEY="..."
 streamlit run demo/streamlit_app.py
 ```
 
+Optional (to enable Transformers/seq2seq dialect backends):
+
+```bash
+.venv/bin/pip install -e ".[dialect-ml]"
+```
+
 ## Host as a web page
 
 Recommended: Streamlit Community Cloud or HuggingFace Spaces (Streamlit).
@@ -36,4 +42,10 @@ Key setup notes:
 - Entry file: `demo/streamlit_app.py`
 - No API key is required to demonstrate the core transformation.
 - If you want live AI before/after, set `SARVAM_API_KEY` as a secret/environment variable.
+
+Dialect backends:
+
+- By default the demo runs offline-first (heuristic dialect detection + rules normalization).
+- If you enable Transformers/seq2seq backends, the demo will require local model paths unless you
+  explicitly toggle "Allow remote model downloads".
 

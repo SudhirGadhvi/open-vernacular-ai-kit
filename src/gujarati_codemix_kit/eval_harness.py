@@ -16,12 +16,12 @@ from .dialect_datasets import (
     load_dialect_normalization_jsonl,
     packaged_data_path,
 )
+from .errors import DownloadError, InvalidConfigError, OptionalDependencyError
 from .normalize import normalize_text
 from .rag_datasets import load_gujarat_facts_tiny
 from .rendering import render_tokens
 from .token_lid import tokenize
 from .transliterate import transliteration_backend
-from .errors import DownloadError, InvalidConfigError, OptionalDependencyError
 
 _GUJARATI_RE = re.compile(r"[\p{Gujarati}]")
 

@@ -15,6 +15,7 @@ from .dialects import (
     DialectNormalizationResult,
     detect_dialect_from_tagged_tokens,
 )
+from .errors import InvalidConfigError
 from .lexicon import LexiconLoadResult, load_user_lexicon
 from .normalize import normalize_text
 from .rendering import render_tokens
@@ -23,7 +24,6 @@ from .transliterate import (
     translit_gu_roman_to_native_configured,
     transliteration_backend_configured,
 )
-from .errors import InvalidConfigError
 
 _GUJARATI_RE = re.compile(r"[\p{Gujarati}]", flags=re.VERSION1)
 _JOINERS = {"-", "_", "/", "@"}

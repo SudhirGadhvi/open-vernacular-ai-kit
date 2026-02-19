@@ -36,8 +36,6 @@ from .dialects import (
     detect_dialect_from_tokens,
     normalize_dialect_tokens,
 )
-from .normalize import normalize_text
-from .pipeline import CodeMixPipeline, CodeMixPipelineResult
 from .errors import (
     DownloadError,
     GckError,
@@ -46,6 +44,8 @@ from .errors import (
     OfflinePolicyError,
     OptionalDependencyError,
 )
+from .normalize import normalize_text
+from .pipeline import CodeMixPipeline, CodeMixPipelineResult
 from .rag import RagDocument, RagIndex, RagQuery, RagSearchResult, make_hf_embedder
 from .rag_datasets import RagDataset, download_gujarat_facts_dataset, load_gujarat_facts_tiny
 

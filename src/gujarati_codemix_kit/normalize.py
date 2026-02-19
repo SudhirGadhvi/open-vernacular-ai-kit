@@ -4,6 +4,8 @@ import unicodedata
 
 import regex as re
 
+from .errors import InvalidConfigError
+
 _WS_RE = re.compile(r"\s+")
 _ZW_RE = re.compile(r"[\u200b\u200c\u200d\u2060\ufeff]")  # ZW*, WORD JOINER, BOM
 _SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([,.:;!?])")
@@ -80,7 +82,7 @@ def normalize_text(text: str, *, numerals: str = "keep") -> str:
     text = _try_indic_normalize_gu(text)
 
     if numerals not in {"keep", "ascii"}:
-        raise ValueError("numerals must be one of: keep, ascii")
+        raise InvalidConfigError("numerals must be one of: keep, ascii")
     if numerals == "ascii":
         text = text.translate(_GUJARATI_DIGITS)
 

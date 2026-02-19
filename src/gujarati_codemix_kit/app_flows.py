@@ -10,6 +10,7 @@ import regex as re
 
 from .config import CodeMixConfig
 from .dialects import GujaratiDialect
+from .errors import InvalidConfigError
 from .pipeline import CodeMixPipeline
 
 
@@ -169,7 +170,7 @@ def process_csv_batch(
     with in_p.open("r", encoding="utf-8", newline="") as f_in:
         reader = csv.DictReader(f_in)
         if reader.fieldnames is None:
-            raise ValueError("CSV has no header row (fieldnames).")
+            raise InvalidConfigError("CSV has no header row (fieldnames).")
         fieldnames = list(reader.fieldnames)
         if output_column not in fieldnames:
             fieldnames.append(output_column)

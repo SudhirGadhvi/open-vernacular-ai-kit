@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Any, Optional
 
 from .codemix_render import render_codemix
+from .errors import IntegrationError, OptionalDependencyError
 from .normalize import normalize_text
 
 
@@ -18,13 +19,13 @@ def _get_sarvam_client(api_key: Optional[str] = None):
     try:
         from sarvamai import SarvamAI
     except Exception as e:
-        raise RuntimeError(
+        raise OptionalDependencyError(
             "Sarvam integration requires `sarvamai`. Install with: pip install -e '.[sarvam]'"
         ) from e
 
     key = api_key or os.environ.get("SARVAM_API_KEY")
     if not key:
-        raise RuntimeError("Missing SARVAM_API_KEY environment variable (or pass api_key=...)")
+        raise IntegrationError("Missing SARVAM_API_KEY environment variable (or pass api_key=...)")
     return SarvamAI(api_subscription_key=key)
 
 

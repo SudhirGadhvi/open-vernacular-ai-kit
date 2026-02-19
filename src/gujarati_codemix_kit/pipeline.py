@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Sequence
 
 import regex as re
 
@@ -23,6 +23,7 @@ from .transliterate import (
     translit_gu_roman_to_native_configured,
     transliteration_backend_configured,
 )
+from .errors import InvalidConfigError
 
 _GUJARATI_RE = re.compile(r"[\p{Gujarati}]", flags=re.VERSION1)
 _JOINERS = {"-", "_", "/", "@"}
@@ -139,7 +140,7 @@ def transliterate_stage(
     cfg = config.normalized()
 
     if cfg.translit_mode not in ("token", "sentence"):
-        raise ValueError("translit_mode must be one of: token, sentence")
+        raise InvalidConfigError("translit_mode must be one of: token, sentence")
 
     rendered: list[str] = []
     n_transliterated = 0
@@ -292,9 +293,20 @@ class CodeMixPipeline:
     def __init__(self, *, config: Optional[CodeMixConfig] = None, on_event: Optional[EventHook] = None):
         self.config = (config or CodeMixConfig()).normalized()
         self.on_event = on_event
+        # Cache per-pipeline expensive-ish lookups. Streamlit/batch flows often reuse a pipeline
+        # instance across many inputs.
+        self._lexicon_cached: Optional[tuple[LexiconLoadResult, dict[str, str], Optional[set[str]]]] = None
+        self._dialect_backend_cached: Optional[object] = None
+        self._dialect_backend_cached_set: bool = False
+        self._dialect_normalizer_cached: Optional[object] = None
+        self._dialect_normalizer_cached_set: bool = False
 
-    def run(self, text: str) -> CodeMixPipelineResult:
-        raw = text or ""
+    def _lexicon_bundle(
+        self,
+    ) -> tuple[LexiconLoadResult, dict[str, str], Optional[set[str]]]:
+        if self._lexicon_cached is not None:
+            return self._lexicon_cached
+
         cfg = self.config
         lex_res = (
             _load_user_lexicon_cached(cfg.user_lexicon_path)  # type: ignore[arg-type]
@@ -303,6 +315,29 @@ class CodeMixPipeline:
         )
         lex = lex_res.mappings
         lex_keys = set(lex.keys()) if lex else None
+        self._lexicon_cached = (lex_res, lex, lex_keys)
+        return self._lexicon_cached
+
+    def _dialect_backend(self) -> Optional[object]:
+        if self._dialect_backend_cached_set:
+            return self._dialect_backend_cached
+        b = get_dialect_backend(self.config)
+        self._dialect_backend_cached = b
+        self._dialect_backend_cached_set = True
+        return b
+
+    def _dialect_normalizer(self) -> Optional[object]:
+        if self._dialect_normalizer_cached_set:
+            return self._dialect_normalizer_cached
+        n = get_dialect_normalizer(self.config)
+        self._dialect_normalizer_cached = n
+        self._dialect_normalizer_cached_set = True
+        return n
+
+    def run(self, text: str) -> CodeMixPipelineResult:
+        raw = text or ""
+        cfg = self.config
+        lex_res, lex, lex_keys = self._lexicon_bundle()
 
         norm = normalize_stage(raw, config=cfg, on_event=self.on_event)
         if not norm:
@@ -374,7 +409,7 @@ class CodeMixPipeline:
                 confidence=1.0,
             )
         else:
-            backend = get_dialect_backend(cfg)
+            backend = self._dialect_backend()
             if backend is None:
                 d = DialectDetection(
                     dialect=detect_dialect_from_tagged_tokens(tagged).dialect,
@@ -384,9 +419,9 @@ class CodeMixPipeline:
                     confidence=0.0,
                 )
             else:
-                d = backend.detect(text=norm, tagged_tokens=tagged, config=cfg)
+                d = backend.detect(text=norm, tagged_tokens=tagged, config=cfg)  # type: ignore[attr-defined]
 
-        normalizer = get_dialect_normalizer(cfg)
+        normalizer = self._dialect_normalizer()
         dn = DialectNormalizationResult(
             dialect=d.dialect, changed=False, tokens_in=toks, tokens_out=toks, backend="none"
         )
@@ -456,4 +491,17 @@ class CodeMixPipeline:
             n_gu_roman_transliterated=n_transliterated,
             transliteration_backend=backend_name,
         )
+
+    def run_many(self, texts: Sequence[str]) -> list[CodeMixPipelineResult]:
+        """
+        Batch helper for higher throughput when processing many rows.
+
+        This reuses per-pipeline caches (lexicon, backend objects) and avoids re-creating pipeline
+        instances in tight loops.
+        """
+
+        out: list[CodeMixPipelineResult] = []
+        for t in texts:
+            out.append(self.run(t))
+        return out
 

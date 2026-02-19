@@ -7,6 +7,7 @@ from typing import Literal, Optional, Protocol, Sequence
 
 from .config import CodeMixConfig
 from .dialects import DialectDetection, GujaratiDialect, detect_dialect_from_tagged_tokens
+from .errors import InvalidConfigError, OfflinePolicyError, OptionalDependencyError
 from .token_lid import Token
 
 DialectBackendName = Literal["auto", "heuristic", "transformers", "llm", "none"]
@@ -76,7 +77,7 @@ class TransformersDialectBackend:
         except Exception:
             is_local = False
         if not is_local and not cfg.allow_remote_models:
-            raise RuntimeError(
+            raise OfflinePolicyError(
                 "Remote model downloads are disabled. Provide a local path for "
                 "`dialect_model_id_or_path` or set allow_remote_models=True."
             )
@@ -85,7 +86,7 @@ class TransformersDialectBackend:
             import torch
             import transformers  # type: ignore
         except Exception as e:  # pragma: no cover
-            raise RuntimeError(
+            raise OptionalDependencyError(
                 "Transformers dialect backend requires extras. Install: `pip install -e '.[dialect-ml]'`"
             ) from e
         _ = transformers  # silence unused import warnings
@@ -144,7 +145,7 @@ def get_dialect_backend(config: CodeMixConfig) -> Optional[DialectBackend]:
         return HeuristicDialectBackend()
     if name == "transformers":
         if not cfg.dialect_model_id_or_path:
-            raise ValueError("dialect_backend='transformers' requires dialect_model_id_or_path")
+            raise InvalidConfigError("dialect_backend='transformers' requires dialect_model_id_or_path")
         return TransformersDialectBackend(model_id_or_path=cfg.dialect_model_id_or_path)
     if name == "llm":
         raise NotImplementedError("LLM dialect backend is not implemented yet.")

@@ -7,6 +7,8 @@ from typing import Optional
 
 import regex as re
 
+from .errors import InvalidConfigError, OptionalDependencyError
+
 # Keep normalization consistent with transliteration exception matching:
 # - lower-case
 # - keep Latin letters only
@@ -35,7 +37,7 @@ def _load_yaml_text(text: str) -> object:
     try:
         import yaml  # type: ignore[reportMissingImports]
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(
+        raise OptionalDependencyError(
             "YAML lexicon support requires PyYAML. Install with: pip install -e \".[lexicon]\""
         ) from e
 
@@ -56,7 +58,7 @@ def load_user_lexicon(path: Optional[str]) -> LexiconLoadResult:
     if not p.exists():
         raise FileNotFoundError(f"User lexicon not found: {p}")
     if not p.is_file():
-        raise ValueError(f"User lexicon path is not a file: {p}")
+        raise InvalidConfigError(f"User lexicon path is not a file: {p}")
 
     raw = p.read_text(encoding="utf-8")
     suffix = p.suffix.lower()
@@ -67,10 +69,10 @@ def load_user_lexicon(path: Optional[str]) -> LexiconLoadResult:
     elif suffix in {".yaml", ".yml"}:
         payload = _load_yaml_text(raw)
     else:
-        raise ValueError(f"Unsupported lexicon format: {suffix} (use .json/.yaml/.yml)")
+        raise InvalidConfigError(f"Unsupported lexicon format: {suffix} (use .json/.yaml/.yml)")
 
     if not isinstance(payload, dict):
-        raise ValueError("User lexicon must be a JSON/YAML object (mapping of key->value).")
+        raise InvalidConfigError("User lexicon must be a JSON/YAML object (mapping of key->value).")
 
     out: dict[str, str] = {}
     for k, v in payload.items():

@@ -21,6 +21,7 @@ from .rag_datasets import load_gujarat_facts_tiny
 from .rendering import render_tokens
 from .token_lid import tokenize
 from .transliterate import transliteration_backend
+from .errors import DownloadError, InvalidConfigError, OptionalDependencyError
 
 _GUJARATI_RE = re.compile(r"[\p{Gujarati}]")
 
@@ -71,22 +72,29 @@ def _download(url: str, dest: Path) -> None:
     try:
         import requests
     except Exception as e:  # pragma: no cover
-        raise RuntimeError("requests is required for eval harness; install with: pip install -e '.[eval]'") from e
+        raise OptionalDependencyError(
+            "requests is required for eval harness; install with: pip install -e '.[eval]'"
+        ) from e
 
-    r = requests.get(url, timeout=120)
-    r.raise_for_status()
-    dest.write_bytes(r.content)
+    try:
+        r = requests.get(url, timeout=120)
+        r.raise_for_status()
+        dest.write_bytes(r.content)
+    except Exception as e:  # pragma: no cover
+        raise DownloadError(f"Failed to download: {url}") from e
 
 
 def _iter_texts_from_csv(path: Path, *, text_column: str) -> Iterable[str]:
     try:
         import pandas as pd
     except Exception as e:  # pragma: no cover
-        raise RuntimeError("pandas is required for eval harness; install with: pip install -e '.[eval]'") from e
+        raise OptionalDependencyError(
+            "pandas is required for eval harness; install with: pip install -e '.[eval]'"
+        ) from e
 
     df = pd.read_csv(path)
     if text_column not in df.columns:
-        raise RuntimeError(f"Missing expected column '{text_column}' in {path.name}")
+        raise InvalidConfigError(f"Missing expected column '{text_column}' in {path.name}")
     for v in df[text_column].astype(str).tolist():
         yield v
 
@@ -204,7 +212,7 @@ def run_dialect_id_eval(
 
     path = Path(dataset_path) if dataset_path else packaged_data_path("dialect_id_samples.jsonl")
     if not path.exists():
-        raise RuntimeError(
+        raise InvalidConfigError(
             f"Dialect eval dataset not found: {path}. "
             "Pass --dialect-dataset (CLI) / dialect_dataset_path (SDK) to a JSONL file."
         )
@@ -265,7 +273,7 @@ def run_dialect_normalization_eval(
 
     path = Path(dataset_path) if dataset_path else packaged_data_path("dialect_norm_samples.jsonl")
     if not path.exists():
-        raise RuntimeError(
+        raise InvalidConfigError(
             f"Dialect normalization eval dataset not found: {path}. "
             "Pass --dialect-norm-dataset (CLI) / dialect_norm_dataset_path (SDK) to a JSONL file."
         )
@@ -331,14 +339,14 @@ def _require_torch_and_transformers(context: str) -> tuple[Any, Any]:
     try:
         import torch  # type: ignore
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(
+        raise OptionalDependencyError(
             f"{context} requires torch. Install with: pip install -e \".[eval]\""
         ) from e
 
     try:
         from transformers import AutoModel, AutoTokenizer  # type: ignore
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(
+        raise OptionalDependencyError(
             f"{context} requires transformers. Install with: pip install -e \".[eval]\""
         ) from e
 
@@ -536,7 +544,7 @@ def run_retrieval_eval(
     """
     k_values = tuple(sorted({int(k) for k in k_values if int(k) > 0}))
     if not k_values:
-        raise ValueError("k_values must contain at least one positive integer")
+        raise InvalidConfigError("k_values must contain at least one positive integer")
 
     ds = load_gujarat_facts_tiny()
     docs = ds.docs
@@ -657,7 +665,7 @@ def run_prompt_stability_eval(
     try:
         from .sarvam_adapters import sarvam_chat
     except Exception as e:  # pragma: no cover
-        raise RuntimeError(
+        raise OptionalDependencyError(
             "Prompt-stability eval requires Sarvam integration. Install with: "
             "pip install -e \".[sarvam,eval]\""
         ) from e
@@ -667,7 +675,7 @@ def run_prompt_stability_eval(
 
     api_key_value = api_key or os.environ.get("SARVAM_API_KEY")
     if not api_key_value:
-        raise RuntimeError(
+        raise InvalidConfigError(
             "Missing SARVAM_API_KEY. Set it in your shell (export SARVAM_API_KEY=...) "
             "or pass --api-key."
         )
@@ -808,7 +816,7 @@ def run_eval(
             max_rows=max_rows,
         )
     if dataset != "gujlish":
-        raise ValueError(
+        raise InvalidConfigError(
             "Unsupported dataset. Try one of: gujlish, golden_translit, retrieval, prompt_stability, dialect_id, dialect_normalization"
         )
 

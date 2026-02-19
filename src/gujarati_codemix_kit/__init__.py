@@ -38,6 +38,14 @@ from .dialects import (
 )
 from .normalize import normalize_text
 from .pipeline import CodeMixPipeline, CodeMixPipelineResult
+from .errors import (
+    DownloadError,
+    GckError,
+    IntegrationError,
+    InvalidConfigError,
+    OfflinePolicyError,
+    OptionalDependencyError,
+)
 from .rag import RagDocument, RagIndex, RagQuery, RagSearchResult, make_hf_embedder
 from .rag_datasets import RagDataset, download_gujarat_facts_dataset, load_gujarat_facts_tiny
 
@@ -71,6 +79,12 @@ __all__ = [
     "parse_whatsapp_export",
     "process_csv_batch",
     "process_jsonl_batch",
+    "GckError",
+    "InvalidConfigError",
+    "OptionalDependencyError",
+    "OfflinePolicyError",
+    "DownloadError",
+    "IntegrationError",
     "RagDocument",
     "RagQuery",
     "RagSearchResult",
@@ -81,5 +95,5 @@ __all__ = [
     "download_gujarat_facts_dataset",
 ]
 
-__version__ = "0.4.0"
+__version__ = "1.0.0"
  

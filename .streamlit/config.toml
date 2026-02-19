@@ -5,4 +5,17 @@ backgroundColor = "#050B16"
 secondaryBackgroundColor = "#0B1220"
 textColor = "#E5E7EB"
 font = "sans serif"
+borderColor = "#1F2937"
+showWidgetBorder = false
+showSidebarBorder = true
+
+[theme.sidebar]
+# Explicit sidebar colors avoid Streamlit's background swapping behavior and
+# prevents some frontend theme validators from seeing empty sidebar colors.
+primaryColor = "#38BDF8"
+backgroundColor = "#0B1220"
+secondaryBackgroundColor = "#050B16"
+textColor = "#E5E7EB"
+borderColor = "#1F2937"
+showWidgetBorder = false
 

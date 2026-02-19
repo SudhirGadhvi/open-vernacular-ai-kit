@@ -538,17 +538,38 @@ def main() -> None:
                 help="Try extra Gujlish spelling variants before transliteration.",
             )
         with s2:
-            sarvam_key = st.text_input("SARVAM_API_KEY (optional)", value=os.environ.get("SARVAM_API_KEY", ""), type="password")
+            sarvam_key = st.text_input(
+                "SARVAM_API_KEY (optional)",
+                value=os.environ.get("SARVAM_API_KEY", ""),
+                type="password",
+            )
+            sarvam_available = _sarvam_available()
+            sarvam_can_enable = bool(sarvam_key) and sarvam_available
             sarvam_enabled = st.checkbox(
                 "Enable Sarvam-M comparison",
                 value=False,
-                disabled=not bool(sarvam_key) or not _sarvam_available(),
+                disabled=not sarvam_can_enable,
+                help="Requires SARVAM_API_KEY + `pip install -e '.[sarvam]'`.",
             )
-            temperature = st.slider("Sarvam-M temperature", min_value=0.0, max_value=1.2, value=0.2, step=0.1)
-            max_out = st.number_input("Max output tokens (Sarvam-M)", min_value=32, max_value=800, value=256, step=16)
+            # Hide AI tuning controls unless Sarvam is actually enabled; this avoids
+            # confusing UX where sliders appear active even when Sarvam can't run.
+            if sarvam_enabled:
+                temperature = st.slider("Sarvam-M temperature", min_value=0.0, max_value=1.2, value=0.2, step=0.1)
+                max_out = st.number_input(
+                    "Max output tokens (Sarvam-M)",
+                    min_value=32,
+                    max_value=800,
+                    value=256,
+                    step=16,
+                )
+            else:
+                temperature = 0.2
+                max_out = 256
 
-            if sarvam_enabled and not _sarvam_available():
-                st.warning("Sarvam SDK not available. Install extras: `pip install -e '.[sarvam]'`.")
+            if not sarvam_available:
+                st.caption("Sarvam SDK not available. Install extras: `pip install -e '.[sarvam]'`.")
+            elif not sarvam_key:
+                st.caption("Enter `SARVAM_API_KEY` to enable Sarvam-M comparison.")
 
         st.markdown("### Advanced (v0.3/v0.4.x)")
         a1, a2 = st.columns(2)
@@ -656,11 +677,21 @@ def main() -> None:
     ex_names = list(ex.keys())
 
     with st.form("gck_form", clear_on_submit=False):
-        f1, f2 = st.columns([3, 1])
+        needs_spacer = False
+        try:
+            # Streamlit >=1.35 supports vertical_alignment; keeps the button aligned
+            # with the selectbox input (not the label).
+            f1, f2 = st.columns([3, 1], vertical_alignment="bottom")
+        except TypeError:
+            # Older Streamlit: fall back to a tiny spacer in the button column.
+            f1, f2 = st.columns([3, 1])
+            needs_spacer = True
         with f1:
             chosen = st.selectbox("Example", options=ex_names, index=0)
         with f2:
-            load = st.form_submit_button("Load example")
+            if needs_spacer:
+                st.write("")
+            load = st.form_submit_button("Load example", width="stretch")
 
         if "gck_msg" not in st.session_state:
             st.session_state["gck_msg"] = ex[ex_names[0]]
@@ -1158,7 +1189,7 @@ def main() -> None:
     elif not sarvam_key:
         st.warning("Missing SARVAM_API_KEY.")
         compare = None
-    elif not _sarvam_available():
+    elif not sarvam_available:
         st.warning("Sarvam SDK is not installed/available.")
         compare = None
     else:

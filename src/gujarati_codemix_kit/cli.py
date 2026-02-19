@@ -8,7 +8,12 @@ from typing import Optional
 import typer
 from rich.console import Console
 
-from .codemix_render import analyze_codemix, render_codemix
+from .codemix_render import (
+    analyze_codemix_with_config,
+    render_codemix_with_config,
+)
+from .config import CodeMixConfig
+from .doctor import collect_doctor_info
 from .normalize import normalize_text
 
 app = typer.Typer(add_completion=False, no_args_is_help=True)
@@ -48,16 +53,16 @@ def codemix(
     ),
 ) -> None:
     """Render a clean Gujarati-English code-mix string."""
+    cfg = CodeMixConfig(
+        topk=topk,
+        numerals=numerals,  # type: ignore[arg-type]
+        translit_mode=translit_mode,  # type: ignore[arg-type]
+        preserve_case=preserve_case,
+        preserve_numbers=preserve_numbers,
+        aggressive_normalize=aggressive_normalize,
+    )
     if stats:
-        a = analyze_codemix(
-            text,
-            topk=topk,
-            numerals=numerals,
-            translit_mode=translit_mode,
-            preserve_case=preserve_case,
-            preserve_numbers=preserve_numbers,
-            aggressive_normalize=aggressive_normalize,
-        )
+        a = analyze_codemix_with_config(text, config=cfg)
         _console.print(a.codemix)
         sys.stderr.write(
             json.dumps(
@@ -73,17 +78,24 @@ def codemix(
             + "\n"
         )
     else:
-        _console.print(
-            render_codemix(
-                text,
-                topk=topk,
-                numerals=numerals,
-                translit_mode=translit_mode,
-                preserve_case=preserve_case,
-                preserve_numbers=preserve_numbers,
-                aggressive_normalize=aggressive_normalize,
-            )
-        )
+        _console.print(render_codemix_with_config(text, config=cfg))
+
+
+@app.command()
+def doctor(
+    as_json: bool = typer.Option(
+        True, "--json/--no-json", help="Print as JSON (recommended for copying into issues)."
+    )
+) -> None:
+    """Print installed optional backends + versions."""
+    info = collect_doctor_info()
+    # IMPORTANT: avoid Rich formatting/ANSI so output stays valid JSON when `--json`.
+    # (Rich may inject escape codes for styling/wrapping in some terminals.)
+    payload = json.dumps(info, ensure_ascii=True, indent=2) + "\n"
+    if as_json:
+        sys.stdout.write(payload)
+    else:
+        sys.stdout.write(payload)
 
 
 @app.command()

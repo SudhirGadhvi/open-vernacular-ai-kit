@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
+from .codeswitch import CodeSwitchMetrics
 from .config import CodeMixConfig
+from .dialects import DialectDetection
 from .pipeline import CodeMixPipeline, CodeMixPipelineResult, EventHook
 
 
@@ -19,6 +21,10 @@ class CodeMixAnalysis:
     raw: str
     normalized: str
     codemix: str
+
+    # v0.4 additions: code-switching + dialect heuristics (MVP).
+    codeswitch: CodeSwitchMetrics
+    dialect: DialectDetection
 
     n_tokens: int
     n_en_tokens: int
@@ -40,6 +46,8 @@ def _result_to_analysis(result: CodeMixPipelineResult) -> CodeMixAnalysis:
         raw=result.raw,
         normalized=result.normalized,
         codemix=result.codemix,
+        codeswitch=result.codeswitch,
+        dialect=result.dialect,
         n_tokens=result.n_tokens,
         n_en_tokens=result.n_en_tokens,
         n_gu_native_tokens=result.n_gu_native_tokens,

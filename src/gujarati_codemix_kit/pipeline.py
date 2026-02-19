@@ -6,7 +6,9 @@ from typing import Any, Callable, Optional
 
 import regex as re
 
+from .codeswitch import CodeSwitchMetrics, compute_code_switch_metrics
 from .config import CodeMixConfig
+from .dialects import DialectDetection, detect_dialect_from_tagged_tokens
 from .lexicon import LexiconLoadResult, load_user_lexicon
 from .normalize import normalize_text
 from .rendering import render_tokens
@@ -38,6 +40,8 @@ class CodeMixPipelineResult:
     normalized: str
     tokens: list[str]
     tagged_tokens: list[Token]
+    codeswitch: CodeSwitchMetrics
+    dialect: DialectDetection
     rendered_tokens: list[str]
     codemix: str
 
@@ -295,6 +299,8 @@ class CodeMixPipeline:
         norm = normalize_stage(raw, config=cfg, on_event=self.on_event)
         if not norm:
             backend = transliteration_backend_configured(preferred=cfg.translit_backend)
+            cs = compute_code_switch_metrics([])
+            d = detect_dialect_from_tagged_tokens([])
             _emit(
                 self.on_event,
                 {
@@ -302,6 +308,9 @@ class CodeMixPipeline:
                     "empty_input": True,
                     "backend": backend,
                     "user_lexicon": lex_res.source,
+                    "cmi": cs.cmi,
+                    "switch_points": cs.n_switch_points,
+                    "dialect": d.dialect.value,
                 },
             )
             return CodeMixPipelineResult(
@@ -309,6 +318,8 @@ class CodeMixPipeline:
                 normalized="",
                 tokens=[],
                 tagged_tokens=[],
+                codeswitch=cs,
+                dialect=d,
                 rendered_tokens=[],
                 codemix="",
                 n_tokens=0,
@@ -327,6 +338,8 @@ class CodeMixPipeline:
             user_lexicon_source=lex_res.source,
             on_event=self.on_event,
         )
+        cs = compute_code_switch_metrics(tagged)
+        d = detect_dialect_from_tagged_tokens(tagged)
 
         n_en = 0
         n_gu_native = 0
@@ -354,6 +367,9 @@ class CodeMixPipeline:
                 "n_gu_roman_tokens": n_gu_roman,
                 "n_gu_roman_transliterated": n_transliterated,
                 "user_lexicon": lex_res.source,
+                "cmi": cs.cmi,
+                "switch_points": cs.n_switch_points,
+                "dialect": d.dialect.value,
             },
         )
 
@@ -362,6 +378,8 @@ class CodeMixPipeline:
             normalized=norm,
             tokens=toks,
             tagged_tokens=tagged,
+            codeswitch=cs,
+            dialect=d,
             rendered_tokens=rendered,
             codemix=out,
             n_tokens=len(toks),

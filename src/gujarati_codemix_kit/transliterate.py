@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
-from typing import Iterable, Optional
+from typing import Iterable, Literal, Optional
 
 import regex as re
 
@@ -150,10 +150,31 @@ def _get_sanscript():
 
 def transliteration_backend() -> str:
     """
-    Return which transliteration backend is available (best-effort).
+    Return which transliteration backend is selected/available (best-effort).
 
     This is used for product/demo reporting and should stay cheap and side-effect free.
     """
+
+    return transliteration_backend_configured(preferred="auto")
+
+
+TranslitBackend = Literal["auto", "ai4bharat", "sanscript", "none"]
+
+
+def transliteration_backend_configured(*, preferred: TranslitBackend = "auto") -> str:
+    """
+    Resolve the actual backend used, considering user preference + availability.
+
+    Returns one of: ai4bharat, sanscript, none
+    """
+    if preferred == "none":
+        return "none"
+    if preferred == "ai4bharat":
+        return "ai4bharat" if _get_xlit_engine() is not None else "none"
+    if preferred == "sanscript":
+        return "sanscript" if _get_sanscript() is not None else "none"
+
+    # auto
     if _get_xlit_engine() is not None:
         return "ai4bharat"
     if _get_sanscript() is not None:
@@ -187,6 +208,7 @@ def translit_gu_roman_to_native_configured(
     preserve_case: bool = True,
     aggressive_normalize: bool = False,
     exceptions: Optional[dict[str, str]] = None,
+    backend: TranslitBackend = "auto",
 ) -> Optional[list[str]]:
     """
     Transliterate romanized Gujarati into Gujarati script candidates (token or phrase).
@@ -228,7 +250,7 @@ def translit_gu_roman_to_native_configured(
                 return [" ".join(mapped)]
 
         # Backends may or may not support phrases; we try best-effort.
-        cands = _translit_backend(s, topk=topk, preserve_case=preserve_case)
+        cands = _translit_backend(s, topk=topk, preserve_case=preserve_case, backend=backend)
         if cands:
             return cands[:topk]
         return None
@@ -245,7 +267,7 @@ def translit_gu_roman_to_native_configured(
     for variant in _gujlish_variants(
         s, preserve_case=preserve_case, aggressive_normalize=aggressive_normalize
     ):
-        cands = _translit_backend(variant, topk=topk, preserve_case=preserve_case)
+        cands = _translit_backend(variant, topk=topk, preserve_case=preserve_case, backend=backend)
         if not cands:
             continue
         for c in cands:
@@ -281,10 +303,16 @@ def _extract_candidates(obj: object) -> list[str]:
     return []
 
 
-def _translit_backend(text: str, *, topk: int, preserve_case: bool) -> Optional[list[str]]:
-    engine = _get_xlit_engine()
+def _translit_backend(
+    text: str, *, topk: int, preserve_case: bool, backend: TranslitBackend
+) -> Optional[list[str]]:
+    selected = transliteration_backend_configured(preferred=backend)
+    if selected == "none":
+        return None
+
+    engine = _get_xlit_engine() if selected == "ai4bharat" else None
     if engine is None:
-        sanscript = _get_sanscript()
+        sanscript = _get_sanscript() if selected == "sanscript" else None
         if sanscript is None:
             return None
 

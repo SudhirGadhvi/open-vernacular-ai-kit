@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
+
 from gujarati_codemix_kit.config import CodeMixConfig
 from gujarati_codemix_kit.doctor import collect_doctor_info
 from gujarati_codemix_kit.pipeline import CodeMixPipeline
-from gujarati_codemix_kit.token_lid import TokenLang, detect_token_lang, tokenize
+from gujarati_codemix_kit.token_lid import TokenLang, analyze_token, detect_token_lang, tokenize
 from gujarati_codemix_kit.transliterate import translit_gu_roman_to_native_configured
 
 
@@ -54,4 +56,21 @@ def test_doctor_info_has_expected_keys() -> None:
     assert "platform" in info
     assert "features" in info
     assert "packages" in info
+
+
+def test_token_analysis_has_reason_and_confidence() -> None:
+    t = analyze_token("maru")
+    assert t.lang == TokenLang.GU_ROMAN
+    assert t.reason
+    assert 0.0 <= t.confidence <= 1.0
+
+
+def test_user_lexicon_affects_lid_and_transliteration(tmp_path) -> None:
+    # "mane" is ambiguous for simple heuristics; lexicon should force it to GU_ROMAN
+    # and the transliteration stage should apply the mapping.
+    lex_path = tmp_path / "lex.json"
+    lex_path.write_text(json.dumps({"mane": "મને"}), encoding="utf-8")
+    cfg = CodeMixConfig(user_lexicon_path=str(lex_path), translit_mode="token")
+    out = CodeMixPipeline(config=cfg).run("mane ok chhe?").codemix
+    assert "મને" in out
 

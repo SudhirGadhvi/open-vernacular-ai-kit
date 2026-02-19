@@ -1,0 +1,4 @@
+{"input":"kamaad thaalu rakhje","dialect":"kathiawadi","expected":"દરવાજો thaalu rakhje","source":"sample","meta":{"note":"token-level rewrite only; english/roman preserved"}}
+{"input":"ghavadaave chhe have","dialect":"surati","expected":"ખંજવાળ આવે છે have","source":"sample","meta":{"note":"phrase-level rewrite"}}
+{"input":"મને ઘવડાવે છે","dialect":"surati","expected":"મને ખંજવાળ આવે છે","source":"sample","meta":{"note":"native phrase rewrite"}}
+

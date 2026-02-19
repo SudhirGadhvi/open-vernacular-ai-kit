@@ -4,7 +4,7 @@
  
  [project]
  name = "gujarati-codemix-kit"
- version = "0.1.0"
+version = "1.0.0"
  description = "Gujarati-English code-mix + romanized Gujarati normalization toolkit (SDK + CLI + demo)."
  readme = "README.md"
  requires-python = ">=3.10"
@@ -44,6 +44,45 @@
    # A lightweight, pure-Python transliteration fallback (ITRANS-style).
    "indic-transliteration",
  ]
+
+# AI4Bharat IndicXlit backend (optional; heavier dependency tree).
+ai4bharat-transliteration = [
+  "ai4bharat-transliteration",
+]
+
+# Optional fastText LID signal for Latin tokens (requires `lid.176.ftz` model file).
+fasttext = [
+  "fasttext>=0.9.2",
+]
+
+# Optional YAML support for user lexicons.
+lexicon = [
+  "PyYAML>=6.0.1",
+]
+
+# RAG utilities (dataset download helpers).
+rag = [
+  "requests>=2.31.0",
+]
+
+rag-embeddings = [
+  "transformers",
+  "torch",
+]
+
+# Documentation site.
+docs = [
+  "mkdocs>=1.6.0",
+  "mkdocs-material>=9.5.0",
+  "pymdown-extensions>=10.11.0",
+]
+
+# Dialect ML backends (optional; users provide fine-tuned weights).
+dialect-ml = [
+  "transformers",
+  "torch",
+  "sentencepiece",
+]
  
  # Sarvam API integration (demo/app only).
  sarvam = [
@@ -62,6 +101,9 @@
    "requests>=2.31.0",
    "datasets>=2.19.0",
    "wordfreq>=3.1.1",
+  # Embedding-based evals (retrieval + prompt stability).
+  "transformers",
+  "torch",
  ]
  
  dev = [

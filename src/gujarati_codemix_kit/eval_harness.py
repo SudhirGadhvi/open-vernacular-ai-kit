@@ -17,6 +17,7 @@ from .dialect_datasets import (
     packaged_data_path,
 )
 from .normalize import normalize_text
+from .rag_datasets import load_gujarat_facts_tiny
 from .rendering import render_tokens
 from .token_lid import tokenize
 from .transliterate import transliteration_backend
@@ -42,18 +43,6 @@ class GoldenTranslitCase:
     gujlish: str
     expected_any_of: list[str]
     requires_backend: bool = False
-
-
-@dataclass(frozen=True)
-class RetrievalDoc:
-    doc_id: str
-    text_gu: str
-
-
-@dataclass(frozen=True)
-class RetrievalQuery:
-    query: str
-    relevant_doc_ids: list[str]
 
 
 _GUJLISH_SPECS: list[DatasetSpec] = [
@@ -536,27 +525,6 @@ def run_golden_translit_eval(
     }
 
 
-_RETRIEVAL_DOCS: list[RetrievalDoc] = [
-    RetrievalDoc("doc_sabarmati", "સાબરમતી નદી અમદાવાદ શહેરમાંથી પસાર થાય છે."),
-    RetrievalDoc("doc_gandhinagar", "ગાંધીનગર ગુજરાતની રાજધાની છે."),
-    RetrievalDoc("doc_navratri", "નવરાત્રી દરમિયાન ગુજરાતમાં ગરબા ખાસ લોકપ્રિય છે."),
-    RetrievalDoc("doc_khakhra", "ખાખરા એક પાતળું અને કરકરું નાસ્તાનું વસ્તુ છે."),
-    RetrievalDoc("doc_undhiyu", "ઉંધીયુ શિયાળાની ખાસ ગુજરાતીની વાનગી છે."),
-    RetrievalDoc("doc_kutch", "કચ્છનું રણ ગુજરાતનું પ્રખ્યાત પ્રવાસન સ્થળ છે."),
-    RetrievalDoc("doc_asiatic_lion", "ગિર જંગલમાં એશિયાઈ સિંહ મળે છે."),
-    RetrievalDoc("doc_surat", "સુરત ડાયમંડ અને ટેક્સ્ટાઈલ ઉદ્યોગ માટે જાણીતું છે."),
-]
-
-_RETRIEVAL_QUERIES: list[RetrievalQuery] = [
-    RetrievalQuery("અમદાવાદમાંથી કઈ નદી પસાર થાય છે?", ["doc_sabarmati"]),
-    RetrievalQuery("ગુજરાતની રાજધાની કઈ છે?", ["doc_gandhinagar"]),
-    RetrievalQuery("ગુજરાતમાં નવરાત્રીમાં કયો નૃત્ય લોકપ્રિય છે?", ["doc_navratri"]),
-    RetrievalQuery("શિયાળામાં બનતી ખાસ ગુજરાતી વાનગી કઈ?", ["doc_undhiyu"]),
-    RetrievalQuery("ગિર જંગલ કયા પ્રાણી માટે જાણીતું છે?", ["doc_asiatic_lion"]),
-    RetrievalQuery("ડાયમંડ ઉદ્યોગ માટે કયું શહેર જાણીતું છે?", ["doc_surat"]),
-]
-
-
 def run_retrieval_eval(
     *,
     k_values: Sequence[int] = (1, 3, 5),
@@ -570,10 +538,11 @@ def run_retrieval_eval(
     if not k_values:
         raise ValueError("k_values must contain at least one positive integer")
 
-    docs = _RETRIEVAL_DOCS
-    queries = _RETRIEVAL_QUERIES
+    ds = load_gujarat_facts_tiny()
+    docs = ds.docs
+    queries = ds.queries
 
-    doc_texts = [d.text_gu for d in docs]
+    doc_texts = [d.text for d in docs]
     doc_ids = [d.doc_id for d in docs]
 
     q_texts: list[str] = []
@@ -617,6 +586,8 @@ def run_retrieval_eval(
 
     return {
         "dataset": "retrieval",
+        "retrieval_dataset": ds.name,
+        "retrieval_dataset_source": ds.source,
         "embedding_model_requested": embedding_model,
         "embedding_model_used": used_model,
         "k_values": list(k_values),

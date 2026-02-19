@@ -19,7 +19,7 @@ This repo is alpha-quality but SDK-first: the public API centers on `CodeMixConf
  ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -U pip
-.venv/bin/pip install -e ".[indic,ml,eval,demo,dev,dialect-ml]"
+.venv/bin/pip install -e ".[indic,ml,eval,demo,dev,dialect-ml,rag]"
  ```
  
  Minimal (CLI + basic heuristics only):
@@ -74,6 +74,36 @@ gck eval --dataset dialect_normalization
  ```
  
  If you export `SARVAM_API_KEY`, the demo can optionally call Sarvam APIs.
+
+## RAG Utilities (v0.5)
+
+v0.5 adds small, optional RAG helpers intended for tiny curated corpora and demos:
+
+- `RagIndex`: build a small embeddings index and do top-k retrieval
+- `load_gujarat_facts_tiny()`: packaged mini dataset (docs + queries) for quick recall evals and demos
+- `download_gujarat_facts_dataset(...)`: opt-in download helper (URLs required; offline-first by default)
+
+To enable HF embedding models:
+
+```bash
+.venv/bin/pip install -e ".[rag-embeddings]"
+```
+
+Example (keyword embedder, no ML deps):
+
+```python
+from gujarati_codemix_kit import RagIndex, load_gujarat_facts_tiny
+
+ds = load_gujarat_facts_tiny()
+
+def keyword_embed(texts: list[str]) -> list[list[float]]:
+    keys = ["અમદાવાદ", "રાજધાની", "નવરાત્રી", "શિયાળ", "ગિર", "ડાયમંડ"]
+    return [[1.0 if k in (t or "") else 0.0 for k in keys] for t in texts]
+
+idx = RagIndex.build(docs=ds.docs, embed_texts=keyword_embed, embedding_model="keywords")
+hits = idx.search(query="ગુજરાતની રાજધાની કઈ છે?", embed_texts=keyword_embed, topk=3)
+print([h.doc_id for h in hits])
+```
 
 ## Dialects (Full SDK)
 

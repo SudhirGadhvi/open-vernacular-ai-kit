@@ -12,97 +12,74 @@
  - Romanized Gujarati (Gujlish)
  - Mixed script in the same sentence
  
- The goal is to normalize text *before* sending it to downstream models (Sarvam-M / Mayura /
+The goal is to normalize text *before* sending it to downstream models (Sarvam-M / Mayura /
  Sarvam-Translate), and to postprocess certain outputs (e.g., Saaras `codemix`).
 
 This repo is alpha-quality but SDK-first: the public API centers on `CodeMixConfig` + `CodeMixPipeline`.
 
-## Why this exists
+Quick example:
 
-Real-world Gujarati user text is often "out of distribution" relative to what most language models (or
-retrieval pipelines) expect:
+```bash
+gck codemix "maru business plan ready chhe!!!"
+# -> મારું business plan ready છે!!
+```
 
-- mixed scripts in one sentence (Gujarati + Latin)
-- romanized Gujarati spellings are inconsistent (`maru`, `maroo`, `mru`, `mare`, ...)
-- tokens are glued (`maru-business`), punctuation is noisy, emoji spacing is chaotic
-- numbers/time formats get merged (`3pm`, `v1.2`, `10k+`)
+## Hard Cases (WhatsApp-Style)
 
-`gujarati-codemix-kit` aims to provide a repeatable preprocessing step that produces a canonical
-representation:
+Canonical output format:
 
-- Gujarati tokens in Gujarati script
-- English tokens preserved in Latin
-- romanized Gujarati transliterated when the backend is confident
+- Gujarati stays in Gujarati script
+- English stays in Latin
+- Gujlish tokens are transliterated to Gujarati when possible
 
-## WhatsApp-style hard cases (examples)
+| Input (messy) | Output (canonical code-mix) |
+| --- | --- |
+| `maru business plan ready chhe!!!` | `મારું business plan ready છે!!` |
+| `maru mobile number 123 chhe` | `મારું mobile number 123 છે` |
+| `maru order confirm chhe` | `મારું order confirm છે` |
+| `aaje maru kaam ready chhe` | `આજે મારું કામ ready છે` |
+| `tame ok chho?` | `તમે ok છો?` |
 
-These are real "shape of text" examples (handwritten / clean-room). Output may vary slightly depending on
-installed optional backends, but the intent stays the same: canonicalize Gujarati + preserve English.
+Note: outputs depend on the selected transliteration backend and configuration. Use `--stats` to log
+what happened (backend used, how many Gujlish tokens were transliterated, etc). For stricter
+"keep English as English" behavior, consider enabling an optional Latin-token LID backend (see docs).
 
-| Input | Output (`gck codemix` default) | Notes |
-| --- | --- | --- |
-| `maru business plan ready chhe!!!` | `મારું business plan ready છે!!` | Romanized Gujarati -> Gujarati script, English preserved |
-| `મારે meeting 3pm ae che, location send kar.` | `મારે meeting 3 pm ae છે, location send kar.` | Keeps English, normalizes spacing around `3 pm` |
-| `aaaj to mastttt chhe 😂😂 office ma` | `aaaj to mastttt છે 😂 😂 office ma` | Keeps uncertain roman tokens, still renders Gujarati `છે` |
-| `maru-business plan v1.2 ready chhe??` | `મારું-business plan v 1.2 ready છે??` | Handles glued tokens and version-ish patterns |
-| `Hu Ahmedabad ma chu, pan project deadline tight chhe` | `હું Ahmedabad ma chu, pan project deadline tight છે` | Mixed: transliterates `Hu`/`chhe`, keeps `Ahmedabad` |
+## Reproducible Eval (Public Data)
 
-## Public API (small + stable)
+This repo includes a lightweight "coverage-style" eval harness (not translation quality):
 
-If you're using this as a library, prefer these symbols:
+```bash
+gck eval --dataset gujlish --report eval/out/report.json
+```
 
-- `CodeMixConfig`: config object; supports `from_dict(...)` for structured config.
-- `CodeMixPipeline`: end-to-end pipeline; `run(text)` and `run_many(texts)`.
-- `analyze_codemix(...)`: convenience helper; returns analysis with `.codemix`.
-- `render_codemix(...)`: convenience helper; returns the canonical rendered string.
-- `normalize_text(...)`: normalization helper (pre-pipeline cleanup).
+Example result from one local run (topk=1, max_rows=2000):
 
-Everything else should be treated as implementation detail unless documented on the docs site.
+- Split `in22`: `pct_has_gujarati_codemix` ~= `0.987`
+- Split `xnli`: `pct_has_gujarati_codemix` ~= `0.956`
+
+See `docs/benchmarks.md` for details.
+
+## Work With Me
+
+If you're building chat/search/support automation for Gujarati users and want to integrate this
+pipeline (SDK/CLI, on-prem, privacy-safe pilots), open a GitHub issue on this repo or reach out via
+my GitHub profile: https://github.com/SudhirGadhvi
  
  ## Install
-
-From PyPI (typical usage):
-
-```bash
-pip install "gujarati-codemix-kit[indic,ml]"
-```
-
-For eval harness + demo:
-
-```bash
-pip install "gujarati-codemix-kit[indic,ml,eval,demo]"
-```
-
-From source (development):
-
-```bash
+ 
+ For full functionality (recommended):
+ 
+ ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -U pip
 .venv/bin/pip install -e ".[indic,ml,eval,demo,dev,dialect-ml,rag]"
-```
-
-Minimal (CLI + basic heuristics only):
-
-```bash
-pip install gujarati-codemix-kit
-```
-
-## Python quickstart (SDK)
-
-```python
-from gujarati_codemix_kit import CodeMixConfig, CodeMixPipeline
-
-cfg = CodeMixConfig(
-    # Keep defaults for most cases; tweak only when you need behavior changes.
-    preserve_numbers=True,
-    preserve_case=True,
-)
-
-pipe = CodeMixPipeline(config=cfg)
-res = pipe.run("maru business plan ready chhe!!!")
-
-print(res.codemix)  # canonical: Gujarati in Gujarati script, English preserved
-```
+ ```
+ 
+ Minimal (CLI + basic heuristics only):
+ 
+ ```bash
+ pip install -e .
+ ```
  
  ## CLI
  
@@ -130,8 +107,6 @@ Quick success metric (% Gujlish tokens transliterated):
 gck codemix --stats "maru business plan ready chhe!!!" 1>/dev/null
 ```
 
-## Evaluation / benchmarks (reproducible)
-
 Run eval (downloads public Gujlish eval CSVs into `~/.cache/gujarati-codemix-kit`):
 
 ```bash
@@ -144,14 +119,6 @@ Dialect evals (uses a tiny packaged JSONL by default, or provide your own):
 gck eval --dataset dialect_id
 gck eval --dataset dialect_normalization
 ```
-
-Typical workflow if you're integrating with a model:
-
-1) run baseline eval on raw text (or a representative sample)
-2) enable the `codemix` render step
-3) rerun eval and compare reports
-
-The eval harness is designed to be versioned and repeatable, so it can serve as a regression guard in CI.
 
  ## Demo (Streamlit)
  
@@ -216,12 +183,6 @@ a = analyze_codemix(
 )
 print(a.codemix)
 ```
-
-## Offline-first + safety defaults
-
-- Remote model downloads are opt-in (`allow_remote_models=False` by default).
-- Optional heavy dependencies are behind extras, so the base install stays lightweight.
-- Behavior is intended to be deterministic for the same version + config.
 
 ## Training (Optional)
 

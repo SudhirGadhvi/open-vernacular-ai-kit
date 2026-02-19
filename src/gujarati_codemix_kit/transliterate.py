@@ -303,6 +303,23 @@ def _extract_candidates(obj: object) -> list[str]:
     return []
 
 
+_GUJARATI_VIRAMA = "\u0acd"  # Gujarati sign virama (halant)
+
+
+def _postprocess_gujarati_candidate(s: str) -> str:
+    """
+    Normalize common transliterator artifacts.
+
+    Some backends (notably ITRANS-ish fallbacks) may emit a *terminal* virama, e.g. "કામ્".
+    Gujarati orthography typically does not write a terminal virama, so we strip it.
+    """
+
+    out = (s or "").strip()
+    while out.endswith(_GUJARATI_VIRAMA):
+        out = out[:-1]
+    return out
+
+
 def _translit_backend(
     text: str, *, topk: int, preserve_case: bool, backend: TranslitBackend
 ) -> Optional[list[str]]:
@@ -320,7 +337,7 @@ def _translit_backend(
         # This won't perfectly match informal Gujlish spellings, but it's cheap and offline.
         try:
             out = sanscript.transliterate(text.lower(), sanscript.ITRANS, sanscript.GUJARATI)
-            out = (out or "").strip()
+            out = _postprocess_gujarati_candidate(out)
             return [out] if out else None
         except Exception:
             return None
@@ -338,7 +355,9 @@ def _translit_backend(
                     out = fn(text)
                 cands = _extract_candidates(out)
                 if cands:
-                    return cands[:topk]
+                    cleaned = [_postprocess_gujarati_candidate(c) for c in cands]
+                    cleaned = [c for c in cleaned if c]
+                    return cleaned[:topk] if cleaned else None
 
             # Fallback: transliterate each word and join (still improves with variants/exceptions).
             words = [w for w in re.split(r"\s+", text.strip(), flags=re.VERSION1) if w]
@@ -348,13 +367,16 @@ def _translit_backend(
             for w in words:
                 out = engine.translit_word(w, topk=1)
                 cands = _extract_candidates(out)
-                rendered.append(cands[0] if cands else w)
+                best = _postprocess_gujarati_candidate(cands[0]) if cands else ""
+                rendered.append(best if best else w)
             joined = " ".join(rendered).strip()
             return [joined] if joined and _GUJARATI_RE.search(joined) else None
 
         out = engine.translit_word(text if preserve_case else text.lower(), topk=topk)
         cands = _extract_candidates(out)
-        return cands[:topk] if cands else None
+        cleaned = [_postprocess_gujarati_candidate(c) for c in cands]
+        cleaned = [c for c in cleaned if c]
+        return cleaned[:topk] if cleaned else None
     except Exception:
         return None
 

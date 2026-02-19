@@ -62,8 +62,7 @@ See `docs/benchmarks.md` for details.
 ## Work With Me
 
 If you're building chat/search/support automation for Gujarati users and want to integrate this
-pipeline (SDK/CLI, on-prem, privacy-safe pilots), open a GitHub issue on this repo or reach out via
-my GitHub profile: https://github.com/SudhirGadhvi
+pipeline (SDK/CLI, on-prem, privacy-safe pilots), open a GitHub issue on this repo or reach out.
  
  ## Install
  

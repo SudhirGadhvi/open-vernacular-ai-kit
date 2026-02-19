@@ -3,7 +3,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Optional
 
+from .codeswitch import CodeSwitchMetrics
 from .config import CodeMixConfig
+from .dialects import DialectDetection, DialectNormalizationResult
 from .pipeline import CodeMixPipeline, CodeMixPipelineResult, EventHook
 
 
@@ -19,6 +21,11 @@ class CodeMixAnalysis:
     raw: str
     normalized: str
     codemix: str
+
+    # v0.4 additions: code-switching + dialect heuristics (MVP).
+    codeswitch: CodeSwitchMetrics
+    dialect: DialectDetection
+    dialect_normalization: DialectNormalizationResult
 
     n_tokens: int
     n_en_tokens: int
@@ -40,6 +47,9 @@ def _result_to_analysis(result: CodeMixPipelineResult) -> CodeMixAnalysis:
         raw=result.raw,
         normalized=result.normalized,
         codemix=result.codemix,
+        codeswitch=result.codeswitch,
+        dialect=result.dialect,
+        dialect_normalization=result.dialect_normalization,
         n_tokens=result.n_tokens,
         n_en_tokens=result.n_en_tokens,
         n_gu_native_tokens=result.n_gu_native_tokens,
@@ -87,6 +97,14 @@ def analyze_codemix(
     translit_backend: str = "auto",
     user_lexicon_path: Optional[str] = None,
     fasttext_model_path: Optional[str] = None,
+    dialect_backend: str = "auto",
+    dialect_model_id_or_path: Optional[str] = None,
+    dialect_min_confidence: float = 0.70,
+    dialect_normalize: bool = False,
+    dialect_force: Optional[str] = None,
+    dialect_normalizer_backend: str = "auto",
+    dialect_normalizer_model_id_or_path: Optional[str] = None,
+    allow_remote_models: bool = False,
 ) -> CodeMixAnalysis:
     """
     Analyze + render CodeMix in one pass.
@@ -104,6 +122,14 @@ def analyze_codemix(
         translit_backend=translit_backend,  # type: ignore[arg-type]
         user_lexicon_path=user_lexicon_path,
         fasttext_model_path=fasttext_model_path,
+        dialect_backend=dialect_backend,  # type: ignore[arg-type]
+        dialect_model_id_or_path=dialect_model_id_or_path,
+        dialect_min_confidence=float(dialect_min_confidence),
+        dialect_normalize=bool(dialect_normalize),
+        dialect_force=dialect_force,
+        dialect_normalizer_backend=dialect_normalizer_backend,  # type: ignore[arg-type]
+        dialect_normalizer_model_id_or_path=dialect_normalizer_model_id_or_path,
+        allow_remote_models=bool(allow_remote_models),
     )
     return analyze_codemix_with_config(text, config=cfg)
 
@@ -120,6 +146,14 @@ def render_codemix(
     translit_backend: str = "auto",
     user_lexicon_path: Optional[str] = None,
     fasttext_model_path: Optional[str] = None,
+    dialect_backend: str = "auto",
+    dialect_model_id_or_path: Optional[str] = None,
+    dialect_min_confidence: float = 0.70,
+    dialect_normalize: bool = False,
+    dialect_force: Optional[str] = None,
+    dialect_normalizer_backend: str = "auto",
+    dialect_normalizer_model_id_or_path: Optional[str] = None,
+    allow_remote_models: bool = False,
 ) -> str:
     """
     Convert mixed Gujarati/English text into a stable code-mix representation:
@@ -138,6 +172,14 @@ def render_codemix(
         translit_backend=translit_backend,  # type: ignore[arg-type]
         user_lexicon_path=user_lexicon_path,
         fasttext_model_path=fasttext_model_path,
+        dialect_backend=dialect_backend,  # type: ignore[arg-type]
+        dialect_model_id_or_path=dialect_model_id_or_path,
+        dialect_min_confidence=float(dialect_min_confidence),
+        dialect_normalize=bool(dialect_normalize),
+        dialect_force=dialect_force,
+        dialect_normalizer_backend=dialect_normalizer_backend,  # type: ignore[arg-type]
+        dialect_normalizer_model_id_or_path=dialect_normalizer_model_id_or_path,
+        allow_remote_models=bool(allow_remote_models),
     )
     return render_codemix_with_config(text, config=cfg)
  

@@ -114,7 +114,10 @@ def doctor(
 def eval(
     dataset: str = typer.Option(
         "gujlish",
-        help="Eval dataset/suite: gujlish, golden_translit, retrieval, prompt_stability.",
+        help=(
+            "Eval dataset/suite: gujlish, golden_translit, retrieval, prompt_stability, "
+            "dialect_id, dialect_normalization."
+        ),
     ),
     report: Optional[Path] = typer.Option(
         None, help="Write a JSON report to this path (directories auto-created)."
@@ -139,6 +142,35 @@ def eval(
     api_key: Optional[str] = typer.Option(None, help="Sarvam API key override (prompt_stability)."),
     preprocess: bool = typer.Option(
         True, help="Preprocess text with normalize+codemix before eval (retrieval/prompt_stability)."
+    ),
+    dialect_dataset: Optional[Path] = typer.Option(
+        None, "--dialect-dataset", help="Path to dialect-id JSONL (dialect_id eval)."
+    ),
+    dialect_norm_dataset: Optional[Path] = typer.Option(
+        None,
+        "--dialect-norm-dataset",
+        help="Path to dialect-normalization JSONL (dialect_normalization eval).",
+    ),
+    dialect_backend: str = typer.Option(
+        "heuristic", help="Dialect backend for dialect_id eval: auto, heuristic, transformers, none."
+    ),
+    dialect_model: Optional[str] = typer.Option(
+        None,
+        "--dialect-model",
+        help="Dialect model id/path for Transformers backend (dialect_id eval).",
+    ),
+    dialect_normalizer_backend: str = typer.Option(
+        "heuristic",
+        help="Dialect normalizer backend for dialect_normalization eval: auto, heuristic, seq2seq, none.",
+    ),
+    dialect_normalizer_model: Optional[str] = typer.Option(
+        None,
+        "--dialect-normalizer-model",
+        help="Seq2seq model id/path for dialect_normalization eval (optional).",
+    ),
+    allow_remote_models: bool = typer.Option(
+        False,
+        help="Allow remote HF model downloads (otherwise only local paths work).",
     ),
 ) -> None:
     """Run a lightweight, reproducible eval harness (downloads data if needed)."""
@@ -166,6 +198,13 @@ def eval(
             n_variants=n_variants,
             api_key=api_key,
             preprocess=preprocess,
+            dialect_dataset_path=None if dialect_dataset is None else str(dialect_dataset),
+            dialect_norm_dataset_path=None if dialect_norm_dataset is None else str(dialect_norm_dataset),
+            dialect_backend=dialect_backend,
+            dialect_model_id_or_path=dialect_model,
+            dialect_normalizer_backend=dialect_normalizer_backend,
+            dialect_normalizer_model_id_or_path=dialect_normalizer_model,
+            allow_remote_models=allow_remote_models,
         )
     except Exception as e:
         _console.print(f"[red]Eval failed:[/red] {e}")

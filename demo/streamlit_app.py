@@ -9,6 +9,7 @@ import sys
 import tempfile
 from dataclasses import asdict
 from datetime import datetime, timezone
+from enum import Enum
 from pathlib import Path
 from typing import Any
 
@@ -27,7 +28,14 @@ if _SRC_DIR.exists():
             sys.modules.pop(name, None)
 
 from gujarati_codemix_kit import __version__ as gck_version
+from gujarati_codemix_kit.app_flows import (
+    clean_whatsapp_chat_text,
+    process_csv_batch,
+    process_jsonl_batch,
+)
 from gujarati_codemix_kit.codemix_render import analyze_codemix
+from gujarati_codemix_kit.codeswitch import compute_code_switch_metrics
+from gujarati_codemix_kit.dialects import detect_dialect_from_tagged_tokens
 from gujarati_codemix_kit.lexicon import load_user_lexicon
 from gujarati_codemix_kit.normalize import normalize_text
 from gujarati_codemix_kit.token_lid import TokenLang, tag_tokens, tokenize
@@ -197,6 +205,20 @@ def _extract_translate_output(resp: Any) -> str:
             if isinstance(v, str) and v:
                 return v
     return str(resp)
+
+
+def _jsonable(x: Any) -> Any:
+    """
+    Convert nested dataclasses/objects into JSON-serializable structures.
+    """
+
+    if isinstance(x, Enum):
+        return x.value
+    if isinstance(x, dict):
+        return {str(k): _jsonable(v) for k, v in x.items()}
+    if isinstance(x, (list, tuple)):
+        return [_jsonable(v) for v in x]
+    return x
 
 
 def _examples() -> dict[str, str]:
@@ -392,13 +414,13 @@ def main() -> None:
             topk = st.number_input("Transliteration top-k", min_value=1, max_value=5, value=1, step=1)
             numerals = st.selectbox("Numerals", options=["keep", "ascii"], index=0)
             translit_mode = st.selectbox(
-                "Transliteration mode (demo v0.3)",
+                "Transliteration mode",
                 options=["sentence", "token"],
                 index=0,
                 help="Sentence mode unlocks phrase/joiner improvements for Gujlish runs.",
             )
             translit_backend = st.selectbox(
-                "Transliteration backend (demo v0.3)",
+                "Transliteration backend",
                 options=["auto", "ai4bharat", "sanscript", "none"],
                 index=0,
                 help="auto picks best available. ai4bharat requires optional install.",
@@ -421,7 +443,7 @@ def main() -> None:
             if sarvam_enabled and not _sarvam_available():
                 st.warning("Sarvam SDK not available. Install extras: `pip install -e '.[sarvam]'`.")
 
-        st.markdown("### Advanced (v0.3)")
+        st.markdown("### Advanced (v0.3/v0.4.x)")
         a1, a2 = st.columns(2)
         with a1:
             lex_upload = st.file_uploader(
@@ -434,6 +456,58 @@ def main() -> None:
                 "fastText model path (lid.176.ftz) for optional LID fallback",
                 value=os.environ.get("GCK_FASTTEXT_MODEL_PATH", ""),
                 help="Optional. If provided + fastText installed + file exists, it can help English detection.",
+            )
+
+        st.markdown("### Dialects (v0.4.x)")
+        d1, d2 = st.columns(2)
+        with d1:
+            dialect_backend = st.selectbox(
+                "Dialect backend",
+                options=["auto", "heuristic", "transformers", "none"],
+                index=0,
+                help=(
+                    "auto uses Transformers if a model is provided, else heuristic. "
+                    "transformers expects a fine-tuned HF seq-classification model (path or id)."
+                ),
+            )
+            dialect_normalize = st.checkbox(
+                "Apply dialect normalization",
+                value=False,
+                help="Only applies when dialect confidence >= threshold. Never rewrites English tokens.",
+            )
+        with d2:
+            dialect_model_id_or_path = st.text_input(
+                "Dialect model id/path (Transformers)",
+                value="",
+                help="Local path (offline) or HF model id. Only used for backend=transformers or auto.",
+            )
+            dialect_min_confidence = st.slider(
+                "Dialect min confidence",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.70,
+                step=0.05,
+                help="Normalization is gated on this threshold.",
+            )
+
+        n1, n2 = st.columns(2)
+        with n1:
+            dialect_normalizer_backend = st.selectbox(
+                "Dialect normalizer backend",
+                options=["auto", "heuristic", "seq2seq", "none"],
+                index=0,
+                help="auto = rules-first + optional seq2seq if a model is provided.",
+            )
+            allow_remote_models = st.checkbox(
+                "Allow remote model downloads",
+                value=False,
+                help="Off by default. Enable only if you want HF model-id downloads/caching.",
+            )
+        with n2:
+            dialect_normalizer_model_id_or_path = st.text_input(
+                "Dialect normalizer model id/path (seq2seq)",
+                value="",
+                help="Optional. Local path (offline) or HF id for a seq2seq dialect->standard normalizer.",
             )
 
     topk = int(topk)
@@ -487,10 +561,28 @@ def main() -> None:
             st.session_state["gck_msg"] = ex[chosen]
 
         msg = st.text_area("Message", key="gck_msg", height=140)
+        whatsapp_cleanup = st.checkbox(
+            "WhatsApp export cleanup (v0.4)",
+            value=False,
+            help="Remove timestamps/system lines from exported chat logs; keeps just message text.",
+        )
         analyze_clicked = st.form_submit_button("Analyze", type="primary")
 
     # Compute only when the user clicks Analyze (or first load).
     if "gck_last_analysis" not in st.session_state or analyze_clicked:
+        raw_input = msg
+        msg_to_analyze = msg
+        if whatsapp_cleanup:
+            try:
+                cleaned = clean_whatsapp_chat_text(msg or "")
+            except Exception:
+                cleaned = ""
+            if cleaned:
+                msg_to_analyze = cleaned
+
+        st.session_state["gck_last_raw_input"] = raw_input
+        st.session_state["gck_last_preprocessed_input"] = msg_to_analyze
+
         # Keep the demo resilient if an older SDK version is imported in some environments.
         # We only pass supported kwargs based on signature inspection.
         desired_kwargs: dict[str, Any] = {
@@ -501,6 +593,14 @@ def main() -> None:
             "aggressive_normalize": aggressive_normalize,
             "user_lexicon_path": lexicon_path,
             "fasttext_model_path": ft_path,
+            "dialect_backend": dialect_backend,
+            "dialect_model_id_or_path": (dialect_model_id_or_path or "").strip() or None,
+            "dialect_min_confidence": float(dialect_min_confidence),
+            "dialect_normalize": bool(dialect_normalize),
+            "dialect_normalizer_backend": dialect_normalizer_backend,
+            "dialect_normalizer_model_id_or_path": (dialect_normalizer_model_id_or_path or "").strip()
+            or None,
+            "allow_remote_models": bool(allow_remote_models),
         }
         try:
             supported = set(inspect.signature(analyze_codemix).parameters.keys())
@@ -512,14 +612,16 @@ def main() -> None:
                     f"Ignoring: {', '.join(dropped)}. "
                     "If you're running from the repo, restart Streamlit to pick up latest code."
                 )
-            st.session_state["gck_last_analysis"] = analyze_codemix(msg, **filtered)
+            st.session_state["gck_last_analysis"] = analyze_codemix(msg_to_analyze, **filtered)
         except TypeError as e:
             st.warning(
                 "SDK/demo mismatch while calling analyze_codemix(). "
                 "Restart Streamlit (and ensure editable install / local src is used). "
                 f"Error: {e}"
             )
-            st.session_state["gck_last_analysis"] = analyze_codemix(msg, topk=topk, numerals=numerals)
+            st.session_state["gck_last_analysis"] = analyze_codemix(
+                msg_to_analyze, topk=topk, numerals=numerals
+            )
 
     a = st.session_state["gck_last_analysis"]
 
@@ -527,17 +629,49 @@ def main() -> None:
     with out1:
         st.subheader("Before")
         st.caption("Raw user message (often Gujlish + English).")
-        st.code(a.raw or "")
+        st.code(st.session_state.get("gck_last_raw_input", a.raw) or "")
     with out2:
         st.subheader("After")
         st.caption("Canonical text for downstream systems.")
         st.code(a.codemix or "")
+
+    pre = st.session_state.get("gck_last_preprocessed_input", "") or ""
+    raw = st.session_state.get("gck_last_raw_input", "") or ""
+    if pre and raw and pre.strip() != raw.strip():
+        st.caption("Preprocessed input (v0.4):")
+        st.code(pre)
 
     m1, m2, m3, m4 = st.columns(4)
     m1.metric("Gujlish tokens", a.n_gu_roman_tokens)
     m2.metric("Converted", a.n_gu_roman_transliterated)
     m3.metric("Conversion rate", f"{a.pct_gu_roman_transliterated * 100:.1f}%")
     m4.metric("Backend", a.transliteration_backend)
+
+    # v0.4 metrics (be defensive if an older SDK is imported).
+    try:
+        cs = a.codeswitch  # type: ignore[attr-defined]
+    except Exception:
+        toks = tokenize(a.normalized or "")
+        tagged = tag_tokens(toks, lexicon_keys=lexicon_keys, fasttext_model_path=ft_path)
+        cs = compute_code_switch_metrics(tagged)
+
+    try:
+        d = a.dialect  # type: ignore[attr-defined]
+    except Exception:
+        toks = tokenize(a.normalized or "")
+        tagged = tag_tokens(toks, lexicon_keys=lexicon_keys, fasttext_model_path=ft_path)
+        d = detect_dialect_from_tagged_tokens(tagged)
+
+    try:
+        dn = a.dialect_normalization  # type: ignore[attr-defined]
+    except Exception:
+        dn = None
+
+    c1, c2, c3, c4 = st.columns(4)
+    c1.metric("CMI", f"{cs.cmi:.1f}")
+    c2.metric("Switch points", cs.n_switch_points)
+    c3.metric("Dialect", d.dialect.value)
+    c4.metric("Dialect confidence", f"{getattr(d, 'confidence', 0.0):.2f}")
 
     st.markdown("## What Changed")
     rows = _transliteration_rows(
@@ -575,6 +709,77 @@ def main() -> None:
             hide_index=True,
         )
         st.caption(f"Lexicon source: {lexicon_source}")
+
+    with st.expander("Code-switching + dialect (v0.4)", expanded=False):
+        st.caption("Heuristic metrics to quantify how mixed the input is (Gujarati vs English).")
+        dialect_norm_applied = bool(getattr(dn, "changed", False)) if dn is not None else False
+        dialect_norm_backend = getattr(dn, "backend", "none") if dn is not None else "none"
+        st.dataframe(
+            [
+                {
+                    "Metric": "CMI (0..100)",
+                    "Value": round(float(cs.cmi), 2),
+                },
+                {"Metric": "Switch points", "Value": int(cs.n_switch_points)},
+                {"Metric": "Gujarati tokens", "Value": int(cs.n_gu_tokens)},
+                {"Metric": "English tokens", "Value": int(cs.n_en_tokens)},
+                {"Metric": "Lexical tokens considered", "Value": int(cs.n_tokens_considered)},
+                {"Metric": "Dialect guess", "Value": d.dialect.value},
+                {"Metric": "Dialect backend", "Value": getattr(d, "backend", "heuristic")},
+                {"Metric": "Dialect confidence", "Value": round(float(getattr(d, "confidence", 0.0)), 3)},
+                {"Metric": "Dialect normalized", "Value": dialect_norm_applied},
+                {"Metric": "Dialect normalizer backend", "Value": dialect_norm_backend},
+            ],
+            width="stretch",
+            hide_index=True,
+        )
+        if getattr(d, "markers_found", None):
+            st.caption("Dialect markers found (debug):")
+            st.json(d.markers_found)
+        if dn is not None and getattr(dn, "changed", False):
+            st.caption("Dialect normalization output (debug):")
+            try:
+                st.code(" ".join(list(getattr(dn, "tokens_out", []))[:80]))
+            except Exception:
+                pass
+
+    with st.expander("Batch helpers (CSV / JSONL) (v0.4)", expanded=False):
+        st.caption("Upload a file, run preprocessing, download enriched output.")
+
+        b1, b2 = st.columns(2)
+        with b1:
+            csv_up = st.file_uploader("CSV upload", type=["csv"], key="gck_csv_upload")
+            csv_text_col = st.text_input("CSV text column", value="text", key="gck_csv_text_col")
+            if csv_up is not None and st.button("Process CSV", key="gck_process_csv"):
+                in_p = _write_uploaded_file_to_tmp(filename=csv_up.name, data=csv_up.getvalue())
+                out_p = str(Path(in_p).with_suffix(".out.csv"))
+                summ = process_csv_batch(in_p, out_p, text_column=csv_text_col)
+                st.success(
+                    f"Processed {summ.n_rows_out} rows (errors: {summ.n_errors})."
+                )
+                st.download_button(
+                    "Download processed CSV",
+                    data=Path(out_p).read_bytes(),
+                    file_name=Path(out_p).name,
+                    mime="text/csv",
+                )
+
+        with b2:
+            jsonl_up = st.file_uploader("JSONL upload", type=["jsonl"], key="gck_jsonl_upload")
+            jsonl_text_key = st.text_input("JSONL text key", value="text", key="gck_jsonl_text_key")
+            if jsonl_up is not None and st.button("Process JSONL", key="gck_process_jsonl"):
+                in_p = _write_uploaded_file_to_tmp(filename=jsonl_up.name, data=jsonl_up.getvalue())
+                out_p = str(Path(in_p).with_suffix(".out.jsonl"))
+                summ = process_jsonl_batch(in_p, out_p, text_key=jsonl_text_key)
+                st.success(
+                    f"Processed {summ.n_rows_out} rows (errors: {summ.n_errors})."
+                )
+                st.download_button(
+                    "Download processed JSONL",
+                    data=Path(out_p).read_bytes(),
+                    file_name=Path(out_p).name,
+                    mime="application/x-ndjson",
+                )
 
     st.divider()
 
@@ -719,7 +924,7 @@ def main() -> None:
     export_payload = {
         "created_at": _utc_now_iso(),
         "gck_version": gck_version,
-        "analysis": asdict(a),
+        "analysis": _jsonable(asdict(a)),
         "sarvam_compare": compare,
     }
     export_json = json.dumps(export_payload, ensure_ascii=False, indent=2)

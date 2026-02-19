@@ -60,6 +60,16 @@ lexicon = [
   "PyYAML>=6.0.1",
 ]
 
+# RAG utilities (dataset download helpers).
+rag = [
+  "requests>=2.31.0",
+]
+
+rag-embeddings = [
+  "transformers",
+  "torch",
+]
+
 # Dialect ML backends (optional; users provide fine-tuned weights).
 dialect-ml = [
   "transformers",

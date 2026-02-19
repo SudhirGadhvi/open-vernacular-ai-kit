@@ -33,13 +33,24 @@ from gujarati_codemix_kit.app_flows import (
     process_csv_batch,
     process_jsonl_batch,
 )
-from gujarati_codemix_kit.codemix_render import analyze_codemix
+from gujarati_codemix_kit.codemix_render import analyze_codemix, render_codemix
 from gujarati_codemix_kit.codeswitch import compute_code_switch_metrics
 from gujarati_codemix_kit.dialects import detect_dialect_from_tagged_tokens
 from gujarati_codemix_kit.lexicon import load_user_lexicon
 from gujarati_codemix_kit.normalize import normalize_text
 from gujarati_codemix_kit.token_lid import TokenLang, tag_tokens, tokenize
 from gujarati_codemix_kit.transliterate import translit_gu_roman_to_native_configured
+
+try:
+    # v0.5: RAG helpers (optional UI section).
+    from gujarati_codemix_kit import RagIndex, load_gujarat_facts_tiny, make_hf_embedder
+
+    _RAG_AVAILABLE = True
+except Exception:  # pragma: no cover
+    _RAG_AVAILABLE = False
+    RagIndex = None  # type: ignore[assignment]
+    load_gujarat_facts_tiny = None  # type: ignore[assignment]
+    make_hf_embedder = None  # type: ignore[assignment]
 
 
 def _utc_now_iso() -> str:
@@ -131,6 +142,102 @@ def _sarvam_available() -> bool:
     except Exception:
         return False
     return True
+
+
+def _rag_keyword_embed(texts: list[str]) -> list[list[float]]:
+    # Deterministic "embedding" for the demo when ML deps are not installed.
+    #
+    # It is intentionally small and only supports the tiny packaged dataset queries well.
+    keys = [
+        "અમદાવાદ",
+        "રાજધાની",
+        "ગાંધીનગર",
+        "નવરાત્રી",
+        "ગરબા",
+        "શિયાળ",
+        "ઉંધીયુ",
+        "ગિર",
+        "સિંહ",
+        "ડાયમંડ",
+        "સુરત",
+    ]
+    out: list[list[float]] = []
+    for t in texts:
+        s = t or ""
+        out.append([1.0 if k in s else 0.0 for k in keys])
+    return out
+
+
+@st.cache_resource(show_spinner=False)
+def _build_rag_index_cached(
+    *,
+    embedding_mode: str,
+    hf_model_id_or_path: str,
+    allow_remote_models: bool,
+) -> object:
+    """
+    Cache the index across Streamlit reruns.
+
+    Returns a `RagIndex` instance when available, else raises.
+    """
+
+    if not _RAG_AVAILABLE:
+        raise RuntimeError("RAG utilities are not available in this environment.")
+    ds = load_gujarat_facts_tiny()
+
+    mode = (embedding_mode or "").strip().lower()
+    if mode == "hf":
+        mid = (hf_model_id_or_path or "").strip()
+        if not mid:
+            raise RuntimeError("Missing HF model id/path for embeddings.")
+        embed = make_hf_embedder(  # type: ignore[misc]
+            model_id_or_path=mid,
+            allow_remote_models=bool(allow_remote_models),
+        )
+        idx = RagIndex.build(docs=ds.docs, embed_texts=embed, embedding_model=mid)  # type: ignore[union-attr]
+        return idx
+
+    # Default: keyword mode (no ML deps).
+    idx = RagIndex.build(docs=ds.docs, embed_texts=_rag_keyword_embed, embedding_model="keywords")  # type: ignore[union-attr]
+    return idx
+
+
+def _rag_context_block(rag_payload: dict[str, Any], *, n_docs: int = 3) -> str:
+    """
+    Render a compact context block from the demo's stored RAG payload.
+    """
+
+    if not isinstance(rag_payload, dict):
+        return ""
+    rows = rag_payload.get("results")
+    if not isinstance(rows, list) or not rows:
+        return ""
+
+    k = max(1, int(n_docs))
+    lines: list[str] = []
+    for r in rows[:k]:
+        if not isinstance(r, dict):
+            continue
+        doc_id = str(r.get("doc_id", "") or "").strip()
+        text = str(r.get("text", "") or "").strip()
+        if not text:
+            continue
+        if doc_id:
+            lines.append(f"- ({doc_id}) {text}")
+        else:
+            lines.append(f"- {text}")
+    ctx = "\n".join(lines).strip()
+    if not ctx:
+        return ""
+
+    q_used = str(rag_payload.get("query_used", "") or "").strip()
+    q_used_block = f"\n\nQuestion:\n{q_used}" if q_used else ""
+    return (
+        "Use the context below to answer.\n\n"
+        f"Context:\n{ctx}"
+        f"{q_used_block}\n\n"
+        "If the context is insufficient, say so briefly."
+    ).strip()
 
 
 def _sarvam_chat(prompt: str, *, api_key: str, temperature: float, max_tokens: int) -> dict[str, Any]:
@@ -831,6 +938,172 @@ def main() -> None:
 
     st.divider()
 
+    st.markdown("## RAG (v0.5): Gujarat Facts Mini-KB")
+    st.caption(
+        "A tiny packaged dataset + retrieval helper. Use this to demo how canonicalization improves "
+        "search/retrieval inputs (Gujarati script vs Gujlish)."
+    )
+
+    if not _RAG_AVAILABLE:
+        st.info("RAG section unavailable in this environment (older install or missing module).")
+        st.caption("If you are running from the repo, restart Streamlit to pick up v0.5 code.")
+        rag_payload: dict[str, Any] | None = None
+    else:
+        ds = load_gujarat_facts_tiny()  # type: ignore[misc]
+        q_examples = [q.query for q in ds.queries]
+        default_q = q_examples[0] if q_examples else "ગુજરાતની રાજધાની કઈ છે?"
+
+        with st.form("gck_rag_form", clear_on_submit=False):
+            r1, r2 = st.columns([2, 1])
+            with r1:
+                ex = st.selectbox("Example query", options=q_examples or [default_q], index=0)
+            with r2:
+                use_after = st.checkbox(
+                    "Use current 'After' text as query",
+                    value=False,
+                    help="Useful if your message is itself a question.",
+                )
+
+            rag_query = st.text_area(
+                "Query",
+                value=(a.codemix if use_after else ex),
+                height=80,
+                help="Try Gujlish too (e.g., 'gujarat ni rajdhani kai che?').",
+            )
+
+            preprocess_query = st.checkbox(
+                "Preprocess query with CodeMix",
+                value=True,
+                help="Runs normalize + Gujlish-to-Gujarati conversion before retrieval.",
+            )
+
+            embedding_mode = st.radio(
+                "Embeddings mode",
+                options=["keyword", "hf"],
+                index=0,
+                help="keyword requires no extra deps. hf uses torch+transformers (optional).",
+                horizontal=True,
+            )
+
+            hf_model_id_or_path = ""
+            if embedding_mode == "hf":
+                hf_model_id_or_path = st.text_input(
+                    "HF model id/path (embeddings)",
+                    value="",
+                    help=(
+                        "Recommended: a local path for offline-first use. "
+                        "If you provide a HF id, you must enable 'Allow remote model downloads' in Settings."
+                    ),
+                )
+                if not allow_remote_models:
+                    st.caption("Remote model downloads are disabled (Settings). Local paths will work.")
+
+            rag_topk = st.slider("Top-k", min_value=1, max_value=8, value=3, step=1)
+            retrieve_clicked = st.form_submit_button("Retrieve", type="primary")
+
+        if not retrieve_clicked:
+            rag_payload = st.session_state.get("gck_last_rag")
+        else:
+            q_raw = rag_query or ""
+            q_used = q_raw
+            if preprocess_query:
+                # Keep retrieval input in the same canonical format used elsewhere.
+                q_used = render_codemix(
+                    normalize_text(q_used),
+                    topk=topk,
+                    numerals=numerals,
+                    translit_mode=translit_mode,
+                    translit_backend=translit_backend,
+                    aggressive_normalize=aggressive_normalize,
+                    user_lexicon_path=lexicon_path,
+                    fasttext_model_path=ft_path,
+                    preserve_case=True,
+                    preserve_numbers=True,
+                )
+
+            try:
+                idx = _build_rag_index_cached(
+                    embedding_mode=embedding_mode,
+                    hf_model_id_or_path=hf_model_id_or_path,
+                    allow_remote_models=bool(allow_remote_models),
+                )
+                if embedding_mode == "hf":
+                    embed = make_hf_embedder(  # type: ignore[misc]
+                        model_id_or_path=hf_model_id_or_path,
+                        allow_remote_models=bool(allow_remote_models),
+                    )
+                else:
+                    embed = _rag_keyword_embed
+
+                results = idx.search(query=q_used, embed_texts=embed, topk=int(rag_topk))  # type: ignore[union-attr]
+                recall1 = idx.recall_at_k(queries=ds.queries, embed_texts=embed, k=1)  # type: ignore[union-attr]
+                recall3 = idx.recall_at_k(queries=ds.queries, embed_texts=embed, k=3)  # type: ignore[union-attr]
+
+                rag_payload = {
+                    "dataset": ds.name,
+                    "source": ds.source,
+                    "embedding_mode": embedding_mode,
+                    "hf_model_id_or_path": hf_model_id_or_path,
+                    "allow_remote_models": bool(allow_remote_models),
+                    "query_raw": q_raw,
+                    "query_used": q_used,
+                    "topk": int(rag_topk),
+                    "recall_at_1_tinyset": float(recall1),
+                    "recall_at_3_tinyset": float(recall3),
+                    "results": [
+                        {
+                            "doc_id": r.doc_id,
+                            "score": float(r.score),
+                            "domain": (r.meta or {}).get("domain", ""),
+                            "tags": ", ".join(list((r.meta or {}).get("tags", []))[:6]),
+                            "text": r.text,
+                        }
+                        for r in results
+                    ],
+                }
+                st.session_state["gck_last_rag"] = rag_payload
+            except Exception as e:
+                rag_payload = {"error": str(e), "query_raw": rag_query, "query_used": q_used}
+                st.session_state["gck_last_rag"] = rag_payload
+
+        if rag_payload and rag_payload.get("error"):
+            st.warning(f"RAG retrieval failed: {rag_payload.get('error')}")
+        elif rag_payload:
+            m1, m2, m3 = st.columns(3)
+            with m1:
+                st.metric("Recall@1 (tiny set)", f"{float(rag_payload.get('recall_at_1_tinyset', 0.0)):.2f}")
+            with m2:
+                st.metric("Recall@3 (tiny set)", f"{float(rag_payload.get('recall_at_3_tinyset', 0.0)):.2f}")
+            with m3:
+                st.metric("Top-k", str(int(rag_payload.get('topk', 0) or 0)))
+
+            st.markdown("**Query (raw)**")
+            st.code(rag_payload.get("query_raw", "") or "")
+            st.markdown("**Query (used for retrieval)**")
+            st.code(rag_payload.get("query_used", "") or "")
+
+            rows = rag_payload.get("results") if isinstance(rag_payload.get("results"), list) else []
+            if rows:
+                st.dataframe(rows, width="stretch", hide_index=True)
+            else:
+                st.info("No results.")
+
+            with st.expander("How to use results (prompt pattern)", expanded=False):
+                st.caption("A minimal pattern for RAG-style prompting (you can paste into the Sarvam section).")
+                ctx = "\n".join(
+                    [f"- ({r['doc_id']}) {r['text']}" for r in rows[:3] if isinstance(r, dict)]
+                ).strip()
+                st.code(
+                    (
+                        "Use the context below to answer the question.\n\n"
+                        f"Context:\n{ctx}\n\n"
+                        f"Question:\n{rag_payload.get('query_used','')}\n\n"
+                        "Answer in Gujarati."
+                    ).strip()
+                )
+
+    st.divider()
+
     st.markdown("## Optional: AI Comparison (Sarvam-M)")
     st.caption("Use this to demonstrate answer quality and stability. Token savings is not the primary promise.")
 
@@ -839,6 +1112,45 @@ def main() -> None:
         value="Please respond to the message below:\n\n{text}",
         height=90,
     )
+
+    rag_last = st.session_state.get("gck_last_rag")
+    rag_ok = (
+        isinstance(rag_last, dict)
+        and isinstance(rag_last.get("results"), list)
+        and len(list(rag_last.get("results") or [])) > 0
+        and not rag_last.get("error")
+    )
+    use_rag_context = st.checkbox(
+        "Include RAG context (from last retrieval)",
+        value=False,
+        disabled=not rag_ok,
+        help="Run the RAG section first to populate retrieved snippets.",
+    )
+    rag_apply_to_before = st.checkbox(
+        "Also apply RAG context to Before prompt",
+        value=False,
+        disabled=not bool(use_rag_context),
+        help="By default, context is applied only to the After prompt.",
+    )
+    rag_n_docs = st.slider(
+        "RAG docs to include",
+        min_value=1,
+        max_value=5,
+        value=3,
+        step=1,
+        disabled=not bool(use_rag_context),
+    )
+    use_rag_query_as_text_after = st.checkbox(
+        "Use RAG query as {text} (After)",
+        value=False,
+        disabled=not rag_ok,
+        help="Useful for direct QA. If off, {text}=the canonicalized message (After).",
+    )
+    if not rag_ok:
+        st.caption("Tip: run a retrieval in the RAG section to enable context injection here.")
+    elif use_rag_context:
+        with st.expander("RAG context that will be injected", expanded=False):
+            st.code(_rag_context_block(rag_last, n_docs=int(rag_n_docs)))
 
     if not sarvam_enabled:
         st.info("Enable Sarvam-M comparison in Settings to run this section.")
@@ -852,8 +1164,24 @@ def main() -> None:
     else:
         run = st.button("Run Sarvam-M", type="primary")
         if run:
-            p_before = _apply_template(prompt_template, a.raw)
-            p_after = _apply_template(prompt_template, a.codemix)
+            text_before = a.raw
+            text_after = a.codemix
+
+            if rag_ok and use_rag_query_as_text_after:
+                q_used = str(rag_last.get("query_used", "") or "").strip()
+                if q_used:
+                    text_after = q_used
+
+            p_before = _apply_template(prompt_template, text_before)
+            p_after = _apply_template(prompt_template, text_after)
+
+            rag_ctx = ""
+            if rag_ok and use_rag_context:
+                rag_ctx = _rag_context_block(rag_last, n_docs=int(rag_n_docs))
+                if rag_ctx:
+                    p_after = f"{rag_ctx}\n\n{p_after}".strip()
+                    if rag_apply_to_before:
+                        p_before = f"{rag_ctx}\n\n{p_before}".strip()
 
             with st.spinner("Calling Sarvam-M (Before)..."):
                 out_before = _sarvam_chat(p_before, api_key=sarvam_key, temperature=float(temperature), max_tokens=max_out)
@@ -871,6 +1199,10 @@ def main() -> None:
                 "created_at": _utc_now_iso(),
                 "prompt_before": p_before,
                 "prompt_after": p_after,
+                "rag_enabled": bool(use_rag_context),
+                "rag_apply_to_before": bool(rag_apply_to_before),
+                "rag_n_docs": int(rag_n_docs),
+                "rag_query_used": (str(rag_last.get("query_used", "") or "") if rag_ok else ""),
                 "usage_before": out_before.get("usage"),
                 "usage_after": out_after.get("usage"),
                 "answer_before": out_before.get("content", ""),
@@ -925,6 +1257,7 @@ def main() -> None:
         "created_at": _utc_now_iso(),
         "gck_version": gck_version,
         "analysis": _jsonable(asdict(a)),
+        "rag": st.session_state.get("gck_last_rag"),
         "sarvam_compare": compare,
     }
     export_json = json.dumps(export_payload, ensure_ascii=False, indent=2)

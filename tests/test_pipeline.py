@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import json
 
-from gujarati_codemix_kit.config import CodeMixConfig
-from gujarati_codemix_kit.doctor import collect_doctor_info
-from gujarati_codemix_kit.pipeline import CodeMixPipeline
-from gujarati_codemix_kit.token_lid import TokenLang, analyze_token, detect_token_lang, tokenize
-from gujarati_codemix_kit.transliterate import translit_gu_roman_to_native_configured
+from open_vernacular_ai_kit.config import CodeMixConfig
+from open_vernacular_ai_kit.doctor import collect_doctor_info
+from open_vernacular_ai_kit.pipeline import CodeMixPipeline
+from open_vernacular_ai_kit.token_lid import TokenLang, analyze_token, detect_token_lang, tokenize
+from open_vernacular_ai_kit.transliterate import translit_gu_roman_to_native_configured
 
 
 def test_tokenize_splits_punct() -> None:

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gujarati_codemix_kit.eval_harness import _default_cache_dir, _download  # noqa: SLF001
+from open_vernacular_ai_kit.eval_harness import _default_cache_dir, _download  # noqa: SLF001
 
 
 def main() -> None:

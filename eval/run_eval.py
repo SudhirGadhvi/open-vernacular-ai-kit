@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 
-from gujarati_codemix_kit.eval_harness import run_eval
+from open_vernacular_ai_kit.eval_harness import run_eval
 
 
 def main() -> None:

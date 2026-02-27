@@ -3,7 +3,7 @@
  build-backend = "hatchling.build"
  
  [project]
- name = "gujarati-codemix-kit"
+name = "open-vernacular-ai-kit"
 version = "1.0.0"
 description = "Open-source Indian vernacular AI text normalization toolkit (Sarvam-first, globally extensible)."
  readme = "README.md"
@@ -112,10 +112,10 @@ dialect-ml = [
  ]
  
  [project.scripts]
- gck = "gujarati_codemix_kit.cli:app"
+gck = "open_vernacular_ai_kit.cli:app"
  
  [tool.hatch.build.targets.wheel]
- packages = ["src/gujarati_codemix_kit"]
+packages = ["src/open_vernacular_ai_kit"]
  
  [tool.ruff]
  line-length = 100

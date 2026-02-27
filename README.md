@@ -5,7 +5,7 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
  
- `gujarati-codemix-kit` is an open-source SDK + CLI for cleaning up Indian vernacular-English code-mixed
+ `open-vernacular-ai-kit` is an open-source SDK + CLI for cleaning up Indian vernacular-English code-mixed
  text. This release is India-first with Sarvam AI integrations, and is designed to expand globally in
  future updates with community-contributed language and provider adapters.
  It is designed for messy WhatsApp-style inputs where vernacular text might appear in:
@@ -110,8 +110,7 @@ git remote set-url origin https://github.com/SudhirGadhvi/open-vernacular-ai-kit
 git remote -v
 ```
 
-Compatibility note: Python package/import names remain unchanged in this release
-(`gujarati-codemix-kit` / `gujarati_codemix_kit`) to avoid breaking existing integrations.
+Compatibility note: Python import path is `open_vernacular_ai_kit`.
  
  ## Install
  
@@ -193,7 +192,7 @@ To enable HF embedding models:
 Example (keyword embedder, no ML deps):
 
 ```python
-from gujarati_codemix_kit import RagIndex, load_vernacular_facts_tiny
+from open_vernacular_ai_kit import RagIndex, load_vernacular_facts_tiny
 
 ds = load_vernacular_facts_tiny()
 
@@ -225,7 +224,7 @@ Safety default: remote HuggingFace model downloads are disabled unless you expli
 Example (heuristic dialect normalization gated by confidence):
 
 ```python
-from gujarati_codemix_kit import analyze_codemix
+from open_vernacular_ai_kit import analyze_codemix
 
 a = analyze_codemix(
     "kamaad thaalu rakhje",

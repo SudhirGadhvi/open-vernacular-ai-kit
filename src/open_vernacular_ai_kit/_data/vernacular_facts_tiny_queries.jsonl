@@ -1,0 +1,6 @@
+{"query":"Which language is commonly used in Gujarat customer support workflows (Gujarati)?","relevant_doc_ids":["doc_gujarati_support"]}
+{"query":"Which language is widely used in Indian news and cinema (Hindi)?","relevant_doc_ids":["doc_hindi_media"]}
+{"query":"Which Indian language is known for strong literary continuity in this dataset (Tamil)?","relevant_doc_ids":["doc_tamil_literature"]}
+{"query":"Which language appears in Karnataka-focused tech and commerce interfaces (Kannada)?","relevant_doc_ids":["doc_kannada_tech"]}
+{"query":"Which language has a strong publishing ecosystem in eastern India (Bengali)?","relevant_doc_ids":["doc_bengali_publishing"]}
+{"query":"Which language is used broadly in Maharashtra civic services (Marathi)?","relevant_doc_ids":["doc_marathi_admin"]}

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import pytest
 
-from gujarati_codemix_kit.codemix_render import render_codemix
+from open_vernacular_ai_kit.codemix_render import render_codemix
 
 _CASES: list[tuple[str, str]] = [
     ("maru plan ready chhe!!!", "મારું plan ready છે!!"),

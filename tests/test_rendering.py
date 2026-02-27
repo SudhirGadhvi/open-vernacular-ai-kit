@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gujarati_codemix_kit.rendering import render_tokens
+from open_vernacular_ai_kit.rendering import render_tokens
 
 
 def test_render_tokens_basic_punct_spacing() -> None:

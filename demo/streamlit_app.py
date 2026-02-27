@@ -16,34 +16,34 @@ from typing import Any
 import streamlit as st
 
 # Ensure the demo uses the local SDK code when run from the repo, even if an older
-# version of `gujarati_codemix_kit` is installed elsewhere in the environment.
+# version of `open_vernacular_ai_kit` is installed elsewhere in the environment.
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 _SRC_DIR = _REPO_ROOT / "src"
 if _SRC_DIR.exists():
     sys.path.insert(0, str(_SRC_DIR))
-    # If Streamlit re-runs the script, `gujarati_codemix_kit` may already be in sys.modules
+    # If Streamlit re-runs the script, `open_vernacular_ai_kit` may already be in sys.modules
     # from an older import path. Drop it so we re-import from local `src/`.
     for name in list(sys.modules.keys()):
-        if name == "gujarati_codemix_kit" or name.startswith("gujarati_codemix_kit."):
+        if name == "open_vernacular_ai_kit" or name.startswith("open_vernacular_ai_kit."):
             sys.modules.pop(name, None)
 
-from gujarati_codemix_kit import __version__ as gck_version
-from gujarati_codemix_kit.app_flows import (
+from open_vernacular_ai_kit import __version__ as gck_version
+from open_vernacular_ai_kit.app_flows import (
     clean_whatsapp_chat_text,
     process_csv_batch,
     process_jsonl_batch,
 )
-from gujarati_codemix_kit.codemix_render import analyze_codemix, render_codemix
-from gujarati_codemix_kit.codeswitch import compute_code_switch_metrics
-from gujarati_codemix_kit.dialects import detect_dialect_from_tagged_tokens
-from gujarati_codemix_kit.lexicon import load_user_lexicon
-from gujarati_codemix_kit.normalize import normalize_text
-from gujarati_codemix_kit.token_lid import TokenLang, tag_tokens, tokenize
-from gujarati_codemix_kit.transliterate import translit_gu_roman_to_native_configured
+from open_vernacular_ai_kit.codemix_render import analyze_codemix, render_codemix
+from open_vernacular_ai_kit.codeswitch import compute_code_switch_metrics
+from open_vernacular_ai_kit.dialects import detect_dialect_from_tagged_tokens
+from open_vernacular_ai_kit.lexicon import load_user_lexicon
+from open_vernacular_ai_kit.normalize import normalize_text
+from open_vernacular_ai_kit.token_lid import TokenLang, tag_tokens, tokenize
+from open_vernacular_ai_kit.transliterate import translit_gu_roman_to_native_configured
 
 try:
     # v0.5: RAG helpers (optional UI section).
-    from gujarati_codemix_kit import RagIndex, load_vernacular_facts_tiny, make_hf_embedder
+    from open_vernacular_ai_kit import RagIndex, load_vernacular_facts_tiny, make_hf_embedder
 
     _RAG_AVAILABLE = True
 except Exception:  # pragma: no cover

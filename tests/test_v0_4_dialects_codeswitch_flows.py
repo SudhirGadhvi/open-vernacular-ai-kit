@@ -3,21 +3,21 @@ from __future__ import annotations
 import csv
 import json
 
-from gujarati_codemix_kit.app_flows import (
+from open_vernacular_ai_kit.app_flows import (
     clean_whatsapp_chat_text,
     process_csv_batch,
     process_jsonl_batch,
 )
-from gujarati_codemix_kit.codeswitch import compute_code_switch_metrics
-from gujarati_codemix_kit.config import CodeMixConfig
-from gujarati_codemix_kit.dialect_backends import TransformersDialectBackend
-from gujarati_codemix_kit.dialect_normalizers import Seq2SeqDialectNormalizer
-from gujarati_codemix_kit.dialects import (
+from open_vernacular_ai_kit.codeswitch import compute_code_switch_metrics
+from open_vernacular_ai_kit.config import CodeMixConfig
+from open_vernacular_ai_kit.dialect_backends import TransformersDialectBackend
+from open_vernacular_ai_kit.dialect_normalizers import Seq2SeqDialectNormalizer
+from open_vernacular_ai_kit.dialects import (
     GujaratiDialect,
     normalize_dialect_tagged_tokens,
     normalize_dialect_tokens,
 )
-from gujarati_codemix_kit.token_lid import Token, TokenLang, tokenize
+from open_vernacular_ai_kit.token_lid import Token, TokenLang, tokenize
 
 
 def test_codeswitch_metrics_basic() -> None:

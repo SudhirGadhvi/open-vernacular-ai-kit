@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gujarati_codemix_kit.config import CodeMixConfig
+from open_vernacular_ai_kit.config import CodeMixConfig
 
 
 def test_config_to_dict_includes_schema_version() -> None:

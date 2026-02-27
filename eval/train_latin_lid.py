@@ -1,6 +1,6 @@
 """Train a small latin-token classifier: EN vs GU_ROMAN.
 
-Output: src/gujarati_codemix_kit/_data/latin_lid.joblib
+Output: src/open_vernacular_ai_kit/_data/latin_lid.joblib
 
 This script is intentionally separate from the library so that:
 - the core package stays lightweight
@@ -75,7 +75,7 @@ def main() -> None:
 
     pipeline.fit(X, y)
 
-    out_path = _repo_root() / "src/gujarati_codemix_kit/_data/latin_lid.joblib"
+    out_path = _repo_root() / "src/open_vernacular_ai_kit/_data/latin_lid.joblib"
     out_path.parent.mkdir(parents=True, exist_ok=True)
     joblib.dump(pipeline, out_path)
     print(f"Wrote: {out_path}")

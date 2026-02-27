@@ -14,7 +14,7 @@ Example JSON:
 Usage:
 
 ```python
-from gujarati_codemix_kit import CodeMixConfig, CodeMixPipeline
+from open_vernacular_ai_kit import CodeMixConfig, CodeMixPipeline
 
 cfg = CodeMixConfig(user_lexicon_path="lex.json")
 out = CodeMixPipeline(config=cfg).run("mane ok chhe?").codemix

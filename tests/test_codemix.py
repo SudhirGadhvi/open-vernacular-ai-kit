@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from gujarati_codemix_kit.codemix_render import analyze_codemix, render_codemix
-from gujarati_codemix_kit.token_lid import TokenLang, detect_token_lang
+from open_vernacular_ai_kit.codemix_render import analyze_codemix, render_codemix
+from open_vernacular_ai_kit.token_lid import TokenLang, detect_token_lang
 
 
 def test_detect_token_lang_common_gujlish() -> None:

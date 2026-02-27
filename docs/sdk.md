@@ -9,7 +9,7 @@ The intended public SDK surface centers on:
 ## Minimal usage
 
 ```python
-from gujarati_codemix_kit import render_codemix
+from open_vernacular_ai_kit import render_codemix
 
 out = render_codemix("maru business plan ready chhe!!!", translit_mode="sentence")
 print(out)
@@ -18,7 +18,7 @@ print(out)
 ## Pipeline usage
 
 ```python
-from gujarati_codemix_kit import CodeMixConfig, CodeMixPipeline
+from open_vernacular_ai_kit import CodeMixConfig, CodeMixPipeline
 
 cfg = CodeMixConfig(translit_mode="sentence")
 pipe = CodeMixPipeline(config=cfg)
@@ -29,7 +29,7 @@ print(res.codemix)
 ## Batch usage
 
 ```python
-from gujarati_codemix_kit import CodeMixPipeline
+from open_vernacular_ai_kit import CodeMixPipeline
 
 pipe = CodeMixPipeline()
 results = pipe.run_many(["maru plan", "hu aaje office"])

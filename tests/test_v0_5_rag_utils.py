@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from gujarati_codemix_kit.rag import RagIndex
-from gujarati_codemix_kit.rag_datasets import load_vernacular_facts_tiny
+from open_vernacular_ai_kit.rag import RagIndex
+from open_vernacular_ai_kit.rag_datasets import load_vernacular_facts_tiny
 
 
 def _keyword_embed(texts: list[str]) -> list[list[float]]:

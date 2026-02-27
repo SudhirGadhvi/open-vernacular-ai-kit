@@ -10,10 +10,12 @@ theme:
 
 nav:
   - Home: index.md
+  - What We Solve: what-we-solve.md
   - Install: install.md
   - CLI: cli.md
   - SDK: sdk.md
   - Config Schema: config-schema.md
+  - North-Star Metrics: north-star-metrics.md
   - Cookbook:
       - WhatsApp Cleanup: cookbook/whatsapp.md
       - CSV Batch: cookbook/csv-batch.md
@@ -32,4 +34,3 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.highlight:
       anchor_linenums: true
-

@@ -16,7 +16,7 @@
  
 The goal is to normalize text *before* sending it to downstream models (Sarvam-M / Mayura /
 Sarvam-Translate), and to provide a reusable open-source foundation for vernacular AI workflows.
-Global language/provider expansion (OpenAI, Claude, and others) is planned and PR-friendly.
+Global language/provider expansion is planned and PR-friendly.
 
 This repo is alpha-quality but SDK-first: the public API centers on `CodeMixConfig` + `CodeMixPipeline`.
 
@@ -26,6 +26,14 @@ Quick example:
 gck codemix "maru business plan ready chhe!!!"
 # -> મારું business plan ready છે!!
 ```
+
+## What We Solve
+
+This project is a production-oriented normalization layer for India-focused AI applications.
+It cleans noisy mixed-script chat text before downstream LLM, retrieval, and support workflows.
+
+- Product positioning + landscape matrix: `docs/what-we-solve.md`
+- North-star metrics definitions and measurement method: `docs/north-star-metrics.md`
 
 ## Hard Cases (WhatsApp-Style)
 
@@ -63,6 +71,22 @@ Example result from one local run (topk=1, max_rows=2000):
 
 See `docs/benchmarks.md` for details.
 
+## North-Star Baseline Snapshot (Current Release)
+
+Generate the snapshot:
+
+```bash
+python3 scripts/snapshot_north_star_metrics.py --output docs/data/north_star_metrics_snapshot.json --iterations 200
+```
+
+Current snapshot (`2026-02-27T19:23:14Z`):
+
+| Metric | Value | Notes |
+| --- | --- | --- |
+| `transliteration_success` | `1.000` | Golden transliteration accuracy (`17/17`; backend=`none`) |
+| `dialect_accuracy` | `0.833` | Heuristic dialect-id accuracy (`5/6`) |
+| `p95_latency_ms` | `0.174` | Pipeline p95 latency in ms (`iterations=200`, `n_calls=1200`) |
+
 ## Indian Language Coverage (This Release)
 
 Current scope: India-first release. Gujarati is production-ready in this repo today; other Scheduled
@@ -96,7 +120,7 @@ Indian languages are planned next and open for community PRs.
 ## Contribute
 
 This release focuses on Indian languages and Sarvam-first hosted API flows.
-If you want to help expand global language coverage or add provider adapters (OpenAI, Claude, etc.),
+If you want to help expand global language coverage or add provider adapters,
 open a GitHub issue or submit a PR.
 
 ## Open-Source Governance

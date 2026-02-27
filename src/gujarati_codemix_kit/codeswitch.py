@@ -9,7 +9,7 @@ from .token_lid import Token, TokenLang
 @dataclass(frozen=True)
 class CodeSwitchMetrics:
     """
-    Lightweight code-switching metrics for Gujarati-English mixed text.
+    Lightweight code-switching metrics for vernacular-English mixed text.
 
     This intentionally stays heuristic and dependency-free:
     - We collapse Gujarati (native script + Gujlish roman) into a single "gu" bucket.

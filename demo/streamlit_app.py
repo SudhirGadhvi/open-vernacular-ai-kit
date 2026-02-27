@@ -43,13 +43,13 @@ from gujarati_codemix_kit.transliterate import translit_gu_roman_to_native_confi
 
 try:
     # v0.5: RAG helpers (optional UI section).
-    from gujarati_codemix_kit import RagIndex, load_gujarat_facts_tiny, make_hf_embedder
+    from gujarati_codemix_kit import RagIndex, load_vernacular_facts_tiny, make_hf_embedder
 
     _RAG_AVAILABLE = True
 except Exception:  # pragma: no cover
     _RAG_AVAILABLE = False
     RagIndex = None  # type: ignore[assignment]
-    load_gujarat_facts_tiny = None  # type: ignore[assignment]
+    load_vernacular_facts_tiny = None  # type: ignore[assignment]
     make_hf_embedder = None  # type: ignore[assignment]
 
 
@@ -149,17 +149,16 @@ def _rag_keyword_embed(texts: list[str]) -> list[list[float]]:
     #
     # It is intentionally small and only supports the tiny packaged dataset queries well.
     keys = [
-        "અમદાવાદ",
-        "રાજધાની",
-        "ગાંધીનગર",
-        "નવરાત્રી",
-        "ગરબા",
-        "શિયાળ",
-        "ઉંધીયુ",
-        "ગિર",
-        "સિંહ",
-        "ડાયમંડ",
-        "સુરત",
+        "gujarati",
+        "hindi",
+        "tamil",
+        "kannada",
+        "bengali",
+        "marathi",
+        "malayalam",
+        "telugu",
+        "punjabi",
+        "odia",
     ]
     out: list[list[float]] = []
     for t in texts:
@@ -183,7 +182,7 @@ def _build_rag_index_cached(
 
     if not _RAG_AVAILABLE:
         raise RuntimeError("RAG utilities are not available in this environment.")
-    ds = load_gujarat_facts_tiny()
+    ds = load_vernacular_facts_tiny()
 
     mode = (embedding_mode or "").strip().lower()
     if mode == "hf":
@@ -332,7 +331,7 @@ def _examples() -> dict[str, str]:
     return {
         "Support: order update": "mare order update joie chhe... parcel kyare aavse??",
         "Business plan": "maru business plan ready chhe!!!",
-        "Mixed Gujarati + English": "મારે tomorrow meeting છે, please confirm.",
+        "Mixed Vernacular + English": "મારે tomorrow meeting છે, please confirm.",
         "Delivery / numbers": "kal 2 baje delivery moklo, bill 450 rupiya.",
         "Multi-line": "maru business plan ready chhe!!!\n\nમારું business plan ready છે!!!",
     }
@@ -378,7 +377,7 @@ def _transliteration_rows(
             continue
         best = cands[0]
         if best != tok.text:
-            rows.append({"Gujlish token": tok.text, "Converted Gujarati": best})
+            rows.append({"Romanized token": tok.text, "Converted native script": best})
     return rows
 
 
@@ -464,17 +463,17 @@ def _delta(b: int | None, a: int | None) -> str:
 
 def main() -> None:
     _try_load_dotenv()
-    st.set_page_config(page_title="Gujarati CodeMix Kit", layout="wide", initial_sidebar_state="collapsed")
+    st.set_page_config(page_title="Open Vernacular AI Kit", layout="wide", initial_sidebar_state="collapsed")
     _inject_css()
 
     st.markdown(
         f"""
 <div class="gck-hero">
-  <div class="gck-pill">AI-ready Gujarati text <span style="opacity:.65">•</span> v{gck_version}</div>
-  <h1>Gujarati CodeMix Kit</h1>
+  <div class="gck-pill">AI-ready vernacular text <span style="opacity:.65">•</span> v{gck_version}</div>
+  <h1>Open Vernacular AI Kit</h1>
   <p>
-    Preprocess Gujarati-English messages before they hit LLMs, search, routing, and analytics.
-    We convert Gujlish (romanized Gujarati) into Gujarati script while keeping English as-is.
+    Preprocess vernacular-English messages before they hit LLMs, search, routing, and analytics.
+    We convert romanized vernacular text into native script while keeping English as-is.
   </p>
 </div>
 """,
@@ -487,7 +486,7 @@ def main() -> None:
             """
 <div class="gck-card">
   <h4>LLM quality</h4>
-  <p>Less ambiguity: Gujlish becomes Gujarati script, improving intent understanding.</p>
+  <p>Less ambiguity: romanized text becomes native script, improving intent understanding.</p>
 </div>
 """,
             unsafe_allow_html=True,
@@ -497,7 +496,7 @@ def main() -> None:
             """
 <div class="gck-card">
   <h4>Search & retrieval</h4>
-  <p>Canonical text matches stored tickets/KB more reliably (Gujarati script vs Latin).</p>
+  <p>Canonical text matches stored tickets/KB more reliably (native script vs Latin).</p>
 </div>
 """,
             unsafe_allow_html=True,
@@ -524,7 +523,7 @@ def main() -> None:
                 "Transliteration mode",
                 options=["sentence", "token"],
                 index=0,
-                help="Sentence mode unlocks phrase/joiner improvements for Gujlish runs.",
+                help="Sentence mode unlocks phrase/joiner improvements for romanized runs.",
             )
             translit_backend = st.selectbox(
                 "Transliteration backend",
@@ -533,9 +532,9 @@ def main() -> None:
                 help="auto picks best available. ai4bharat requires optional install.",
             )
             aggressive_normalize = st.checkbox(
-                "Aggressive Gujlish normalization",
+                "Aggressive romanized-text normalization",
                 value=False,
-                help="Try extra Gujlish spelling variants before transliteration.",
+                help="Try extra spelling variants before transliteration.",
             )
         with s2:
             sarvam_key = st.text_input(
@@ -549,7 +548,7 @@ def main() -> None:
                 "Enable Sarvam-M comparison",
                 value=False,
                 disabled=not sarvam_can_enable,
-                help="Requires SARVAM_API_KEY + `pip install -e '.[sarvam]'`.",
+                help="Requires SARVAM_API_KEY + `pip install -e '.[sarvam]'`. Other providers are planned via PRs.",
             )
             # Hide AI tuning controls unless Sarvam is actually enabled; this avoids
             # confusing UX where sliders appear active even when Sarvam can't run.
@@ -567,7 +566,10 @@ def main() -> None:
                 max_out = 256
 
             if not sarvam_available:
-                st.caption("Sarvam SDK not available. Install extras: `pip install -e '.[sarvam]'`.")
+                st.caption(
+                    "Sarvam SDK not available. Install extras: `pip install -e '.[sarvam]'`. "
+                    "This release uses Sarvam as the hosted provider."
+                )
             elif not sarvam_key:
                 st.caption("Enter `SARVAM_API_KEY` to enable Sarvam-M comparison.")
 
@@ -575,7 +577,7 @@ def main() -> None:
         a1, a2 = st.columns(2)
         with a1:
             lex_upload = st.file_uploader(
-                "User lexicon (JSON/YAML) to force specific roman→Gujarati mappings",
+                "User lexicon (JSON/YAML) to force specific roman→native-script mappings",
                 type=["json", "yaml", "yml"],
                 help="Example JSON: {\"mane\": \"મને\", \"kyare\": \"ક્યારે\"}",
             )
@@ -766,7 +768,7 @@ def main() -> None:
     out1, out2 = st.columns(2)
     with out1:
         st.subheader("Before")
-        st.caption("Raw user message (often Gujlish + English).")
+        st.caption("Raw user message (often romanized vernacular + English).")
         st.code(st.session_state.get("gck_last_raw_input", a.raw) or "")
     with out2:
         st.subheader("After")
@@ -780,7 +782,7 @@ def main() -> None:
         st.code(pre)
 
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Gujlish tokens", a.n_gu_roman_tokens)
+    m1.metric("Romanized tokens", a.n_gu_roman_tokens)
     m2.metric("Converted", a.n_gu_roman_transliterated)
     m3.metric("Conversion rate", f"{a.pct_gu_roman_transliterated * 100:.1f}%")
     m4.metric("Backend", a.transliteration_backend)
@@ -824,7 +826,7 @@ def main() -> None:
     if rows:
         st.dataframe(rows, width="stretch", hide_index=True)
     else:
-        st.info("No Gujlish conversions detected for this input.")
+        st.info("No romanized-token conversions detected for this input.")
 
     with st.expander("Token LID (v0.3: confidence + reason)", expanded=False):
         toks = tokenize(a.normalized or "")
@@ -849,7 +851,7 @@ def main() -> None:
         st.caption(f"Lexicon source: {lexicon_source}")
 
     with st.expander("Code-switching + dialect (v0.4)", expanded=False):
-        st.caption("Heuristic metrics to quantify how mixed the input is (Gujarati vs English).")
+        st.caption("Heuristic metrics to quantify how mixed the input is (vernacular vs English).")
         dialect_norm_applied = bool(getattr(dn, "changed", False)) if dn is not None else False
         dialect_norm_backend = getattr(dn, "backend", "none") if dn is not None else "none"
         st.dataframe(
@@ -859,7 +861,7 @@ def main() -> None:
                     "Value": round(float(cs.cmi), 2),
                 },
                 {"Metric": "Switch points", "Value": int(cs.n_switch_points)},
-                {"Metric": "Gujarati tokens", "Value": int(cs.n_gu_tokens)},
+                {"Metric": "Native-script tokens", "Value": int(cs.n_gu_tokens)},
                 {"Metric": "English tokens", "Value": int(cs.n_en_tokens)},
                 {"Metric": "Lexical tokens considered", "Value": int(cs.n_tokens_considered)},
                 {"Metric": "Dialect guess", "Value": d.dialect.value},
@@ -953,7 +955,7 @@ def main() -> None:
 
     with impact_right:
         st.subheader("Routing / analytics signal")
-        st.caption("Token-level language mix becomes cleaner after Gujlish conversion.")
+        st.caption("Token-level language mix becomes cleaner after romanized-text conversion.")
         c_before = _lid_counts(a.raw, lexicon_keys=lexicon_keys, fasttext_model_path=ft_path)
         c_after = _lid_counts(a.codemix, lexicon_keys=lexicon_keys, fasttext_model_path=ft_path)
         st.dataframe(
@@ -969,10 +971,10 @@ def main() -> None:
 
     st.divider()
 
-    st.markdown("## RAG (v0.5): Gujarat Facts Mini-KB")
+    st.markdown("## RAG (v0.5): Indian Vernacular Facts Mini-KB")
     st.caption(
-        "A tiny packaged dataset + retrieval helper. Use this to demo how canonicalization improves "
-        "search/retrieval inputs (Gujarati script vs Gujlish)."
+        "A tiny packaged India-focused dataset + retrieval helper. Use this to demo how canonicalization improves "
+        "search/retrieval inputs (native script vs romanized text)."
     )
 
     if not _RAG_AVAILABLE:
@@ -980,9 +982,13 @@ def main() -> None:
         st.caption("If you are running from the repo, restart Streamlit to pick up v0.5 code.")
         rag_payload: dict[str, Any] | None = None
     else:
-        ds = load_gujarat_facts_tiny()  # type: ignore[misc]
+        ds = load_vernacular_facts_tiny()  # type: ignore[misc]
         q_examples = [q.query for q in ds.queries]
-        default_q = q_examples[0] if q_examples else "ગુજરાતની રાજધાની કઈ છે?"
+        default_q = (
+            q_examples[0]
+            if q_examples
+            else "Which language is commonly used in Gujarat customer support workflows (Gujarati)?"
+        )
 
         with st.form("gck_rag_form", clear_on_submit=False):
             r1, r2 = st.columns([2, 1])
@@ -999,13 +1005,13 @@ def main() -> None:
                 "Query",
                 value=(a.codemix if use_after else ex),
                 height=80,
-                help="Try Gujlish too (e.g., 'gujarat ni rajdhani kai che?').",
+                help="Try romanized text too (e.g., 'gujarat ma support mate kai language vapray che?').",
             )
 
             preprocess_query = st.checkbox(
                 "Preprocess query with CodeMix",
                 value=True,
-                help="Runs normalize + Gujlish-to-Gujarati conversion before retrieval.",
+                help="Runs normalize + romanized-to-native conversion before retrieval.",
             )
 
             embedding_mode = st.radio(
@@ -1129,14 +1135,17 @@ def main() -> None:
                         "Use the context below to answer the question.\n\n"
                         f"Context:\n{ctx}\n\n"
                         f"Question:\n{rag_payload.get('query_used','')}\n\n"
-                        "Answer in Gujarati."
+                        "Answer in the same language as the question."
                     ).strip()
                 )
 
     st.divider()
 
     st.markdown("## Optional: AI Comparison (Sarvam-M)")
-    st.caption("Use this to demonstrate answer quality and stability. Token savings is not the primary promise.")
+    st.caption(
+        "Use this to demonstrate answer quality and stability. "
+        "Sarvam is the current integrated provider; additional providers are planned via PRs."
+    )
 
     prompt_template = st.text_area(
         "Prompt template (use {text})",

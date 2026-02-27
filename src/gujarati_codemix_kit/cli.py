@@ -22,38 +22,38 @@ _console = Console()
 
 @app.command()
 def normalize(
-    text: str = typer.Argument(..., help="Input text (Gujarati / English / code-mixed)."),
-    numerals: str = typer.Option("keep", help="Numerals: keep (Gujarati digits) or ascii."),
+    text: str = typer.Argument(..., help="Input text (vernacular / English / code-mixed)."),
+    numerals: str = typer.Option("keep", help="Numerals: keep (native digits) or ascii."),
 ) -> None:
-    """Normalize punctuation, whitespace, and Gujarati script."""
+    """Normalize punctuation, whitespace, and Indic-script text."""
     _console.print(normalize_text(text, numerals=numerals))
 
 
 @app.command()
 def codemix(
-    text: str = typer.Argument(..., help="Input text (may include romanized Gujarati/Gujlish)."),
+    text: str = typer.Argument(..., help="Input text (may include romanized vernacular text)."),
     topk: int = typer.Option(1, help="Top-K transliteration candidates to consider."),
-    numerals: str = typer.Option("keep", help="Numerals: keep (Gujarati digits) or ascii."),
+    numerals: str = typer.Option("keep", help="Numerals: keep (native digits) or ascii."),
     translit_mode: str = typer.Option(
-        "token", help="Transliteration mode for Gujlish: token or sentence."
+        "token", help="Transliteration mode for romanized vernacular text: token or sentence."
     ),
     translit_backend: str = typer.Option(
         "auto", help="Transliteration backend: auto, ai4bharat, sanscript, none."
     ),
     user_lexicon: Optional[Path] = typer.Option(
-        None, "--user-lexicon", help="Path to JSON/YAML file of roman->Gujarati overrides."
+        None, "--user-lexicon", help="Path to JSON/YAML file of roman->native-script overrides."
     ),
     fasttext_model: Optional[Path] = typer.Option(
         None, "--fasttext-model", help="Optional path to lid.176.ftz (fastText LID model)."
     ),
     preserve_case: bool = typer.Option(
-        True, help="Preserve original case for Latin tokens (English + Gujlish)."
+        True, help="Preserve original case for Latin tokens (English + romanized vernacular)."
     ),
     preserve_numbers: bool = typer.Option(
-        True, help="Preserve Gujarati digits (disable to normalize Gujarati digits to ASCII)."
+        True, help="Preserve native digits (disable to normalize digits to ASCII)."
     ),
     aggressive_normalize: bool = typer.Option(
-        False, help="Try extra Gujlish spelling variants before transliteration."
+        False, help="Try extra romanized spelling variants before transliteration."
     ),
     stats: bool = typer.Option(
         False,
@@ -61,7 +61,7 @@ def codemix(
         help="Write CodeMix conversion stats to stderr as JSON (stdout remains the rendered string).",
     ),
 ) -> None:
-    """Render a clean Gujarati-English code-mix string."""
+    """Render a clean vernacular-English code-mix string."""
     cfg = CodeMixConfig(
         topk=topk,
         numerals=numerals,  # type: ignore[arg-type]
@@ -137,9 +137,13 @@ def eval(
             "Note: ai4bharat/indic-bert may be gated on HF (the eval will fall back automatically)."
         ),
     ),
-    sarvam_model: str = typer.Option("sarvam-m", help="Sarvam chat model (prompt_stability)."),
+    sarvam_model: str = typer.Option(
+        "sarvam-m", help="Sarvam chat model (prompt_stability; current hosted provider in this release)."
+    ),
     n_variants: int = typer.Option(10, help="Number of prompt variants (prompt_stability)."),
-    api_key: Optional[str] = typer.Option(None, help="Sarvam API key override (prompt_stability)."),
+    api_key: Optional[str] = typer.Option(
+        None, help="Sarvam API key override (prompt_stability; future providers planned via PRs)."
+    ),
     preprocess: bool = typer.Option(
         True, help="Preprocess text with normalize+codemix before eval (retrieval/prompt_stability)."
     ),

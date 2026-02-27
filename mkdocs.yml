@@ -1,5 +1,5 @@
-site_name: Gujarati CodeMix Kit
-site_description: Gujarati-English code-mix + Gujlish normalization toolkit
+site_name: Open Vernacular AI Kit
+site_description: Open-source Indian vernacular text normalization toolkit (Sarvam-first now, global-ready roadmap)
 theme:
   name: material
   features:

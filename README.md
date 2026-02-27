@@ -1,19 +1,22 @@
- # Gujarati CodeMix Kit
+ # Open Vernacular AI Kit
 
-[![CI](https://github.com/SudhirGadhvi/gujarati-codemix-kit/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SudhirGadhvi/gujarati-codemix-kit/actions/workflows/ci.yml)
-[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://sudhirgadhvi.github.io/gujarati-codemix-kit/)
+[![CI](https://github.com/SudhirGadhvi/open-vernacular-ai-kit/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SudhirGadhvi/open-vernacular-ai-kit/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://sudhirgadhvi.github.io/open-vernacular-ai-kit/)
 [![Version](https://img.shields.io/badge/version-1.0.0-brightgreen)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
  
- `gujarati-codemix-kit` is a small SDK + CLI for cleaning up Gujarati-English code-mixed text,
- especially messy WhatsApp-style inputs where Gujarati might appear in:
+ `gujarati-codemix-kit` is an open-source SDK + CLI for cleaning up Indian vernacular-English code-mixed
+ text. This release is India-first with Sarvam AI integrations, and is designed to expand globally in
+ future updates with community-contributed language and provider adapters.
+ It is designed for messy WhatsApp-style inputs where vernacular text might appear in:
  
- - Gujarati script (ગુજરાતી)
- - Romanized Gujarati (Gujlish)
+ - native script (example: ગુજરાતી)
+ - Romanized vernacular text (example: Gujlish)
  - Mixed script in the same sentence
  
 The goal is to normalize text *before* sending it to downstream models (Sarvam-M / Mayura /
- Sarvam-Translate), and to postprocess certain outputs (e.g., Saaras `codemix`).
+Sarvam-Translate), and to provide a reusable open-source foundation for vernacular AI workflows.
+Global language/provider expansion (OpenAI, Claude, and others) is planned and PR-friendly.
 
 This repo is alpha-quality but SDK-first: the public API centers on `CodeMixConfig` + `CodeMixPipeline`.
 
@@ -26,11 +29,11 @@ gck codemix "maru business plan ready chhe!!!"
 
 ## Hard Cases (WhatsApp-Style)
 
-Canonical output format:
+Canonical output format (Gujarati-first profile):
 
-- Gujarati stays in Gujarati script
+- Native-script tokens stay in their native script
 - English stays in Latin
-- Gujlish tokens are transliterated to Gujarati when possible
+- Romanized vernacular tokens are transliterated to native script when possible
 
 | Input (messy) | Output (canonical code-mix) |
 | --- | --- |
@@ -41,12 +44,13 @@ Canonical output format:
 | `tame ok chho?` | `તમે ok છો?` |
 
 Note: outputs depend on the selected transliteration backend and configuration. Use `--stats` to log
-what happened (backend used, how many Gujlish tokens were transliterated, etc). For stricter
+what happened (backend used, how many romanized vernacular tokens were transliterated, etc). For stricter
 "keep English as English" behavior, consider enabling an optional Latin-token LID backend (see docs).
 
-## Reproducible Eval (Public Data)
+## Reproducible Eval (Gujarati Baseline)
 
-This repo includes a lightweight "coverage-style" eval harness (not translation quality):
+This repo includes a lightweight "coverage-style" eval harness (not translation quality) for the
+current Gujarati baseline:
 
 ```bash
 gck eval --dataset gujlish --report eval/out/report.json
@@ -59,10 +63,55 @@ Example result from one local run (topk=1, max_rows=2000):
 
 See `docs/benchmarks.md` for details.
 
-## Work With Me
+## Indian Language Coverage (This Release)
 
-If you're building chat/search/support automation for Gujarati users and want to integrate this
-pipeline (SDK/CLI, on-prem, privacy-safe pilots), open a GitHub issue on this repo or reach out.
+Current scope: India-first release. Gujarati is production-ready in this repo today; other Scheduled
+Indian languages are planned next and open for community PRs.
+
+| Language | Ready | Partially Ready | Planned (PR welcome) |
+| --- | --- | --- | --- |
+| Assamese | [ ] | [ ] | [x] |
+| Bengali | [ ] | [ ] | [x] |
+| Bodo | [ ] | [ ] | [x] |
+| Dogri | [ ] | [ ] | [x] |
+| Gujarati | [x] | [ ] | [ ] |
+| Hindi | [ ] | [ ] | [x] |
+| Kannada | [ ] | [ ] | [x] |
+| Kashmiri | [ ] | [ ] | [x] |
+| Konkani | [ ] | [ ] | [x] |
+| Maithili | [ ] | [ ] | [x] |
+| Malayalam | [ ] | [ ] | [x] |
+| Manipuri | [ ] | [ ] | [x] |
+| Marathi | [ ] | [ ] | [x] |
+| Nepali | [ ] | [ ] | [x] |
+| Odia | [ ] | [ ] | [x] |
+| Punjabi | [ ] | [ ] | [x] |
+| Sanskrit | [ ] | [ ] | [x] |
+| Santali | [ ] | [ ] | [x] |
+| Sindhi | [ ] | [ ] | [x] |
+| Tamil | [ ] | [ ] | [x] |
+| Telugu | [ ] | [ ] | [x] |
+| Urdu | [ ] | [ ] | [x] |
+
+## Contribute
+
+This release focuses on Indian languages and Sarvam-first hosted API flows.
+If you want to help expand global language coverage or add provider adapters (OpenAI, Claude, etc.),
+open a GitHub issue or submit a PR.
+
+## Repository Rename Notes
+
+Repository target name for this release: `open-vernacular-ai-kit`.
+
+If your local clone still points to the old remote, update it:
+
+```bash
+git remote set-url origin https://github.com/SudhirGadhvi/open-vernacular-ai-kit.git
+git remote -v
+```
+
+Compatibility note: Python package/import names remain unchanged in this release
+(`gujarati-codemix-kit` / `gujarati_codemix_kit`) to avoid breaking existing integrations.
  
  ## Install
  
@@ -88,17 +137,17 @@ python3 -m venv .venv
  gck normalize "મારું business plan ready છે!!!"
  ```
  
- Render clean code-mix (Gujarati tokens in Gujarati script, English preserved):
+Render clean code-mix (native-script tokens preserved, English preserved):
  
  ```bash
  gck codemix "maru business plan ready chhe!!!"
  ```
  
-Canonical output format:
+Canonical output format (Gujarati-first profile):
 
-- Gujarati stays in Gujarati script
+- Native-script tokens stay in native script
 - English stays in Latin
-- Gujlish (romanized Gujarati) tokens are transliterated to Gujarati script when possible
+- Romanized vernacular tokens are transliterated to native script when possible
 
 Quick success metric (% Gujlish tokens transliterated):
 
@@ -106,7 +155,7 @@ Quick success metric (% Gujlish tokens transliterated):
 gck codemix --stats "maru business plan ready chhe!!!" 1>/dev/null
 ```
 
-Run eval (downloads public Gujlish eval CSVs into `~/.cache/gujarati-codemix-kit`):
+Run eval (downloads public Gujlish eval CSVs into `~/.cache/open-vernacular-ai-kit`):
 
 ```bash
 gck eval --dataset gujlish --report eval/out/report.json
@@ -132,8 +181,8 @@ gck eval --dataset dialect_normalization
 v0.5 adds small, optional RAG helpers intended for tiny curated corpora and demos:
 
 - `RagIndex`: build a small embeddings index and do top-k retrieval
-- `load_gujarat_facts_tiny()`: packaged mini dataset (docs + queries) for quick recall evals and demos
-- `download_gujarat_facts_dataset(...)`: opt-in download helper (URLs required; offline-first by default)
+- `load_vernacular_facts_tiny()`: packaged India-focused mini dataset (docs + queries) for quick recall evals and demos
+- `download_vernacular_facts_dataset(...)`: opt-in download helper (URLs required; offline-first by default)
 
 To enable HF embedding models:
 
@@ -144,16 +193,20 @@ To enable HF embedding models:
 Example (keyword embedder, no ML deps):
 
 ```python
-from gujarati_codemix_kit import RagIndex, load_gujarat_facts_tiny
+from gujarati_codemix_kit import RagIndex, load_vernacular_facts_tiny
 
-ds = load_gujarat_facts_tiny()
+ds = load_vernacular_facts_tiny()
 
 def keyword_embed(texts: list[str]) -> list[list[float]]:
-    keys = ["અમદાવાદ", "રાજધાની", "નવરાત્રી", "શિયાળ", "ગિર", "ડાયમંડ"]
-    return [[1.0 if k in (t or "") else 0.0 for k in keys] for t in texts]
+    keys = ["gujarati", "hindi", "tamil", "kannada", "bengali", "marathi"]
+    return [[1.0 if k in (t or "").lower() else 0.0 for k in keys] for t in texts]
 
 idx = RagIndex.build(docs=ds.docs, embed_texts=keyword_embed, embedding_model="keywords")
-hits = idx.search(query="ગુજરાતની રાજધાની કઈ છે?", embed_texts=keyword_embed, topk=3)
+hits = idx.search(
+    query="which language is commonly used in gujarat customer support workflows (gujarati)?",
+    embed_texts=keyword_embed,
+    topk=3,
+)
 print([h.doc_id for h in hits])
 ```
 

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 class GckError(Exception):
     """
-    Base error class for gujarati-codemix-kit.
+    Base error class for the Open Vernacular AI Kit SDK.
 
     This is intentionally small: callers can catch GckError for SDK-level issues while still
     preserving backward-compat with built-in exception types via multiple inheritance.

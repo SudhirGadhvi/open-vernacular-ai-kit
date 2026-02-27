@@ -18,7 +18,7 @@ from .dialect_datasets import (
 )
 from .errors import DownloadError, InvalidConfigError, OptionalDependencyError
 from .normalize import normalize_text
-from .rag_datasets import load_gujarat_facts_tiny
+from .rag_datasets import load_vernacular_facts_tiny
 from .rendering import render_tokens
 from .token_lid import tokenize
 from .transliterate import transliteration_backend
@@ -61,7 +61,7 @@ _GUJLISH_SPECS: list[DatasetSpec] = [
 
 
 def _default_cache_dir() -> Path:
-    return Path.home() / ".cache" / "gujarati-codemix-kit"
+    return Path.home() / ".cache" / "open-vernacular-ai-kit"
 
 
 def _download(url: str, dest: Path) -> None:
@@ -546,7 +546,7 @@ def run_retrieval_eval(
     if not k_values:
         raise InvalidConfigError("k_values must contain at least one positive integer")
 
-    ds = load_gujarat_facts_tiny()
+    ds = load_vernacular_facts_tiny()
     docs = ds.docs
     queries = ds.queries
 
@@ -557,7 +557,7 @@ def run_retrieval_eval(
     for q in queries:
         s = q.query
         if preprocess_query:
-            # Allows running gujlish-ish queries through the same normalization pipeline.
+            # Allows running romanized queries through the same normalization pipeline.
             s = render_codemix(normalize_text(s))
         q_texts.append(s)
 
@@ -657,16 +657,16 @@ def run_prompt_stability_eval(
     """
     Prompt-stability benchmark:
       - create N deterministic prompt variants
-      - call Sarvam-M for each variant
+      - call Sarvam-M for each variant (current hosted provider integration)
       - compute semantic similarity between outputs via IndicBERT embeddings
 
-    Responses are cached in ~/.cache/gujarati-codemix-kit to avoid repeated API calls.
+    Responses are cached in ~/.cache/open-vernacular-ai-kit to avoid repeated API calls.
     """
     try:
         from .sarvam_adapters import sarvam_chat
     except Exception as e:  # pragma: no cover
         raise OptionalDependencyError(
-            "Prompt-stability eval requires Sarvam integration. Install with: "
+            "Prompt-stability eval currently requires Sarvam integration. Install with: "
             "pip install -e \".[sarvam,eval]\""
         ) from e
 

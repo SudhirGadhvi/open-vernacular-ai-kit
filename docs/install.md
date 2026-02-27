@@ -10,7 +10,7 @@ python3 -m venv .venv
 
 ## Feature extras
 
-- `indic`: Gujarati normalization + transliteration helpers
+- `indic`: Indic-script normalization + transliteration helpers
 - `ml`: optional lightweight ML LID helper
 - `fasttext`: optional fastText LID fallback
 - `lexicon`: YAML support for user lexicons

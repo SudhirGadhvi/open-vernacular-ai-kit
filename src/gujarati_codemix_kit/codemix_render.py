@@ -15,7 +15,7 @@ class CodeMixAnalysis:
     Product-facing analysis of CodeMix rendering.
 
     Canonical output format for this kit is the `codemix` string:
-    Gujarati stays Gujarati script; English stays Latin; Gujlish tokens are transliterated when possible.
+    native-script tokens stay native, English stays Latin, and romanized tokens are transliterated when possible.
     """
 
     raw: str
@@ -110,7 +110,7 @@ def analyze_codemix(
     Analyze + render CodeMix in one pass.
 
     The primary "success metric" is `pct_gu_roman_transliterated`, i.e. the estimated fraction of
-    Gujarati-roman (Gujlish) tokens that were converted into Gujarati script.
+    Gujarati-roman tokens that were converted into native script.
     """
     cfg = CodeMixConfig(
         topk=topk,
@@ -156,11 +156,11 @@ def render_codemix(
     allow_remote_models: bool = False,
 ) -> str:
     """
-    Convert mixed Gujarati/English text into a stable code-mix representation:
+    Convert mixed vernacular/English text into a stable code-mix representation:
 
-    - Gujarati stays in Gujarati script
+    - Native-script tokens stay in native script
     - English stays in Latin
-    - Romanized Gujarati tokens are transliterated to Gujarati script if possible
+    - Romanized tokens are transliterated to native script when possible
     """
     cfg = CodeMixConfig(
         topk=topk,

@@ -5,14 +5,14 @@
  [project]
  name = "gujarati-codemix-kit"
 version = "1.0.0"
- description = "Gujarati-English code-mix + romanized Gujarati normalization toolkit (SDK + CLI + demo)."
+description = "Open-source Indian vernacular AI text normalization toolkit (Sarvam-first, globally extensible)."
  readme = "README.md"
  requires-python = ">=3.10"
  license = { file = "LICENSE" }
  authors = [
    { name = "Sudhir Gadhvi" },
  ]
- keywords = ["gujarati", "indic", "codemix", "transliteration", "normalization", "sarvam"]
+keywords = ["vernacular", "indian-languages", "indic", "codemix", "transliteration", "normalization"]
  classifiers = [
    "Development Status :: 3 - Alpha",
    "Intended Audience :: Developers",
@@ -38,7 +38,7 @@ version = "1.0.0"
    "joblib>=1.4.2",
  ]
  
- # Gujarati normalization + transliteration (recommended for most use cases).
+# Indic-script normalization + transliteration (recommended for most use cases).
  indic = [
    "indic-nlp-library>=0.92",
    # A lightweight, pure-Python transliteration fallback (ITRANS-style).
@@ -84,7 +84,7 @@ dialect-ml = [
   "sentencepiece",
 ]
  
- # Sarvam API integration (demo/app only).
+ # Current hosted-provider integration (Sarvam) for demo/app flows.
  sarvam = [
    "sarvamai>=0.1.0",
    "python-dotenv>=1.0.1",

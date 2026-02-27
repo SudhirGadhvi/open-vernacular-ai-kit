@@ -27,6 +27,14 @@ gck codemix "maru business plan ready chhe!!!"
 # -> મારું business plan ready છે!!
 ```
 
+## What We Solve
+
+This project is a production-oriented normalization layer for India-focused AI applications.
+It cleans noisy mixed-script chat text before downstream LLM, retrieval, and support workflows.
+
+- Product positioning + competitor matrix: `docs/what-we-solve.md`
+- North-star metrics definitions and measurement method: `docs/north-star-metrics.md`
+
 ## Hard Cases (WhatsApp-Style)
 
 Canonical output format (Gujarati-first profile):
@@ -62,6 +70,22 @@ Example result from one local run (topk=1, max_rows=2000):
 - Split `xnli`: `pct_has_gujarati_codemix` ~= `0.956`
 
 See `docs/benchmarks.md` for details.
+
+## North-Star Baseline Snapshot (Current Release)
+
+Generate the snapshot:
+
+```bash
+python3 scripts/snapshot_north_star_metrics.py --output docs/data/north_star_metrics_snapshot.json --iterations 200
+```
+
+Current snapshot (`2026-02-27T19:23:14Z`):
+
+| Metric | Value | Notes |
+| --- | --- | --- |
+| `transliteration_success` | `1.000` | Golden transliteration accuracy (`17/17`; backend=`none`) |
+| `dialect_accuracy` | `0.833` | Heuristic dialect-id accuracy (`5/6`) |
+| `p95_latency_ms` | `0.174` | Pipeline p95 latency in ms (`iterations=200`, `n_calls=1200`) |
 
 ## Indian Language Coverage (This Release)
 

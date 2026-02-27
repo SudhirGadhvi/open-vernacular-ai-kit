@@ -70,28 +70,28 @@ Indian languages are planned next and open for community PRs.
 
 | Language | Ready | Partially Ready | Planned (PR welcome) |
 | --- | --- | --- | --- |
-| Assamese | [ ] | [ ] | [x] |
-| Bengali | [ ] | [ ] | [x] |
-| Bodo | [ ] | [ ] | [x] |
-| Dogri | [ ] | [ ] | [x] |
-| Gujarati | [x] | [ ] | [ ] |
-| Hindi | [ ] | [ ] | [x] |
-| Kannada | [ ] | [ ] | [x] |
-| Kashmiri | [ ] | [ ] | [x] |
-| Konkani | [ ] | [ ] | [x] |
-| Maithili | [ ] | [ ] | [x] |
-| Malayalam | [ ] | [ ] | [x] |
-| Manipuri | [ ] | [ ] | [x] |
-| Marathi | [ ] | [ ] | [x] |
-| Nepali | [ ] | [ ] | [x] |
-| Odia | [ ] | [ ] | [x] |
-| Punjabi | [ ] | [ ] | [x] |
-| Sanskrit | [ ] | [ ] | [x] |
-| Santali | [ ] | [ ] | [x] |
-| Sindhi | [ ] | [ ] | [x] |
-| Tamil | [ ] | [ ] | [x] |
-| Telugu | [ ] | [ ] | [x] |
-| Urdu | [ ] | [ ] | [x] |
+| Assamese | ⬜ | ⬜ | ✅ |
+| Bengali | ⬜ | ⬜ | ✅ |
+| Bodo | ⬜ | ⬜ | ✅ |
+| Dogri | ⬜ | ⬜ | ✅ |
+| Gujarati | ✅ | ⬜ | ⬜ |
+| Hindi | ⬜ | ⬜ | ✅ |
+| Kannada | ⬜ | ⬜ | ✅ |
+| Kashmiri | ⬜ | ⬜ | ✅ |
+| Konkani | ⬜ | ⬜ | ✅ |
+| Maithili | ⬜ | ⬜ | ✅ |
+| Malayalam | ⬜ | ⬜ | ✅ |
+| Manipuri | ⬜ | ⬜ | ✅ |
+| Marathi | ⬜ | ⬜ | ✅ |
+| Nepali | ⬜ | ⬜ | ✅ |
+| Odia | ⬜ | ⬜ | ✅ |
+| Punjabi | ⬜ | ⬜ | ✅ |
+| Sanskrit | ⬜ | ⬜ | ✅ |
+| Santali | ⬜ | ⬜ | ✅ |
+| Sindhi | ⬜ | ⬜ | ✅ |
+| Tamil | ⬜ | ⬜ | ✅ |
+| Telugu | ⬜ | ⬜ | ✅ |
+| Urdu | ⬜ | ⬜ | ✅ |
 
 ## Contribute
 
@@ -169,11 +169,73 @@ gck eval --dataset dialect_normalization
 
  ## Demo (Streamlit)
  
+### Run On Localhost
+
+1. Create and activate a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+```
+
+2. Install demo dependencies:
+
+```bash
+pip install -e ".[demo,indic]"
+```
+
+3. Start the demo server:
+
+```bash
+.venv/bin/streamlit run demo/streamlit_app.py
+```
+
+4. Open in browser:
+
+```text
+http://localhost:8501
+```
+
+Optional (enable Sarvam AI comparison in the UI):
+
+```bash
+pip install -e ".[sarvam]"
+export SARVAM_API_KEY="your_key_here"
+```
+
+Then restart:
+
  ```bash
  streamlit run demo/streamlit_app.py
  ```
  
  If you export `SARVAM_API_KEY`, the demo can optionally call Sarvam APIs.
+
+### Troubleshooting (Local Demo)
+
+- **`streamlit: command not found`**
+  - Run with virtualenv binary:
+  ```bash
+  .venv/bin/streamlit run demo/streamlit_app.py
+  ```
+
+- **Port `8501` already in use**
+  - Start on a different port:
+  ```bash
+  .venv/bin/streamlit run demo/streamlit_app.py --server.port 8502
+  ```
+  - Then open `http://localhost:8502`.
+
+- **Import/dependency errors in demo**
+  - Reinstall required extras:
+  ```bash
+  pip install -e ".[demo,indic]"
+  ```
+  - For Sarvam features:
+  ```bash
+  pip install -e ".[sarvam]"
+  ```
 
 ### Demo Screenshots
 

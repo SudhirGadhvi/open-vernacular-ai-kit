@@ -15,6 +15,7 @@ python3 -m venv .venv
 - `fasttext`: optional fastText LID fallback
 - `lexicon`: YAML support for user lexicons
 - `dialect-ml`: Transformers backends for dialect utilities (optional)
+- `api`: FastAPI + uvicorn service wrapper
 - `eval`: eval harness dependencies
 - `demo`: Streamlit demo
 - `rag`: requests-based dataset download helpers
@@ -24,6 +25,5 @@ python3 -m venv .venv
 Example (full local dev):
 
 ```bash
-.venv/bin/pip install -e ".[indic,ml,fasttext,lexicon,dialect-ml,eval,demo,rag,rag-embeddings,docs,dev]"
+.venv/bin/pip install -e ".[api,indic,ml,fasttext,lexicon,dialect-ml,eval,demo,rag,rag-embeddings,docs,dev]"
 ```
-

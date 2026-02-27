@@ -16,6 +16,8 @@ Quick links:
 - What we solve: `docs/what-we-solve.md`
 - Install: `docs/install.md`
 - CLI: `docs/cli.md`
+- API Service: `docs/api-service.md`
+- Deploy: `docs/deploy.md`
 - SDK: `docs/sdk.md`
 - North-star metrics: `docs/north-star-metrics.md`
 - Cookbook: `docs/cookbook/`

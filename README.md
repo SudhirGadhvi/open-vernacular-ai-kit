@@ -99,6 +99,20 @@ This release focuses on Indian languages and Sarvam-first hosted API flows.
 If you want to help expand global language coverage or add provider adapters (OpenAI, Claude, etc.),
 open a GitHub issue or submit a PR.
 
+## Open-Source Governance
+
+This repository now includes a full public OSS governance baseline:
+
+- Contribution workflow: `CONTRIBUTING.md`
+- Security reporting policy: `SECURITY.md`
+- Community behavior policy: `CODE_OF_CONDUCT.md`
+- Support channels: `SUPPORT.md`
+- Ownership/review routing: `.github/CODEOWNERS`
+- PR and issue intake templates: `.github/pull_request_template.md`, `.github/ISSUE_TEMPLATE/`
+- Dependency update automation: `.github/dependabot.yml`
+- Release and RC process: `RELEASE.md`
+- Maintainer model and merge policy: `GOVERNANCE.md`
+
 ## Repository Rename Notes
 
 Repository target name for this release: `open-vernacular-ai-kit`.

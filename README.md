@@ -99,7 +99,7 @@ Indian languages are planned next and open for community PRs.
 | Bodo | ⬜ | ⬜ | ✅ |
 | Dogri | ⬜ | ⬜ | ✅ |
 | Gujarati | ✅ | ⬜ | ⬜ |
-| Hindi | ⬜ | ⬜ | ✅ |
+| Hindi | ⬜ | ✅ | ✅ |
 | Kannada | ⬜ | ⬜ | ✅ |
 | Kashmiri | ⬜ | ⬜ | ✅ |
 | Konkani | ⬜ | ⬜ | ✅ |
@@ -176,9 +176,15 @@ python3 -m venv .venv
  
 Render clean code-mix (native-script tokens preserved, English preserved):
  
- ```bash
- gck codemix "maru business plan ready chhe!!!"
- ```
+```bash
+gck codemix "maru business plan ready chhe!!!"
+```
+
+Hindi beta language profile:
+
+```bash
+gck codemix --language hi "mera naam Sudhir hai"
+```
  
 Canonical output format (Gujarati-first profile):
 

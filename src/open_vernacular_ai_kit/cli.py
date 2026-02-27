@@ -32,6 +32,9 @@ def normalize(
 @app.command()
 def codemix(
     text: str = typer.Argument(..., help="Input text (may include romanized vernacular text)."),
+    language: str = typer.Option(
+        "gu", help="Target language profile: gu (stable), hi (beta)."
+    ),
     topk: int = typer.Option(1, help="Top-K transliteration candidates to consider."),
     numerals: str = typer.Option("keep", help="Numerals: keep (native digits) or ascii."),
     translit_mode: str = typer.Option(
@@ -63,6 +66,7 @@ def codemix(
 ) -> None:
     """Render a clean vernacular-English code-mix string."""
     cfg = CodeMixConfig(
+        language=language,  # type: ignore[arg-type]
         topk=topk,
         numerals=numerals,  # type: ignore[arg-type]
         translit_mode=translit_mode,  # type: ignore[arg-type]
@@ -79,6 +83,7 @@ def codemix(
         sys.stderr.write(
             json.dumps(
                 {
+                    "language": a.language,
                     "transliteration_backend": a.transliteration_backend,
                     "n_tokens": a.n_tokens,
                     "n_gu_roman_tokens": a.n_gu_roman_tokens,
@@ -123,6 +128,10 @@ def eval(
         None, help="Write a JSON report to this path (directories auto-created)."
     ),
     topk: int = typer.Option(1, help="Top-K transliteration candidates (gujlish/golden_translit)."),
+    language: str = typer.Option(
+        "gu",
+        help="Target language for language-aware evals: gu, hi, or all (golden_translit only).",
+    ),
     max_rows: Optional[int] = typer.Option(
         2000, help="Max rows per split (gujlish). Use 0 for no limit."
     ),
@@ -193,6 +202,7 @@ def eval(
     try:
         result = run_eval(
             dataset=dataset,
+            language=language,
             topk=topk,
             max_rows=max_rows,
             translit_mode=translit_mode,

@@ -35,6 +35,13 @@ It cleans noisy mixed-script chat text before downstream LLM, retrieval, and sup
 - Product positioning + landscape matrix: `docs/what-we-solve.md`
 - North-star metrics definitions and measurement method: `docs/north-star-metrics.md`
 
+## Developer Adoption Assets
+
+- Integration snippets (OpenAI, LangChain, RAG): `docs/cookbook/integrations.md`
+- Batch CLI recipes (support + ecommerce): `docs/cookbook/batch-cli-recipes.md`
+- Before/after LLM uplift notebook: `notebooks/before_after_llm_output.ipynb`
+- Notebook dataset: `docs/data/llm_uplift_examples.jsonl`
+
 ## Hard Cases (WhatsApp-Style)
 
 Canonical output format (Gujarati-first profile):

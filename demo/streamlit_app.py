@@ -7,11 +7,14 @@ import json
 import os
 import sys
 import tempfile
-from dataclasses import asdict
+from dataclasses import asdict, is_dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
+from urllib import error as urllib_error
+from urllib import request as urllib_request
 
 import streamlit as st
 
@@ -320,11 +323,101 @@ def _jsonable(x: Any) -> Any:
 
     if isinstance(x, Enum):
         return x.value
+    if is_dataclass(x):
+        return _jsonable(asdict(x))
     if isinstance(x, dict):
         return {str(k): _jsonable(v) for k, v in x.items()}
     if isinstance(x, (list, tuple)):
         return [_jsonable(v) for v in x]
+    if hasattr(x, "__dict__"):
+        return _jsonable(vars(x))
     return x
+
+
+def _to_namespace(x: Any) -> Any:
+    if isinstance(x, dict):
+        return SimpleNamespace(**{str(k): _to_namespace(v) for k, v in x.items()})
+    if isinstance(x, list):
+        return [_to_namespace(v) for v in x]
+    return x
+
+
+def _dialect_label(d: Any) -> str:
+    if d is None:
+        return "unknown"
+    raw = getattr(d, "dialect", None)
+    if raw is None:
+        return "unknown"
+    v = getattr(raw, "value", raw)
+    return str(v or "unknown")
+
+
+def _api_get_json(base_url: str, path: str, *, timeout_s: float) -> dict[str, Any]:
+    url = f"{(base_url or '').rstrip('/')}{path}"
+    req = urllib_request.Request(url=url, method="GET")
+    try:
+        with urllib_request.urlopen(req, timeout=float(timeout_s)) as resp:
+            data = resp.read().decode("utf-8", errors="replace")
+    except urllib_error.URLError as e:
+        raise RuntimeError(f"API GET failed: {url} ({e})") from e
+    try:
+        obj = json.loads(data)
+    except Exception as e:
+        raise RuntimeError(f"API GET returned invalid JSON: {url}") from e
+    if not isinstance(obj, dict):
+        raise RuntimeError(f"API GET returned non-object JSON: {url}")
+    return obj
+
+
+def _api_post_json(
+    base_url: str, path: str, payload: dict[str, Any], *, timeout_s: float
+) -> dict[str, Any]:
+    url = f"{(base_url or '').rstrip('/')}{path}"
+    body = json.dumps(payload, ensure_ascii=True).encode("utf-8")
+    req = urllib_request.Request(
+        url=url,
+        data=body,
+        method="POST",
+        headers={"content-type": "application/json"},
+    )
+    try:
+        with urllib_request.urlopen(req, timeout=float(timeout_s)) as resp:
+            data = resp.read().decode("utf-8", errors="replace")
+    except urllib_error.HTTPError as e:
+        detail = ""
+        try:
+            detail = e.read().decode("utf-8", errors="replace")
+        except Exception:
+            detail = str(e)
+        raise RuntimeError(f"API POST failed: {url} ({detail})") from e
+    except urllib_error.URLError as e:
+        raise RuntimeError(f"API POST failed: {url} ({e})") from e
+    try:
+        obj = json.loads(data)
+    except Exception as e:
+        raise RuntimeError(f"API POST returned invalid JSON: {url}") from e
+    if not isinstance(obj, dict):
+        raise RuntimeError(f"API POST returned non-object JSON: {url}")
+    return obj
+
+
+def _analyze_via_api(
+    *,
+    text: str,
+    config: dict[str, Any],
+    api_base_url: str,
+    api_timeout_s: float,
+) -> object:
+    payload = {
+        "schema_version": 1,
+        "text": text or "",
+        "config": config,
+    }
+    obj = _api_post_json(api_base_url, "/analyze", payload, timeout_s=api_timeout_s)
+    data = obj.get("analysis")
+    if not isinstance(data, dict):
+        raise RuntimeError("API /analyze response missing 'analysis' object")
+    return _to_namespace(data)
 
 
 def _examples() -> dict[str, str]:
@@ -515,6 +608,37 @@ def main() -> None:
     st.divider()
 
     with st.expander("Settings", expanded=False):
+        st.markdown("### Runtime mode")
+        runtime_mode = st.selectbox(
+            "Execution mode",
+            options=["SDK (in-process)", "API service"],
+            index=0,
+            help=(
+                "SDK mode runs local Python functions directly. API mode calls a running "
+                "FastAPI service (`/normalize`, `/codemix`, `/analyze`)."
+            ),
+        )
+        if runtime_mode == "API service":
+            r1, r2 = st.columns(2)
+            with r1:
+                api_base_url = st.text_input(
+                    "API base URL",
+                    value=os.environ.get("OVAK_API_BASE_URL", "http://localhost:8000"),
+                ).strip()
+            with r2:
+                api_timeout_s = float(
+                    st.number_input(
+                        "API timeout (seconds)",
+                        min_value=0.5,
+                        max_value=30.0,
+                        value=3.0,
+                        step=0.5,
+                    )
+                )
+        else:
+            api_base_url = ""
+            api_timeout_s = 3.0
+
         s1, s2 = st.columns(2)
         with s1:
             topk = st.number_input("Transliteration top-k", min_value=1, max_value=5, value=1, step=1)
@@ -674,6 +798,19 @@ def main() -> None:
             pass
 
     st.markdown("## Live Demo", help="Paste a message, then click Analyze.")
+    if runtime_mode == "API service":
+        health = st.session_state.get("gck_api_last_health")
+        if isinstance(health, dict):
+            if bool(health.get("ok")):
+                st.caption(f"Runtime: API service ({api_base_url})")
+            else:
+                st.caption(
+                    f"Runtime: SDK fallback (API unavailable: {str(health.get('detail', 'unknown'))})"
+                )
+        else:
+            st.caption(f"Runtime: API service ({api_base_url})")
+    else:
+        st.caption("Runtime: SDK (in-process)")
 
     ex = _examples()
     ex_names = list(ex.keys())
@@ -742,26 +879,56 @@ def main() -> None:
             or None,
             "allow_remote_models": bool(allow_remote_models),
         }
-        try:
-            supported = set(inspect.signature(analyze_codemix).parameters.keys())
-            filtered = {k: v for k, v in desired_kwargs.items() if k in supported}
-            dropped = sorted(set(desired_kwargs.keys()) - set(filtered.keys()))
-            if dropped:
-                st.warning(
-                    "Some v0.3 demo options aren't supported by the imported SDK. "
-                    f"Ignoring: {', '.join(dropped)}. "
-                    "If you're running from the repo, restart Streamlit to pick up latest code."
+        runtime_used = "sdk"
+        api_error: str | None = None
+        if runtime_mode == "API service":
+            try:
+                h = _api_get_json(api_base_url, "/healthz", timeout_s=api_timeout_s)
+                if not bool(h.get("ok", False)):
+                    raise RuntimeError("health check returned ok=false")
+                st.session_state["gck_api_last_health"] = {
+                    "ok": True,
+                    "checked_at": _utc_now_iso(),
+                }
+                st.session_state["gck_last_analysis"] = _analyze_via_api(
+                    text=msg_to_analyze,
+                    config=desired_kwargs,
+                    api_base_url=api_base_url,
+                    api_timeout_s=api_timeout_s,
                 )
-            st.session_state["gck_last_analysis"] = analyze_codemix(msg_to_analyze, **filtered)
-        except TypeError as e:
-            st.warning(
-                "SDK/demo mismatch while calling analyze_codemix(). "
-                "Restart Streamlit (and ensure editable install / local src is used). "
-                f"Error: {e}"
-            )
-            st.session_state["gck_last_analysis"] = analyze_codemix(
-                msg_to_analyze, topk=topk, numerals=numerals
-            )
+                runtime_used = "api"
+            except Exception as e:
+                api_error = str(e)
+                st.session_state["gck_api_last_health"] = {
+                    "ok": False,
+                    "detail": api_error,
+                    "checked_at": _utc_now_iso(),
+                }
+
+        if runtime_used != "api":
+            if api_error:
+                st.warning(f"API mode unavailable; using SDK fallback. Error: {api_error}")
+            try:
+                supported = set(inspect.signature(analyze_codemix).parameters.keys())
+                filtered = {k: v for k, v in desired_kwargs.items() if k in supported}
+                dropped = sorted(set(desired_kwargs.keys()) - set(filtered.keys()))
+                if dropped:
+                    st.warning(
+                        "Some v0.3 demo options aren't supported by the imported SDK. "
+                        f"Ignoring: {', '.join(dropped)}. "
+                        "If you're running from the repo, restart Streamlit to pick up latest code."
+                    )
+                st.session_state["gck_last_analysis"] = analyze_codemix(msg_to_analyze, **filtered)
+            except TypeError as e:
+                st.warning(
+                    "SDK/demo mismatch while calling analyze_codemix(). "
+                    "Restart Streamlit (and ensure editable install / local src is used). "
+                    f"Error: {e}"
+                )
+                st.session_state["gck_last_analysis"] = analyze_codemix(
+                    msg_to_analyze, topk=topk, numerals=numerals
+                )
+        st.session_state["gck_last_runtime_mode"] = runtime_used
 
     a = st.session_state["gck_last_analysis"]
 
@@ -810,7 +977,7 @@ def main() -> None:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("CMI", f"{cs.cmi:.1f}")
     c2.metric("Switch points", cs.n_switch_points)
-    c3.metric("Dialect", d.dialect.value)
+    c3.metric("Dialect", _dialect_label(d))
     c4.metric("Dialect confidence", f"{getattr(d, 'confidence', 0.0):.2f}")
 
     st.markdown("## What Changed")
@@ -864,7 +1031,7 @@ def main() -> None:
                 {"Metric": "Native-script tokens", "Value": int(cs.n_gu_tokens)},
                 {"Metric": "English tokens", "Value": int(cs.n_en_tokens)},
                 {"Metric": "Lexical tokens considered", "Value": int(cs.n_tokens_considered)},
-                {"Metric": "Dialect guess", "Value": d.dialect.value},
+                {"Metric": "Dialect guess", "Value": _dialect_label(d)},
                 {"Metric": "Dialect backend", "Value": getattr(d, "backend", "heuristic")},
                 {"Metric": "Dialect confidence", "Value": round(float(getattr(d, "confidence", 0.0)), 3)},
                 {"Metric": "Dialect normalized", "Value": dialect_norm_applied},
@@ -1293,10 +1460,12 @@ def main() -> None:
     st.divider()
 
     st.markdown("## Export")
+    analysis_payload = _jsonable(a)
     export_payload = {
         "created_at": _utc_now_iso(),
         "gck_version": gck_version,
-        "analysis": _jsonable(asdict(a)),
+        "runtime_mode": st.session_state.get("gck_last_runtime_mode", "sdk"),
+        "analysis": analysis_payload,
         "rag": st.session_state.get("gck_last_rag"),
         "sarvam_compare": compare,
     }
@@ -1312,4 +1481,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

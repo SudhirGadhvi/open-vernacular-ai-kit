@@ -9,9 +9,15 @@ from typing import Iterable, Optional
 
 import regex as re
 
+from .language_packs import get_language_pack
+
 
 class TokenLang(str, Enum):
     EN = "en"
+    # Canonical members used by language-pack aware code.
+    TARGET_NATIVE = "gu_native"
+    TARGET_ROMAN = "gu_roman"
+    # Backward-compatible aliases retained for existing integrations.
     GU_NATIVE = "gu_native"
     GU_ROMAN = "gu_roman"
     OTHER = "other"
@@ -25,7 +31,6 @@ class Token:
     reason: str = ""
 
 
-_GUJARATI_CHAR_RE = re.compile(r"[\p{Gujarati}]")
 _LATIN_CHAR_RE = re.compile(r"[\p{Latin}]")
 _LATIN_ONLY_RE = re.compile(r"[^\p{Latin}]+", flags=re.VERSION1)
 
@@ -35,40 +40,13 @@ _TOKEN_RE = re.compile(
     flags=re.VERSION1,
 )
 
-_COMMON_GU_ROMAN = {
-    # Very common Gujlish tokens that don't contain distinctive clusters.
-    "hu",
-    "tu",
-    "tame",
-    "ame",
-    "maru",
-    "mare",
-    "taro",
-    "tari",
-    "tamaro",
-    "tamari",
-    "chhe",
-    "che",
-    "nathi",
-    "hato",
-    "hati",
-    "hase",
-    "shu",
-    "su",
-    "kem",
-    "kya",
-    "kyare",
-    "aaje",
-    "kaale",
-}
-
-
 def tokenize(text: str) -> list[str]:
     return [m.group(0) for m in _TOKEN_RE.finditer(text)]
 
 
-def _is_gujarati_script(token: str) -> bool:
-    return bool(_GUJARATI_CHAR_RE.search(token))
+def _is_native_script(token: str, *, language: str) -> bool:
+    pack = get_language_pack(language)
+    return bool(pack.native_script_re.search(token))
 
 
 def _is_latin(token: str) -> bool:
@@ -102,36 +80,19 @@ def _looks_like_english(token: str) -> bool:
     }
 
 
-def _looks_like_gujarati_roman(token: str) -> bool:
+def _looks_like_target_roman(token: str, *, language: str) -> bool:
     """
-    Fast heuristic for Gujarati romanization (Gujlish).
+    Fast heuristic for romanized target-language text.
 
     Not perfect; the ML classifier (if present) should override this.
     """
+    pack = get_language_pack(language)
     t = token.lower()
     if len(t) <= 2:
-        return t in _COMMON_GU_ROMAN
-    if t in _COMMON_GU_ROMAN:
+        return t in pack.common_roman_tokens
+    if t in pack.common_roman_tokens:
         return True
-    clusters = (
-        "aa",
-        "ee",
-        "oo",
-        "ai",
-        "au",
-        "kh",
-        "gh",
-        "ch",
-        "chh",
-        "jh",
-        "th",
-        "dh",
-        "ph",
-        "bh",
-        "sh",
-        "gn",
-    )
-    return any(c in t for c in clusters)
+    return any(c in t for c in pack.roman_clusters)
 
 
 def _model_path() -> Path:
@@ -262,6 +223,7 @@ def _fasttext_predict_language(token: str, *, model_path: Optional[str]) -> Opti
 def analyze_token(
     token: str,
     *,
+    language: str = "gu",
     lexicon_keys: Optional[set[str]] = None,
     fasttext_model_path: Optional[str] = None,
 ) -> Token:
@@ -270,11 +232,17 @@ def analyze_token(
 
     Reasons are intentionally stable strings since they can be surfaced in logs/analysis.
     """
+    pack = get_language_pack(language)
     if not token:
         return Token(text=token, lang=TokenLang.OTHER, confidence=1.0, reason="empty")
 
-    if _is_gujarati_script(token):
-        return Token(text=token, lang=TokenLang.GU_NATIVE, confidence=1.0, reason="gujarati_script")
+    if _is_native_script(token, language=pack.code):
+        return Token(
+            text=token,
+            lang=TokenLang.TARGET_NATIVE,
+            confidence=1.0,
+            reason=f"{pack.code}_script",
+        )
 
     if not _is_latin(token):
         # Includes digits and punctuation and other scripts.
@@ -285,26 +253,32 @@ def analyze_token(
     t_lower = token.lower()
     norm = _normalize_latin_key(token)
     if lexicon_keys and norm in lexicon_keys:
-        return Token(text=token, lang=TokenLang.GU_ROMAN, confidence=0.98, reason="user_lexicon")
+        return Token(text=token, lang=TokenLang.TARGET_ROMAN, confidence=0.98, reason="user_lexicon")
 
-    if t_lower in _COMMON_GU_ROMAN:
-        return Token(text=token, lang=TokenLang.GU_ROMAN, confidence=0.95, reason="common_gujlish")
-
-    # If present, the sklearn model is the strongest signal for Gujlish vs English.
-    p_gu = _latin_predict_proba_is_gu_roman(token)
-    if p_gu is not None:
-        if p_gu >= 0.5:
-            return Token(text=token, lang=TokenLang.GU_ROMAN, confidence=p_gu, reason="ml_latin_lid")
-        return Token(text=token, lang=TokenLang.EN, confidence=1.0 - p_gu, reason="ml_latin_lid")
-
-    ml = _latin_predict_is_gu_roman(token)
-    if ml is not None:
+    if t_lower in pack.common_roman_tokens:
         return Token(
             text=token,
-            lang=TokenLang.GU_ROMAN if ml else TokenLang.EN,
-            confidence=0.7,
-            reason="ml_latin_lid_no_proba",
+            lang=TokenLang.TARGET_ROMAN,
+            confidence=0.95,
+            reason=f"common_{pack.code}_roman",
         )
+
+    if pack.code == "gu":
+        # Existing sklearn model is trained for Gujlish-vs-English only.
+        p_gu = _latin_predict_proba_is_gu_roman(token)
+        if p_gu is not None:
+            if p_gu >= 0.5:
+                return Token(text=token, lang=TokenLang.TARGET_ROMAN, confidence=p_gu, reason="ml_latin_lid")
+            return Token(text=token, lang=TokenLang.EN, confidence=1.0 - p_gu, reason="ml_latin_lid")
+
+        ml = _latin_predict_is_gu_roman(token)
+        if ml is not None:
+            return Token(
+                text=token,
+                lang=TokenLang.TARGET_ROMAN if ml else TokenLang.EN,
+                confidence=0.7,
+                reason="ml_latin_lid_no_proba",
+            )
 
     # Optional fastText: use as a *fallback* signal (primarily to confidently identify English).
     ft = _fasttext_predict_language(token, model_path=fasttext_model_path)
@@ -315,23 +289,34 @@ def analyze_token(
 
     if _looks_like_english(token):
         return Token(text=token, lang=TokenLang.EN, confidence=0.8, reason="english_function_word")
-    if _looks_like_gujarati_roman(token):
-        return Token(text=token, lang=TokenLang.GU_ROMAN, confidence=0.6, reason="gujlish_clusters")
+    if _looks_like_target_roman(token, language=pack.code):
+        return Token(
+            text=token,
+            lang=TokenLang.TARGET_ROMAN,
+            confidence=0.6,
+            reason=f"{pack.code}_roman_clusters",
+        )
     return Token(text=token, lang=TokenLang.EN, confidence=0.5, reason="default_en")
 
 
-def detect_token_lang(token: str) -> TokenLang:
-    return analyze_token(token).lang
+def detect_token_lang(token: str, *, language: str = "gu") -> TokenLang:
+    return analyze_token(token, language=language).lang
 
 
 def tag_tokens(
     tokens: Iterable[str],
     *,
+    language: str = "gu",
     lexicon_keys: Optional[set[str]] = None,
     fasttext_model_path: Optional[str] = None,
 ) -> list[Token]:
     return [
-        analyze_token(t, lexicon_keys=lexicon_keys, fasttext_model_path=fasttext_model_path)
+        analyze_token(
+            t,
+            language=language,
+            lexicon_keys=lexicon_keys,
+            fasttext_model_path=fasttext_model_path,
+        )
         for t in tokens
     ]
  

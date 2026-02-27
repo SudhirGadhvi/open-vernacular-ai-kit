@@ -9,7 +9,7 @@ _CASES: list[tuple[str, str]] = [
     ("hu aaje office ma plan ready chhe!!", "હું આજે office ma plan ready છે!!"),
     ("tame aaje ok chhe?", "તમે આજે ok છે?"),
     ("shu che???", "શું છે??"),
-    ("maru naam Ravi chhe.", "મારું નામ Ravi છે."),
+    ("maru naam Sudhir chhe.", "મારું નામ Sudhir છે."),
     ("naam shu che?", "નામ શું છે?"),
     ("tame kem chhe?", "તમે કેમ છે?"),
     ("hu nathi ready.", "હું નથી ready."),

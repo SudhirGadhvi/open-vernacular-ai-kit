@@ -70,28 +70,28 @@ Indian languages are planned next and open for community PRs.
 
 | Language | Ready | Partially Ready | Planned (PR welcome) |
 | --- | --- | --- | --- |
-| Assamese | [ ] | [ ] | [x] |
-| Bengali | [ ] | [ ] | [x] |
-| Bodo | [ ] | [ ] | [x] |
-| Dogri | [ ] | [ ] | [x] |
-| Gujarati | [x] | [ ] | [ ] |
-| Hindi | [ ] | [ ] | [x] |
-| Kannada | [ ] | [ ] | [x] |
-| Kashmiri | [ ] | [ ] | [x] |
-| Konkani | [ ] | [ ] | [x] |
-| Maithili | [ ] | [ ] | [x] |
-| Malayalam | [ ] | [ ] | [x] |
-| Manipuri | [ ] | [ ] | [x] |
-| Marathi | [ ] | [ ] | [x] |
-| Nepali | [ ] | [ ] | [x] |
-| Odia | [ ] | [ ] | [x] |
-| Punjabi | [ ] | [ ] | [x] |
-| Sanskrit | [ ] | [ ] | [x] |
-| Santali | [ ] | [ ] | [x] |
-| Sindhi | [ ] | [ ] | [x] |
-| Tamil | [ ] | [ ] | [x] |
-| Telugu | [ ] | [ ] | [x] |
-| Urdu | [ ] | [ ] | [x] |
+| Assamese | ⬜ | ⬜ | ✅ |
+| Bengali | ⬜ | ⬜ | ✅ |
+| Bodo | ⬜ | ⬜ | ✅ |
+| Dogri | ⬜ | ⬜ | ✅ |
+| Gujarati | ✅ | ⬜ | ⬜ |
+| Hindi | ⬜ | ⬜ | ✅ |
+| Kannada | ⬜ | ⬜ | ✅ |
+| Kashmiri | ⬜ | ⬜ | ✅ |
+| Konkani | ⬜ | ⬜ | ✅ |
+| Maithili | ⬜ | ⬜ | ✅ |
+| Malayalam | ⬜ | ⬜ | ✅ |
+| Manipuri | ⬜ | ⬜ | ✅ |
+| Marathi | ⬜ | ⬜ | ✅ |
+| Nepali | ⬜ | ⬜ | ✅ |
+| Odia | ⬜ | ⬜ | ✅ |
+| Punjabi | ⬜ | ⬜ | ✅ |
+| Sanskrit | ⬜ | ⬜ | ✅ |
+| Santali | ⬜ | ⬜ | ✅ |
+| Sindhi | ⬜ | ⬜ | ✅ |
+| Tamil | ⬜ | ⬜ | ✅ |
+| Telugu | ⬜ | ⬜ | ✅ |
+| Urdu | ⬜ | ⬜ | ✅ |
 
 ## Contribute
 
@@ -169,11 +169,147 @@ gck eval --dataset dialect_normalization
 
  ## Demo (Streamlit)
  
+### Run On Localhost
+
+1. Create and activate a virtual environment:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -U pip
+```
+
+2. Install demo dependencies:
+
+```bash
+pip install -e ".[demo,indic]"
+```
+
+3. Start the demo server:
+
+```bash
+.venv/bin/streamlit run demo/streamlit_app.py
+```
+
+4. Open in browser:
+
+```text
+http://localhost:8501
+```
+
+Optional (enable Sarvam AI comparison in the UI):
+
+```bash
+pip install -e ".[sarvam]"
+export SARVAM_API_KEY="your_key_here"
+```
+
+Then restart:
+
  ```bash
  streamlit run demo/streamlit_app.py
  ```
  
  If you export `SARVAM_API_KEY`, the demo can optionally call Sarvam APIs.
+
+### Troubleshooting (Local Demo)
+
+- **`streamlit: command not found`**
+  - Run with virtualenv binary:
+  ```bash
+  .venv/bin/streamlit run demo/streamlit_app.py
+  ```
+
+- **Port `8501` already in use**
+  - Start on a different port:
+  ```bash
+  .venv/bin/streamlit run demo/streamlit_app.py --server.port 8502
+  ```
+  - Then open `http://localhost:8502`.
+
+- **Import/dependency errors in demo**
+  - Reinstall required extras:
+  ```bash
+  pip install -e ".[demo,indic]"
+  ```
+  - For Sarvam features:
+  ```bash
+  pip install -e ".[sarvam]"
+  ```
+
+### Demo Screenshots
+
+#### 1) Landing / value overview
+
+![Open Vernacular AI Kit Hero](demo-hero.png)
+
+What this shows:
+- The app focus: normalize mixed vernacular + English text before LLM/search/routing.
+- Product value areas: LLM quality, retrieval quality, and analytics signal cleanup.
+- Starting point before running any analysis.
+
+#### 2) Live analysis (Before -> After)
+
+![Live Analysis Before and After](demo-analysis.png)
+
+What this shows:
+- A raw romanized message in **Before**.
+- Canonicalized output in **After** with native-script conversions.
+- Conversion metrics (romanized tokens, converted count, conversion rate, backend).
+- Token-level changes table to inspect exactly what was transformed.
+
+#### 3) RAG section
+
+![RAG Mini-KB Section](demo-rag.png)
+
+What this shows:
+- The India-focused mini-KB retrieval panel.
+- Query input, preprocessing toggle, embeddings mode, and top-k controls.
+- A quick way to test retrieval quality on canonicalized inputs.
+
+#### 4) Settings panel (expanded)
+
+![Settings Panel Expanded](demo-settings.png)
+
+What this shows:
+- Full runtime controls for transliteration, numerals, backends, and model options.
+- Sarvam comparison toggles and advanced dialect-related settings.
+- The main place to configure behavior before running analysis.
+
+#### 5) Token LID panel (expanded)
+
+![Token LID Expanded](demo-token-lid.png)
+
+What this shows:
+- Token-by-token language tags and confidence scores.
+- Why each token was classified as native script, romanized, English, or other.
+- Useful for debugging lexicon rules and transliteration decisions.
+
+#### 6) Code-switching + dialect panel (expanded)
+
+![Code Switching and Dialect Expanded](demo-codeswitch-dialect.png)
+
+What this shows:
+- CMI/switch-point metrics for mixed-language inputs.
+- Detected dialect label and confidence.
+- Quick diagnostics to understand how mixed or dialect-heavy an input is.
+
+#### 7) Batch helpers panel (expanded)
+
+![Batch Helpers Expanded](demo-batch-helpers.png)
+
+What this shows:
+- CSV and JSONL upload flows for bulk preprocessing.
+- Download-ready processed outputs for production pipelines.
+- The easiest way to run large input sets through the same normalization logic.
+
+### How To Use The Demo
+
+1. Open the app and load an example (or paste your own user message).
+2. Click **Analyze** to produce canonical text and conversion metrics.
+3. Review **Before vs After** and the **What Changed** table.
+4. (Optional) Open **RAG** and run retrieval on the same canonicalized text.
+5. (Optional) Add `SARVAM_API_KEY` to enable model comparison in the AI section.
 
 ## RAG Utilities (v0.5)
 

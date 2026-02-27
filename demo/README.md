@@ -1,13 +1,13 @@
 # Web Demo (Streamlit)
 
-This folder contains a web demo for Gujarati CodeMix Kit.
+This folder contains a web demo for Open Vernacular AI Kit (India-first release).
 
 The demo is designed for non-technical users too:
 
-- Paste a message (WhatsApp-style mixed Gujarati + English, including Gujlish).
+- Paste a message (WhatsApp-style mixed Indian vernacular + English, including romanized text).
 - See "Before vs After" (what a user wrote vs what we send to AI/search).
 - Optionally compare Sarvam-M outputs (requires `SARVAM_API_KEY`).
-- v0.5: try the RAG panel to retrieve from a tiny packaged "Gujarat facts" mini-KB.
+- v0.5: try the RAG panel to retrieve from a tiny packaged India-focused mini-KB.
 
 ## Run locally
 

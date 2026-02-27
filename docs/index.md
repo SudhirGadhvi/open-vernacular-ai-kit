@@ -1,13 +1,14 @@
-# Gujarati CodeMix Kit
+# Open Vernacular AI Kit
 
-`gujarati-codemix-kit` is a small SDK + CLI for cleaning up Gujarati-English code-mixed text,
-especially WhatsApp-style inputs where Gujarati might appear in Gujarati script or Romanized Gujarati
-("Gujlish").
+`gujarati-codemix-kit` is an open-source SDK + CLI for cleaning up Indian vernacular-English
+code-mixed text.
+This release is India-first and Sarvam-first, with global language/provider support planned via
+community PRs in upcoming updates.
 
 Core promise:
 
-- Canonical output format: Gujarati stays Gujarati script; English stays Latin; Gujlish is converted
-  to Gujarati script when possible.
+- Canonical output format: native-script tokens stay in native script; English stays Latin; romanized
+  vernacular text is converted to native script when possible.
 - Offline-first by default: optional ML backends and remote model downloads are opt-in.
 
 Quick links:

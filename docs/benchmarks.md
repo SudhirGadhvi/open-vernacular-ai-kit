@@ -13,13 +13,13 @@ Notes:
 - This is meant for regression tracking, not absolute performance claims.
 - Real-world throughput depends on optional backends (transliteration engines, transformers models, etc).
 
-## Quality / Coverage (Public Gujlish Eval)
+## Quality / Coverage (Gujarati Baseline Eval)
 
-This project also includes a lightweight, reproducible "coverage-style" eval on public Gujlish
-datasets. It answers the question:
+This project also includes a lightweight, reproducible "coverage-style" eval on public Gujarati
+romanization data. It answers the question:
 
-> After `codemix` rendering, how often does the output contain Gujarati script (i.e., did we convert
-> romanized Gujarati tokens into Gujarati)?
+> After `codemix` rendering, how often does the output contain native Gujarati script (i.e., did we
+> convert romanized Gujarati tokens into Gujarati)?
 
 Run:
 
@@ -30,7 +30,7 @@ gck eval --dataset gujlish --report eval/out/report.json
 Key fields in the JSON report:
 
 - `pct_has_gujarati_codemix`: fraction of rows where output contains Gujarati script
-- `pct_gu_roman_tokens_changed_est`: fraction of detected Gujlish tokens that were transliterated
+- `pct_gu_roman_tokens_changed_est`: fraction of detected romanized Gujarati tokens that were transliterated
 
 Important caveat:
 

@@ -1,6 +1,6 @@
 # User Lexicon
 
-If you have specific roman->Gujarati mappings that must be enforced, provide a user lexicon.
+If you have specific roman->native-script mappings that must be enforced, provide a user lexicon.
 
 Example JSON:
 

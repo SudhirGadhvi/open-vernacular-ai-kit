@@ -20,7 +20,7 @@ def _get_sarvam_client(api_key: Optional[str] = None):
         from sarvamai import SarvamAI
     except Exception as e:
         raise OptionalDependencyError(
-            "Sarvam integration requires `sarvamai`. Install with: pip install -e '.[sarvam]'"
+            "Current hosted-provider integration is Sarvam (`sarvamai`). Install with: pip install -e '.[sarvam]'"
         ) from e
 
     key = api_key or os.environ.get("SARVAM_API_KEY")
@@ -41,7 +41,7 @@ def sarvam_translate_text(
     """
     Convenience wrapper around Sarvam translate API.
 
-    For code-mixed Gujarati inputs, `preprocess=True` will normalize + codemix-render
+    For code-mixed Indian-vernacular inputs, `preprocess=True` will normalize + codemix-render
     to improve consistency before translation.
     """
     client = _get_sarvam_client(api_key=api_key)

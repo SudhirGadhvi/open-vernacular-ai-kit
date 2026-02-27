@@ -1,4 +1,4 @@
-"""Gujarati CodeMix Kit.
+"""Open Vernacular AI Kit.
 
 Public API is intentionally small. Prefer using `CodeMixPipeline` + `CodeMixConfig` for SDK usage.
 """
@@ -47,7 +47,13 @@ from .errors import (
 from .normalize import normalize_text
 from .pipeline import CodeMixPipeline, CodeMixPipelineResult
 from .rag import RagDocument, RagIndex, RagQuery, RagSearchResult, make_hf_embedder
-from .rag_datasets import RagDataset, download_gujarat_facts_dataset, load_gujarat_facts_tiny
+from .rag_datasets import (
+    RagDataset,
+    download_gujarat_facts_dataset,
+    download_vernacular_facts_dataset,
+    load_gujarat_facts_tiny,
+    load_vernacular_facts_tiny,
+)
 
 __all__ = [
     "CodeMixConfig",
@@ -91,6 +97,8 @@ __all__ = [
     "RagIndex",
     "make_hf_embedder",
     "RagDataset",
+    "load_vernacular_facts_tiny",
+    "download_vernacular_facts_dataset",
     "load_gujarat_facts_tiny",
     "download_gujarat_facts_dataset",
 ]

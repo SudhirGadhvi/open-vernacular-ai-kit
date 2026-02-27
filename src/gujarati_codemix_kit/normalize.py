@@ -57,7 +57,7 @@ def _try_indic_normalize_gu(text: str) -> str:
 
 def normalize_text(text: str, *, numerals: str = "keep") -> str:
     """
-    Normalize Gujarati/English code-mixed text for downstream models.
+    Normalize vernacular/English code-mixed text for downstream models.
 
     - Unicode NFKC
     - Strip zero-width chars

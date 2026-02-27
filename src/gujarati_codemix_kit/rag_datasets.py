@@ -19,7 +19,7 @@ class RagDataset:
 
 
 def _default_cache_dir() -> Path:
-    return Path.home() / ".cache" / "gujarati-codemix-kit"
+    return Path.home() / ".cache" / "open-vernacular-ai-kit"
 
 
 def _iter_jsonl(path: Path) -> Iterable[dict[str, Any]]:
@@ -63,22 +63,22 @@ def load_rag_queries_jsonl(path: str | Path) -> list[RagQuery]:
     return out
 
 
-def load_gujarat_facts_tiny() -> RagDataset:
+def load_vernacular_facts_tiny() -> RagDataset:
     """
-    Load a tiny curated Gujarat cultural/business snippets dataset (docs + queries).
+    Load a tiny curated India-focused vernacular snippets dataset (docs + queries).
 
     This dataset is shipped *inside* the package as a convenience for:
       - quick-start RAG demos
       - retrieval recall regression tests
 
-    For larger / updated datasets, see `download_gujarat_facts_dataset(...)`.
+    For larger / updated datasets, see `download_vernacular_facts_dataset(...)`.
     """
 
-    docs_path = packaged_data_path("gujarat_facts_tiny_docs.jsonl")
-    queries_path = packaged_data_path("gujarat_facts_tiny_queries.jsonl")
+    docs_path = packaged_data_path("vernacular_facts_tiny_docs.jsonl")
+    queries_path = packaged_data_path("vernacular_facts_tiny_queries.jsonl")
     docs = load_rag_docs_jsonl(docs_path)
     queries = load_rag_queries_jsonl(queries_path)
-    return RagDataset(name="gujarat_facts_tiny", docs=docs, queries=queries, source="packaged")
+    return RagDataset(name="vernacular_facts_tiny", docs=docs, queries=queries, source="packaged")
 
 
 def _download(url: str, dest: Path) -> None:
@@ -100,7 +100,7 @@ def _download(url: str, dest: Path) -> None:
         raise DownloadError(f"Failed to download: {url}") from e
 
 
-def download_gujarat_facts_dataset(
+def download_vernacular_facts_dataset(
     *,
     docs_url: str,
     queries_url: str,
@@ -108,14 +108,14 @@ def download_gujarat_facts_dataset(
     force: bool = False,
 ) -> RagDataset:
     """
-    Download the Gujarat facts dataset JSONLs to a local cache directory.
+    Download a vernacular facts dataset JSONL pair to a local cache directory.
 
     Notes:
       - This is opt-in; the core SDK stays offline-first.
       - URLs are required because the SDK does not assume a canonical hosting location.
     """
 
-    root = (cache_dir or _default_cache_dir()) / "rag-datasets" / "gujarat-facts"
+    root = (cache_dir or _default_cache_dir()) / "rag-datasets" / "vernacular-facts"
     docs_path = root / "docs.jsonl"
     queries_path = root / "queries.jsonl"
     if force:
@@ -133,9 +133,36 @@ def download_gujarat_facts_dataset(
     _download(docs_url, docs_path)
     _download(queries_url, queries_path)
     return RagDataset(
-        name="gujarat_facts_downloaded",
+        name="vernacular_facts_downloaded",
         docs=load_rag_docs_jsonl(docs_path),
         queries=load_rag_queries_jsonl(queries_path),
         source="downloaded",
+    )
+
+
+def load_gujarat_facts_tiny() -> RagDataset:
+    """
+    Backward-compatible alias for `load_vernacular_facts_tiny`.
+    """
+
+    return load_vernacular_facts_tiny()
+
+
+def download_gujarat_facts_dataset(
+    *,
+    docs_url: str,
+    queries_url: str,
+    cache_dir: Optional[Path] = None,
+    force: bool = False,
+) -> RagDataset:
+    """
+    Backward-compatible alias for `download_vernacular_facts_dataset`.
+    """
+
+    return download_vernacular_facts_dataset(
+        docs_url=docs_url,
+        queries_url=queries_url,
+        cache_dir=cache_dir,
+        force=force,
     )
 

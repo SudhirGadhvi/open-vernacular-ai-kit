@@ -13,7 +13,7 @@ Configs serialized to a dict include `schema_version`:
 ## Roundtrip
 
 ```python
-from gujarati_codemix_kit import CodeMixConfig
+from open_vernacular_ai_kit import CodeMixConfig
 
 cfg = CodeMixConfig(translit_mode="sentence", topk=2)
 d = cfg.to_dict()

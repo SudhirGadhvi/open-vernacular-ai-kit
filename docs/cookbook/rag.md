@@ -5,7 +5,7 @@ The SDK includes small, optional RAG helpers intended for tiny curated corpora a
 ## Packaged tiny dataset
 
 ```python
-from gujarati_codemix_kit import RagIndex, load_vernacular_facts_tiny
+from open_vernacular_ai_kit import RagIndex, load_vernacular_facts_tiny
 
 ds = load_vernacular_facts_tiny()
 
@@ -29,7 +29,7 @@ pip install -e ".[rag-embeddings]"
 ```
 
 ```python
-from gujarati_codemix_kit import RagIndex, load_vernacular_facts_tiny, make_hf_embedder
+from open_vernacular_ai_kit import RagIndex, load_vernacular_facts_tiny, make_hf_embedder
 
 ds = load_vernacular_facts_tiny()
 embed = make_hf_embedder(model_id_or_path="/path/to/local/hf/model", allow_remote_models=False)

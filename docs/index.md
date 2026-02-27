@@ -1,6 +1,6 @@
 # Open Vernacular AI Kit
 
-`gujarati-codemix-kit` is an open-source SDK + CLI for cleaning up Indian vernacular-English
+`open-vernacular-ai-kit` is an open-source SDK + CLI for cleaning up Indian vernacular-English
 code-mixed text.
 This release is India-first and Sarvam-first, with global language/provider support planned via
 community PRs in upcoming updates.

@@ -5,7 +5,7 @@ Dialect utilities are offline-first and pluggable.
 Heuristic dialect normalization (rules) gated by confidence:
 
 ```python
-from gujarati_codemix_kit import analyze_codemix
+from open_vernacular_ai_kit import analyze_codemix
 
 a = analyze_codemix(
     "kamaad thaalu rakhje",

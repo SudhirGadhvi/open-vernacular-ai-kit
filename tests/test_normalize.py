@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from gujarati_codemix_kit.normalize import normalize_text
+from open_vernacular_ai_kit.normalize import normalize_text
 
 
 def test_normalize_basic_whitespace_and_punct() -> None:

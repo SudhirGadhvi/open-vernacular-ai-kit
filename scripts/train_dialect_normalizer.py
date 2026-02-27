@@ -3,7 +3,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from gujarati_codemix_kit.dialect_datasets import load_dialect_normalization_jsonl
+from open_vernacular_ai_kit.dialect_datasets import load_dialect_normalization_jsonl
 
 
 def _require_ml() -> None:

@@ -4,7 +4,7 @@ import argparse
 import statistics
 import time
 
-from gujarati_codemix_kit import CodeMixConfig, CodeMixPipeline, render_codemix
+from open_vernacular_ai_kit import CodeMixConfig, CodeMixPipeline, render_codemix
 
 
 def _samples() -> list[str]:
@@ -73,7 +73,7 @@ def _bench_render(n: int) -> dict[str, float]:
 
 
 def main() -> None:
-    p = argparse.ArgumentParser(description="Micro-benchmark for gujarati-codemix-kit.")
+    p = argparse.ArgumentParser(description="Micro-benchmark for open-vernacular-ai-kit.")
     p.add_argument("--n", type=int, default=50, help="Number of benchmark iterations.")
     p.add_argument(
         "--mode",

@@ -13,6 +13,8 @@ nav:
   - What We Solve: what-we-solve.md
   - Install: install.md
   - CLI: cli.md
+  - API Service: api-service.md
+  - Deploy: deploy.md
   - SDK: sdk.md
   - Config Schema: config-schema.md
   - North-Star Metrics: north-star-metrics.md

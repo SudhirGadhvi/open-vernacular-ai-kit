@@ -58,6 +58,8 @@ def collect_doctor_info() -> dict[str, object]:
         "wordfreq": "wordfreq",
         "transformers": "transformers",
         "torch": "torch",
+        "fastapi": "fastapi",
+        "uvicorn": "uvicorn",
         "pytest": "pytest",
         "ruff": "ruff",
     }
@@ -92,4 +94,3 @@ def collect_doctor_info() -> dict[str, object]:
         },
         "packages": packages,
     }
-

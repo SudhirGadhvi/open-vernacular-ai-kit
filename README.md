@@ -16,7 +16,7 @@
  
 The goal is to normalize text *before* sending it to downstream models (Sarvam-M / Mayura /
 Sarvam-Translate), and to provide a reusable open-source foundation for vernacular AI workflows.
-Global language/provider expansion (OpenAI, Claude, and others) is planned and PR-friendly.
+Global language/provider expansion is planned and PR-friendly.
 
 This repo is alpha-quality but SDK-first: the public API centers on `CodeMixConfig` + `CodeMixPipeline`.
 
@@ -32,7 +32,7 @@ gck codemix "maru business plan ready chhe!!!"
 This project is a production-oriented normalization layer for India-focused AI applications.
 It cleans noisy mixed-script chat text before downstream LLM, retrieval, and support workflows.
 
-- Product positioning + competitor matrix: `docs/what-we-solve.md`
+- Product positioning + landscape matrix: `docs/what-we-solve.md`
 - North-star metrics definitions and measurement method: `docs/north-star-metrics.md`
 
 ## Hard Cases (WhatsApp-Style)
@@ -120,7 +120,7 @@ Indian languages are planned next and open for community PRs.
 ## Contribute
 
 This release focuses on Indian languages and Sarvam-first hosted API flows.
-If you want to help expand global language coverage or add provider adapters (OpenAI, Claude, etc.),
+If you want to help expand global language coverage or add provider adapters,
 open a GitHub issue or submit a PR.
 
 ## Open-Source Governance

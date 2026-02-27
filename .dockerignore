@@ -1,0 +1,16 @@
+.git
+.github
+.venv
+.pytest_cache
+.ruff_cache
+.streamlit
+__pycache__
+*.py[cod]
+*.so
+*.log
+.DS_Store
+eval/
+docs/
+demo/
+tests/
+TODO.md

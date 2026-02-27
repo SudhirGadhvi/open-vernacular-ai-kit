@@ -7,6 +7,7 @@ The demo is designed for non-technical users too:
 - Paste a message (WhatsApp-style mixed Indian vernacular + English, including romanized text).
 - See "Before vs After" (what a user wrote vs what we send to AI/search).
 - Optionally compare Sarvam-M outputs (requires `SARVAM_API_KEY`).
+- Choose runtime mode: in-process SDK (default) or API service mode.
 - v0.5: try the RAG panel to retrieve from a tiny packaged India-focused mini-KB.
 
 ## Run locally
@@ -18,6 +19,15 @@ python3 -m venv .venv
 .venv/bin/python -m pip install -U pip
 .venv/bin/pip install -e ".[demo,indic]"
 streamlit run demo/streamlit_app.py
+```
+
+Optional (run demo against API service mode):
+
+```bash
+.venv/bin/pip install -e ".[api,indic,ml,lexicon,demo]"
+uvicorn open_vernacular_ai_kit.api_service:app --host 0.0.0.0 --port 8000
+# In another terminal:
+OVAK_API_BASE_URL=http://localhost:8000 streamlit run demo/streamlit_app.py
 ```
 
 Optional (to enable AI comparison):
@@ -61,4 +71,3 @@ RAG embeddings:
 - The demo ships with a keyword-based retrieval mode (no extra deps).
 - If you enable HF embeddings in the UI, provide a local model path (recommended) or toggle
   "Allow remote model downloads" (requires outbound network access on your hosting platform).
-

@@ -157,7 +157,7 @@ Compatibility note: Python import path is `open_vernacular_ai_kit`.
  ```bash
 python3 -m venv .venv
 .venv/bin/python -m pip install -U pip
-.venv/bin/pip install -e ".[indic,ml,eval,demo,dev,dialect-ml,rag]"
+.venv/bin/pip install -e ".[api,indic,ml,eval,demo,dev,dialect-ml,rag]"
  ```
  
  Minimal (CLI + basic heuristics only):
@@ -204,6 +204,45 @@ Dialect evals (uses a tiny packaged JSONL by default, or provide your own):
 gck eval --dataset dialect_id
 gck eval --dataset dialect_normalization
 ```
+
+## API Service (FastAPI)
+
+Install API extras:
+
+```bash
+pip install -e ".[api,indic,ml,lexicon]"
+```
+
+Run service:
+
+```bash
+uvicorn open_vernacular_ai_kit.api_service:app --host 0.0.0.0 --port 8000
+```
+
+Endpoints:
+
+- `GET /healthz`
+- `POST /normalize`
+- `POST /codemix`
+- `POST /analyze`
+
+See:
+
+- `docs/api-service.md`
+- `docs/deploy.md`
+
+## Docker Image
+
+Build and run locally:
+
+```bash
+docker build -t ovak-api:local .
+docker run --rm -p 8000:8000 ovak-api:local
+```
+
+Image publishing:
+
+- Docker workflow publishes to GHCR on `v*` tags (`.github/workflows/docker.yml`).
 
  ## Demo (Streamlit)
  

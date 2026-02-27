@@ -78,6 +78,12 @@ docs = [
   "pymdown-extensions>=10.11.0",
 ]
 
+# FastAPI service wrapper (optional runtime surface).
+api = [
+  "fastapi>=0.111.0",
+  "uvicorn>=0.30.0",
+]
+
 # Dialect ML backends (optional; users provide fine-tuned weights).
 dialect-ml = [
   "transformers",

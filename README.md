@@ -175,6 +175,80 @@ gck eval --dataset dialect_normalization
  
  If you export `SARVAM_API_KEY`, the demo can optionally call Sarvam APIs.
 
+### Demo Screenshots
+
+#### 1) Landing / value overview
+
+![Open Vernacular AI Kit Hero](demo-hero.png)
+
+What this shows:
+- The app focus: normalize mixed vernacular + English text before LLM/search/routing.
+- Product value areas: LLM quality, retrieval quality, and analytics signal cleanup.
+- Starting point before running any analysis.
+
+#### 2) Live analysis (Before -> After)
+
+![Live Analysis Before and After](demo-analysis.png)
+
+What this shows:
+- A raw romanized message in **Before**.
+- Canonicalized output in **After** with native-script conversions.
+- Conversion metrics (romanized tokens, converted count, conversion rate, backend).
+- Token-level changes table to inspect exactly what was transformed.
+
+#### 3) RAG section
+
+![RAG Mini-KB Section](demo-rag.png)
+
+What this shows:
+- The India-focused mini-KB retrieval panel.
+- Query input, preprocessing toggle, embeddings mode, and top-k controls.
+- A quick way to test retrieval quality on canonicalized inputs.
+
+#### 4) Settings panel (expanded)
+
+![Settings Panel Expanded](demo-settings.png)
+
+What this shows:
+- Full runtime controls for transliteration, numerals, backends, and model options.
+- Sarvam comparison toggles and advanced dialect-related settings.
+- The main place to configure behavior before running analysis.
+
+#### 5) Token LID panel (expanded)
+
+![Token LID Expanded](demo-token-lid.png)
+
+What this shows:
+- Token-by-token language tags and confidence scores.
+- Why each token was classified as native script, romanized, English, or other.
+- Useful for debugging lexicon rules and transliteration decisions.
+
+#### 6) Code-switching + dialect panel (expanded)
+
+![Code Switching and Dialect Expanded](demo-codeswitch-dialect.png)
+
+What this shows:
+- CMI/switch-point metrics for mixed-language inputs.
+- Detected dialect label and confidence.
+- Quick diagnostics to understand how mixed or dialect-heavy an input is.
+
+#### 7) Batch helpers panel (expanded)
+
+![Batch Helpers Expanded](demo-batch-helpers.png)
+
+What this shows:
+- CSV and JSONL upload flows for bulk preprocessing.
+- Download-ready processed outputs for production pipelines.
+- The easiest way to run large input sets through the same normalization logic.
+
+### How To Use The Demo
+
+1. Open the app and load an example (or paste your own user message).
+2. Click **Analyze** to produce canonical text and conversion metrics.
+3. Review **Before vs After** and the **What Changed** table.
+4. (Optional) Open **RAG** and run retrieval on the same canonicalized text.
+5. (Optional) Add `SARVAM_API_KEY` to enable model comparison in the AI section.
+
 ## RAG Utilities (v0.5)
 
 v0.5 adds small, optional RAG helpers intended for tiny curated corpora and demos:

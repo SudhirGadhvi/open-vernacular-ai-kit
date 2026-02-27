@@ -1,0 +1,40 @@
+name: pr-governance
+
+on:
+  pull_request:
+    branches: ["main", "develop"]
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  branch-and-title-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate branch naming convention
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          if [[ "$HEAD_REF" =~ ^dependabot/ ]]; then
+            echo "Dependabot branch exempt."
+            exit 0
+          fi
+          if [[ ! "$HEAD_REF" =~ ^(feat|fix|docs|chore|refactor|test|hotfix|release)\/[a-z0-9._-]+$ ]]; then
+            echo "Invalid branch name: $HEAD_REF"
+            echo "Expected: <type>/<short-description>"
+            echo "Allowed types: feat, fix, docs, chore, refactor, test, hotfix, release"
+            exit 1
+          fi
+
+      - name: Validate PR title format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          if [[ ! "$PR_TITLE" =~ ^(feat|fix|docs|chore|refactor|test|hotfix|release)(\([a-z0-9._-]+\))?:\ .+ ]]; then
+            echo "Invalid PR title: $PR_TITLE"
+            echo "Expected Conventional Commit style title, e.g.:"
+            echo "feat(rag): add weighted retriever option"
+            exit 1
+          fi

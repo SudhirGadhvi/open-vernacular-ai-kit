@@ -24,6 +24,7 @@ keywords = ["vernacular", "indian-languages", "indic", "codemix", "transliterati
    "Programming Language :: Python :: 3.12",
    "Programming Language :: Python :: 3.13",
  ]
+urls = { Homepage = "https://github.com/SudhirGadhvi/open-vernacular-ai-kit", Repository = "https://github.com/SudhirGadhvi/open-vernacular-ai-kit", Documentation = "https://sudhirgadhvi.github.io/open-vernacular-ai-kit/" }
  dependencies = [
    "typer>=0.12.3",
    "rich>=13.7.1",

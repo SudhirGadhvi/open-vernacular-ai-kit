@@ -1,0 +1,11 @@
+# Default owners
+* @SudhirGadhvi
+
+# Docs and metadata
+/docs/ @SudhirGadhvi
+/README.md @SudhirGadhvi
+/mkdocs.yml @SudhirGadhvi
+
+# Core package
+/src/open_vernacular_ai_kit/ @SudhirGadhvi
+/tests/ @SudhirGadhvi

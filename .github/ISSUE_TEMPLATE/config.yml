@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability reporting
+    url: https://github.com/SudhirGadhvi/open-vernacular-ai-kit/security/advisories/new
+    about: Use private reporting for vulnerabilities.

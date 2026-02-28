@@ -14,7 +14,8 @@ This repository uses semantic versioning and tag-driven GitHub Actions releases.
 
 1. Merge features into `develop` through PRs.
 2. Prepare release PR from `develop` to `main`.
-3. After merge to `main`, create and push a signed/annotated tag.
+3. Bump package version in `pyproject.toml` (and `src/open_vernacular_ai_kit/__init__.py`) to the release version.
+4. After merge to `main`, create and push a signed/annotated tag.
 
 Example:
 
@@ -39,4 +40,5 @@ git push origin v1.1.0
 - [ ] CI green on `main`
 - [ ] Docs updated for user-facing changes
 - [ ] Security-impacting changes reviewed
+- [ ] `pyproject.toml` `project.version` matches intended release
 - [ ] Version/tag verified before push

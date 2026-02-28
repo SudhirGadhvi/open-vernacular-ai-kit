@@ -494,11 +494,69 @@ def _lid_counts(
 
 def _token_set(text: str) -> set[str]:
     toks = tokenize(normalize_text(text or ""))
+    stop = {
+        # English helpers
+        "the",
+        "a",
+        "an",
+        "is",
+        "are",
+        "was",
+        "were",
+        "to",
+        "of",
+        "in",
+        "on",
+        "for",
+        "and",
+        "or",
+        # Common romanized Gujarati helpers/function words
+        "che",
+        "chhe",
+        "shu",
+        "su",
+        "kem",
+        "hu",
+        "tu",
+        "tame",
+        "ame",
+        "nathi",
+        "kayu",
+        "kya",
+        "kyare",
+        "aaje",
+        "kaale",
+        "nu",
+        "na",
+        "ni",
+        "ne",
+        # Common Gujarati-script helpers/function words
+        "છે",
+        "શું",
+        "કેમ",
+        "હું",
+        "તું",
+        "તમે",
+        "અમે",
+        "નથી",
+        "નું",
+        "ના",
+        "ની",
+        "ને",
+        "કે",
+        "તો",
+        "અને",
+    }
     out: set[str] = set()
     for t in toks:
         if not any(ch.isalnum() for ch in t):
             continue
-        out.add(t.lower())
+        key = t.lower().strip()
+        if len(key) <= 2:
+            continue
+        if key in stop:
+            continue
+        out.add(key)
     return out
 
 
@@ -535,7 +593,12 @@ def _best_match(query_tokens: set[str], corpus: list[dict[str, str]]) -> dict[st
         }
         if best is None or cand["score"] > best["score"]:
             best = cand
-    return best or {"id": "", "title": "", "text": "", "score": 0.0, "overlap": []}
+    if best is None:
+        return {"id": "", "title": "", "text": "", "score": 0.0, "overlap": []}
+    # Avoid misleading "best" picks when overlap is too weak/noisy.
+    if float(best["score"]) < 0.08:
+        return {"id": "", "title": "", "text": "", "score": 0.0, "overlap": []}
+    return best
 
 
 def _apply_template(tpl: str, text: str) -> str:
@@ -1021,22 +1084,25 @@ def main() -> None:
         st.caption("Heuristic metrics to quantify how mixed the input is (vernacular vs English).")
         dialect_norm_applied = bool(getattr(dn, "changed", False)) if dn is not None else False
         dialect_norm_backend = getattr(dn, "backend", "none") if dn is not None else "none"
+        dialect_rows = [
+            {
+                "Metric": "CMI (0..100)",
+                "Value": round(float(cs.cmi), 2),
+            },
+            {"Metric": "Switch points", "Value": int(cs.n_switch_points)},
+            {"Metric": "Native-script tokens", "Value": int(cs.n_gu_tokens)},
+            {"Metric": "English tokens", "Value": int(cs.n_en_tokens)},
+            {"Metric": "Lexical tokens considered", "Value": int(cs.n_tokens_considered)},
+            {"Metric": "Dialect guess", "Value": _dialect_label(d)},
+            {"Metric": "Dialect backend", "Value": getattr(d, "backend", "heuristic")},
+            {"Metric": "Dialect confidence", "Value": round(float(getattr(d, "confidence", 0.0)), 3)},
+            {"Metric": "Dialect normalized", "Value": dialect_norm_applied},
+            {"Metric": "Dialect normalizer backend", "Value": dialect_norm_backend},
+        ]
+        # Keep Value column string-typed to avoid Arrow mixed-type warnings in Streamlit.
+        dialect_rows = [{"Metric": r["Metric"], "Value": str(r["Value"])} for r in dialect_rows]
         st.dataframe(
-            [
-                {
-                    "Metric": "CMI (0..100)",
-                    "Value": round(float(cs.cmi), 2),
-                },
-                {"Metric": "Switch points", "Value": int(cs.n_switch_points)},
-                {"Metric": "Native-script tokens", "Value": int(cs.n_gu_tokens)},
-                {"Metric": "English tokens", "Value": int(cs.n_en_tokens)},
-                {"Metric": "Lexical tokens considered", "Value": int(cs.n_tokens_considered)},
-                {"Metric": "Dialect guess", "Value": _dialect_label(d)},
-                {"Metric": "Dialect backend", "Value": getattr(d, "backend", "heuristic")},
-                {"Metric": "Dialect confidence", "Value": round(float(getattr(d, "confidence", 0.0)), 3)},
-                {"Metric": "Dialect normalized", "Value": dialect_norm_applied},
-                {"Metric": "Dialect normalizer backend", "Value": dialect_norm_backend},
-            ],
+            dialect_rows,
             width="stretch",
             hide_index=True,
         )
@@ -1091,7 +1157,6 @@ def main() -> None:
     st.divider()
 
     st.markdown("## Impact Without AI")
-    st.caption("These are measurable improvements you can explain to a product team without talking about tokens.")
 
     impact_left, impact_right = st.columns(2)
     with impact_left:
@@ -1105,6 +1170,11 @@ def main() -> None:
 
         st.metric("Top match score (Before)", f"{bm_before['score']*100:.1f}")
         st.metric("Top match score (After)", f"{bm_after['score']*100:.1f}", delta=f"{(bm_after['score']-bm_before['score'])*100:+.1f}")
+        if bm_before["score"] <= 0.0 and bm_after["score"] <= 0.0:
+            st.info(
+                "No lexical overlap with the mini demo KB for this query. "
+                "Try: 'mare order update joie chhe... parcel kyare aavse??'"
+            )
 
         st.markdown("**Query tokens (Before)**")
         st.code(" ".join(sorted(q_before)) if q_before else "(empty)")
@@ -1117,8 +1187,12 @@ def main() -> None:
         st.code(", ".join(bm_after["overlap"]) if bm_after["overlap"] else "(none)")
 
         with st.expander("Stored KB/ticket example (unchanged)"):
-            st.write(bm_after["title"] or bm_before["title"])
-            st.code(bm_after["text"] or bm_before["text"])
+            chosen = bm_after if float(bm_after.get("score", 0.0)) > 0.0 else bm_before
+            if float(chosen.get("score", 0.0)) <= 0.0:
+                st.info("No confident KB match for this query in the mini demo corpus.")
+            else:
+                st.write(chosen["title"])
+                st.code(chosen["text"])
 
     with impact_right:
         st.subheader("Routing / analytics signal")

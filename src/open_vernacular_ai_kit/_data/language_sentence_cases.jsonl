@@ -1,0 +1,20 @@
+{"language": "hi", "raw": "namaste, main accha hun, dhanyavad", "expected": "नमस्ते, मैं अच्छा हूँ, धन्यवाद", "source": "Basic Hindi I p109 + Hindi textbooks common greetings"}
+{"language": "hi", "raw": "mera parivar chicago me rehta hai", "expected": "मेरा परिवार chicago में रहता है", "source": "Basic Hindi I p109"}
+{"language": "hi", "raw": "meri maa ka naam liz hai", "expected": "मेरी माँ का नाम liz है", "source": "Basic Hindi I p109"}
+{"language": "hi", "raw": "mere pita ji ka naam adam hai", "expected": "मेरे पिता ji का नाम adam है", "source": "Basic Hindi I p109"}
+{"language": "hi", "raw": "aap kaise ho aur ghar kab aaoge", "expected": "आप कैसे हो और घर कब आओगे", "source": "Hindi conversation pattern"}
+{"language": "hi", "raw": "mujhe tumse baat karni hai", "expected": "मुझे तुमसे बात करनी है", "source": "Hindi textbook conversational form"}
+{"language": "hi", "raw": "vah ghar me hai", "expected": "वह घर में है", "source": "Hindi case marker usage"}
+{"language": "hi", "raw": "meri maa ek achhi adhyapika hai", "expected": "मेरी माँ एक अच्छी adhyapika है", "source": "Basic Hindi I p109 + p118"}
+{"language": "hi", "raw": "vah bahut sundar hai", "expected": "वह बहुत सुन्दर है", "source": "Basic Hindi I p118"}
+{"language": "hi", "raw": "hamare rishtedaar har sukh dukh ki ghadi me saath dete hain", "expected": "हमारे rishtedaar हर sukh dukh की ghadi में साथ देते हैं", "source": "Basic Hindi I p118"}
+{"language": "gu", "raw": "hu aaje office ma plan ready chhe", "expected": "હું આજે office માં plan ready છે", "source": "Gujarati code-mix baseline + case marker grammar"}
+{"language": "gu", "raw": "tamne aaje office ma aavu chhe", "expected": "તમને આજે office માં આવું છે", "source": "Gujarati dative + locative pattern"}
+{"language": "gu", "raw": "aapdu kaam saras rite thai gayu", "expected": "આપણું કામ સરસ રીતે થઈ ગયું", "source": "Gujarati adjective/adverb patterns"}
+{"language": "gu", "raw": "shu tame mane madad kari shako", "expected": "શું તમે મને મદદ કરી શકો", "source": "Gujarati support-style phrase"}
+{"language": "gu", "raw": "amne ahi badma aavu joie", "expected": "અમને અહીં બાદમાં આવું જોઈએ", "source": "Gujarati adverb pages 246-247"}
+{"language": "gu", "raw": "tamaro parivar kya chhe", "expected": "તમારો પરિવાર ક્યાં છે", "source": "Gujarati pronoun/genitive grammar p248"}
+{"language": "gu", "raw": "tame aaje to ready chhe", "expected": "તમે આજે તો ready છે", "source": "Gujarati tag/particle examples p254"}
+{"language": "gu", "raw": "maru ghar ahi chhe", "expected": "મારું ઘર અહીં છે", "source": "Gujarati pronoun + place adverb"}
+{"language": "gu", "raw": "ame kale amdavad jvana", "expected": "અમે કાલે અમદાવાદ jvana", "source": "Gujarati time/place from dictionary + grammar examples"}
+{"language": "gu", "raw": "mane tari vaat samajh nathi padti", "expected": "મને તારી વાત સમજ નથી પડતી", "source": "Gujarati conversational comprehension phrase"}

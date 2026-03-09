@@ -120,23 +120,23 @@ def eval(
     dataset: str = typer.Option(
         "gujlish",
         help=(
-            "Eval dataset/suite: gujlish, golden_translit, retrieval, prompt_stability, "
+            "Eval dataset/suite: gujlish, golden_translit, language_sentences, retrieval, prompt_stability, "
             "dialect_id, dialect_normalization."
         ),
     ),
     report: Optional[Path] = typer.Option(
         None, help="Write a JSON report to this path (directories auto-created)."
     ),
-    topk: int = typer.Option(1, help="Top-K transliteration candidates (gujlish/golden_translit)."),
+    topk: int = typer.Option(1, help="Top-K transliteration candidates (gujlish/golden_translit/language_sentences)."),
     language: str = typer.Option(
         "gu",
-        help="Target language for language-aware evals: gu, hi, or all (golden_translit only).",
+        help="Target language for language-aware evals: gu, hi, or all (golden_translit/language_sentences).",
     ),
     max_rows: Optional[int] = typer.Option(
         2000, help="Max rows per split (gujlish). Use 0 for no limit."
     ),
     translit_mode: str = typer.Option(
-        "token", help="Transliteration mode: token or sentence (golden_translit)."
+        "token", help="Transliteration mode: token or sentence (golden_translit/language_sentences)."
     ),
     k: int = typer.Option(5, help="Top-k for retrieval recall (retrieval)."),
     embedding_model: str = typer.Option(

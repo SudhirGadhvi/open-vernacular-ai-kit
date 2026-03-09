@@ -29,6 +29,29 @@ Current snapshot (`2026-02-27T19:23:14Z`):
 | `dialect_accuracy` | `0.833` | Heuristic dialect-id accuracy (`5/6`) |
 | `p95_latency_ms` | `0.174` | Pipeline p95 latency in ms (`iterations=200`, `n_calls=1200`) |
 
+## Golden Transliteration Regression Guard
+
+For offline regression tracking across the packaged Gujarati and Hindi language profiles, run:
+
+```bash
+gck eval --dataset golden_translit --language all --translit-mode sentence
+```
+
+This hand-validated suite is intended to catch regressions in common vernacular pronouns, question
+words, support-style phrases, and inflected verb forms without requiring any hosted model access.
+
+## Sentence-Level Language Regression Guard
+
+For source-backed sentence regressions across the packaged Hindi and Gujarati language profiles, run:
+
+```bash
+gck eval --dataset language_sentences --language all --translit-mode sentence
+```
+
+This suite uses textbook/dialog-inspired examples plus Gujarati grammar-derived code-mix cases to
+check that pronouns, possessives, case markers, adverbs, and common support phrases still render
+correctly in full sentences.
+
 ## Quality / Coverage (Gujarati Baseline Eval)
 
 This project also includes a lightweight, reproducible "coverage-style" eval on public Gujarati

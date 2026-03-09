@@ -30,6 +30,9 @@ def test_language_sentence_eval_supports_language_slices() -> None:
     assert res["language"] == "all"
     assert int(res["language_slices"]["gu"]["n_cases"]) > 0
     assert int(res["language_slices"]["hi"]["n_cases"]) > 0
+    assert int(res["n_cases"]) >= 100
+    assert int(res["language_slices"]["gu"]["n_cases"]) >= 50
+    assert int(res["language_slices"]["hi"]["n_cases"]) >= 50
 
 
 def test_run_eval_dispatches_language_sentence_dataset() -> None:

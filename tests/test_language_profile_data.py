@@ -14,3 +14,8 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert hi.default_exceptions["mera"] == "मेरा"
     assert hi.default_exceptions["me"] == "में"
     assert "me" in hi.context_roman_tokens
+
+    assert hi.default_exceptions["dijiye"] == "दीजिए"
+    assert hi.default_exceptions["madad"] == "मदद"
+    assert gu.default_exceptions["chhiye"] == "છીએ"
+    assert gu.default_exceptions["aavo"] == "આવો"

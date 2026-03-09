@@ -100,7 +100,14 @@
     "badma",
     "have",
     "joie",
-    "amdavad"
+    "amdavad",
+    "chhiye",
+    "aavo",
+    "jao",
+    "pachi",
+    "savare",
+    "sanje",
+    "ratre"
   ],
   "context_roman_tokens": [
     "ma",
@@ -225,6 +232,13 @@
     "badma": "બાદમાં",
     "have": "હવે",
     "joie": "જોઈએ",
-    "amdavad": "અમદાવાદ"
+    "amdavad": "અમદાવાદ",
+    "chhiye": "છીએ",
+    "aavo": "આવો",
+    "jao": "જાઓ",
+    "pachi": "પછી",
+    "savare": "સવારે",
+    "sanje": "સાંજે",
+    "ratre": "રાત્રે"
   }
 }

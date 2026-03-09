@@ -27,7 +27,12 @@ Use `--stats` to print conversion statistics to stderr (stdout remains the rende
 
 ```bash
 gck eval --dataset gujlish --report eval/out/report.json
+gck eval --dataset golden_translit --language all --translit-mode sentence
+gck eval --dataset language_sentences --language all --translit-mode sentence
 ```
+
+The packaged `language_sentences` dataset currently contains `118` exact-match Hindi and Gujarati
+sentence regressions.
 
 Note: eval dependencies are optional; install with `pip install -e ".[eval]"`.
 

@@ -92,6 +92,8 @@ def _looks_like_target_roman(token: str, *, language: str) -> bool:
         return t in pack.common_roman_tokens
     if t in pack.common_roman_tokens:
         return True
+    if len(t) >= 4 and any(t.endswith(suffix) for suffix in pack.roman_suffixes):
+        return True
     return any(c in t for c in pack.roman_clusters)
 
 
@@ -299,6 +301,16 @@ def analyze_token(
     return Token(text=token, lang=TokenLang.EN, confidence=0.5, reason="default_en")
 
 
+def _is_target_neighbor(token: Token, *, pack_code: str) -> bool:
+    if token.lang in {TokenLang.TARGET_NATIVE, TokenLang.TARGET_ROMAN}:
+        return True
+    if token.reason.startswith(f"common_{pack_code}_roman"):
+        return True
+    if token.reason.startswith(f"{pack_code}_roman"):
+        return True
+    return False
+
+
 def detect_token_lang(token: str, *, language: str = "gu") -> TokenLang:
     return analyze_token(token, language=language).lang
 
@@ -310,7 +322,7 @@ def tag_tokens(
     lexicon_keys: Optional[set[str]] = None,
     fasttext_model_path: Optional[str] = None,
 ) -> list[Token]:
-    return [
+    tagged = [
         analyze_token(
             t,
             language=language,
@@ -319,4 +331,32 @@ def tag_tokens(
         )
         for t in tokens
     ]
+    pack = get_language_pack(language)
+    if not pack.context_roman_tokens:
+        return tagged
+
+    target_like_count = sum(
+        1
+        for tok in tagged
+        if tok.lang in {TokenLang.TARGET_NATIVE, TokenLang.TARGET_ROMAN}
+        or tok.reason.startswith(f"common_{pack.code}_roman")
+        or tok.reason.startswith(f"{pack.code}_roman")
+    )
+    adjusted = list(tagged)
+    for i, tok in enumerate(adjusted):
+        norm = _normalize_latin_key(tok.text)
+        if norm not in pack.context_roman_tokens:
+            continue
+        if tok.lang not in {TokenLang.EN, TokenLang.OTHER}:
+            continue
+        prev_is_target = i > 0 and _is_target_neighbor(adjusted[i - 1], pack_code=pack.code)
+        next_is_target = i + 1 < len(adjusted) and _is_target_neighbor(adjusted[i + 1], pack_code=pack.code)
+        if prev_is_target or next_is_target or target_like_count >= 2:
+            adjusted[i] = Token(
+                text=tok.text,
+                lang=TokenLang.TARGET_ROMAN,
+                confidence=0.72,
+                reason=f"context_{pack.code}_roman",
+            )
+    return adjusted
  

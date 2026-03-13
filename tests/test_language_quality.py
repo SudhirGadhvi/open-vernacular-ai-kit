@@ -22,6 +22,11 @@ from open_vernacular_ai_kit.token_lid import TokenLang, detect_token_lang
         ("fari", "gu"),
         ("vage", "gu"),
         ("jagyae", "gu"),
+        ("ochhu", "gu"),
+        ("paise", "gu"),
+        ("moklo", "gu"),
+        ("batave", "gu"),
+        ("avsho", "gu"),
         ("mujhe", "hi"),
         ("tumhara", "hi"),
         ("jayenge", "hi"),
@@ -32,6 +37,8 @@ from open_vernacular_ai_kit.token_lid import TokenLang, detect_token_lang
         ("chahiye", "hi"),
         ("madad", "hi"),
         ("lekin", "hi"),
+        ("galat", "hi"),
+        ("batayiye", "hi"),
     ],
 )
 def test_detect_token_lang_expanded_language_hints(token: str, language: str) -> None:
@@ -62,6 +69,9 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("aa refund ni vaat chhe", "આ refund ની વાત છે"),
         ("aa refund ni jagyae replacement joie", "આ refund ની જગ્યાએ replacement જોઈએ"),
         ("payment pending chhe ke complete", "payment pending છે કે complete"),
+        ("aaje customer care sathe vaat thai hati", "આજે customer care સાથે વાત થઈ હતી"),
+        ("mari payment pending batave chhe", "મારી payment pending બતાવે છે"),
+        ("delivery partner ne exact location moklo", "delivery partner ne exact location મોકલો"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
@@ -85,6 +95,7 @@ def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
         ("mujhe aap ki madad chahiye", "मुझे आप की मदद चाहिए"),
         ("aap hamare ghar aaiye", "आप हमारे घर आइए"),
         ("mujhe madad chahiye lekin samay nahin hai", "मुझे मदद चाहिए लेकिन समय नहीं है"),
+        ("mujhe order status batayiye", "मुझे order status बताइए"),
     ],
 )
 def test_render_codemix_hindi_quality_cases(raw: str, expected: str) -> None:

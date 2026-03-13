@@ -52,10 +52,10 @@ This suite uses textbook/dialog-inspired examples plus Gujarati grammar-derived 
 check that pronouns, possessives, case markers, adverbs, and common support phrases still render
 correctly in full sentences.
 
-The packaged dataset currently contains `118` exact-match sentence cases:
+The packaged dataset currently contains `120` exact-match sentence cases:
 
-- `55` Hindi textbook/dialog-derived cases
-- `63` Gujarati grammar and support-style cases
+- `56` Hindi textbook/dialog-derived cases
+- `64` Gujarati grammar and support-style cases
 
 ## Quality / Coverage (Gujarati Baseline Eval)
 

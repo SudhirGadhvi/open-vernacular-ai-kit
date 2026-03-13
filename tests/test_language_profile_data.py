@@ -17,5 +17,8 @@ def test_language_profiles_load_from_packaged_data() -> None:
 
     assert hi.default_exceptions["dijiye"] == "दीजिए"
     assert hi.default_exceptions["madad"] == "मदद"
+    assert hi.default_exceptions["bhej"] == "भेज"
     assert gu.default_exceptions["chhiye"] == "છીએ"
     assert gu.default_exceptions["aavo"] == "આવો"
+    assert gu.default_exceptions["paisa"] == "પૈસા"
+    assert gu.default_exceptions["avse"] == "આવશે"

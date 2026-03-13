@@ -134,3 +134,20 @@ Recommended actions:
 - `accept_dialect_case`
 - `reject`
 - `pending`
+
+## Promote Sentence Cases
+
+Only after review, promote accepted sentence cases:
+
+```bash
+python3 scripts/promote_sarvam_sentence_cases.py \
+  --input eval/datasets/sarvam_teacher_seed_reviewed.jsonl \
+  --report eval/out/sarvam_candidates/seed_promotion_report.json
+```
+
+This script:
+
+- adds only `accept_sentence_case` rows
+- skips exact duplicates already present in the packaged dataset
+- reports conflicts instead of silently overwriting existing cases
+- infers `gu` or `hi` for reviewed `mixed` rows from the expected script

@@ -21,6 +21,7 @@ from open_vernacular_ai_kit.token_lid import TokenLang, detect_token_lang
         ("aa", "gu"),
         ("fari", "gu"),
         ("vage", "gu"),
+        ("jagyae", "gu"),
         ("mujhe", "hi"),
         ("tumhara", "hi"),
         ("jayenge", "hi"),
@@ -59,6 +60,7 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("tamare ahi aavu joie", "તમારે અહીં આવું જોઈએ"),
         ("aa ghar tyaa chhe", "આ ઘર ત્યાં છે"),
         ("aa refund ni vaat chhe", "આ refund ની વાત છે"),
+        ("aa refund ni jagyae replacement joie", "આ refund ની જગ્યાએ replacement જોઈએ"),
         ("payment pending chhe ke complete", "payment pending છે કે complete"),
     ],
 )

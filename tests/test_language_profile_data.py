@@ -29,9 +29,11 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["ni"] == "ની"
     assert gu.default_exceptions["nu"] == "નું"
     assert gu.default_exceptions["vage"] == "વાગે"
+    assert gu.default_exceptions["jagyae"] == "જગ્યાએ"
     assert "tamare" in gu.common_roman_tokens
     assert "aa" in gu.common_roman_tokens
     assert "fari" in gu.common_roman_tokens
+    assert "jagyae" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
     assert "lekin" in hi.common_roman_tokens

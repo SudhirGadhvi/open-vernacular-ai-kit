@@ -72,6 +72,9 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("aaje customer care sathe vaat thai hati", "આજે customer care સાથે વાત થઈ હતી"),
         ("mari payment pending batave chhe", "મારી payment pending બતાવે છે"),
         ("delivery partner ne exact location moklo", "delivery partner ne exact location મોકલો"),
+        ("aa coupon code kem kaam nathi karto", "આ coupon code કેમ કામ નથી કરતો"),
+        ("mobile number change karvu chhe", "mobile number change કરવું છે"),
+        ("customer care vala mane callback kare", "customer care vala મને callback કરે"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
@@ -96,6 +99,11 @@ def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
         ("aap hamare ghar aaiye", "आप हमारे घर आइए"),
         ("mujhe madad chahiye lekin samay nahin hai", "मुझे मदद चाहिए लेकिन समय नहीं है"),
         ("mujhe order status batayiye", "मुझे order status बताइए"),
+        ("delivery late kyon ho rahi hai", "delivery late क्यों हो रही है"),
+        ("invoice pdf mujhe whatsapp par bhejo", "invoice pdf मुझे whatsapp पर भेजो"),
+        ("return pickup kal subah chahiye", "return pickup कल सुबह चाहिए"),
+        ("coupon apply karyo but discount nahin mila", "coupon apply karyo but discount नहीं मिला"),
+        ("delivery boy ghar ke niche wait kari raha hai", "delivery boy घर के नीचे wait kari रहा है"),
     ],
 )
 def test_render_codemix_hindi_quality_cases(raw: str, expected: str) -> None:

@@ -123,7 +123,10 @@
     "batave",
     "avsho",
     "atki",
-    "moklo"
+    "moklo",
+    "karto",
+    "karvu",
+    "kare"
   ],
   "context_roman_tokens": [
     "ma",
@@ -284,6 +287,9 @@
     "batave": "બતાવે",
     "avsho": "આવશો",
     "atki": "અટકી",
-    "moklo": "મોકલો"
+    "moklo": "મોકલો",
+    "karto": "કરતો",
+    "karvu": "કરવું",
+    "kare": "કરે"
   }
 }

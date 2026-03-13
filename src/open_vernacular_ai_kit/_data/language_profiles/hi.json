@@ -163,7 +163,11 @@
     "kijiye",
     "lekin",
     "galat",
-    "batayiye"
+    "batayiye",
+    "kyon",
+    "bhejo",
+    "subah",
+    "mila"
   ],
   "context_roman_tokens": [
     "ka",
@@ -175,7 +179,8 @@
     "na",
     "to",
     "dobara",
-    "abhi"
+    "abhi",
+    "niche"
   ],
   "roman_clusters": [
     "aa",
@@ -377,6 +382,11 @@
     "dobara": "दोबारा",
     "galat": "गलत",
     "abhi": "अभी",
-    "batayiye": "बताइए"
+    "batayiye": "बताइए",
+    "kyon": "क्यों",
+    "bhejo": "भेजो",
+    "subah": "सुबह",
+    "mila": "मिला",
+    "niche": "नीचे"
   }
 }

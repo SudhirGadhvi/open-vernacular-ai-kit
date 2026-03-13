@@ -40,6 +40,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["avsho"] == "આવશો"
     assert gu.default_exceptions["atki"] == "અટકી"
     assert gu.default_exceptions["moklo"] == "મોકલો"
+    assert gu.default_exceptions["karto"] == "કરતો"
+    assert gu.default_exceptions["karvu"] == "કરવું"
+    assert gu.default_exceptions["kare"] == "કરે"
     assert "tamare" in gu.common_roman_tokens
     assert "aa" in gu.common_roman_tokens
     assert "fari" in gu.common_roman_tokens
@@ -47,6 +50,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "ochhu" in gu.common_roman_tokens
     assert "paise" in gu.common_roman_tokens
     assert "moklo" in gu.common_roman_tokens
+    assert "karto" in gu.common_roman_tokens
+    assert "karvu" in gu.common_roman_tokens
+    assert "kare" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
     assert "sathe" in gu.context_roman_tokens
@@ -57,7 +63,17 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert hi.default_exceptions["abhi"] == "अभी"
     assert hi.default_exceptions["galat"] == "गलत"
     assert hi.default_exceptions["batayiye"] == "बताइए"
+    assert hi.default_exceptions["kyon"] == "क्यों"
+    assert hi.default_exceptions["bhejo"] == "भेजो"
+    assert hi.default_exceptions["subah"] == "सुबह"
+    assert hi.default_exceptions["mila"] == "मिला"
+    assert hi.default_exceptions["niche"] == "नीचे"
     assert "galat" in hi.common_roman_tokens
     assert "batayiye" in hi.common_roman_tokens
+    assert "kyon" in hi.common_roman_tokens
+    assert "bhejo" in hi.common_roman_tokens
+    assert "subah" in hi.common_roman_tokens
+    assert "mila" in hi.common_roman_tokens
     assert "dobara" in hi.context_roman_tokens
     assert "abhi" in hi.context_roman_tokens
+    assert "niche" in hi.context_roman_tokens

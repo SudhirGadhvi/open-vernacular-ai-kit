@@ -61,6 +61,13 @@ from .sarvam_review import (
     init_review_records_from_candidates,
     load_reviewed_records_jsonl,
 )
+from .sarvam_seed import (
+    SarvamTeacherSeedRecord,
+    build_failure_seed,
+    build_failure_seed_from_golden_translit,
+    build_failure_seed_from_language_sentences,
+    dump_teacher_seed_jsonl,
+)
 from .sarvam_teacher import (
     SarvamTeacherCandidateRecord,
     SarvamTeacherInput,
@@ -122,11 +129,16 @@ __all__ = [
     "SarvamTeacherTokenCandidate",
     "SarvamTeacherCandidateRecord",
     "SarvamTeacherReviewedRecord",
+    "SarvamTeacherSeedRecord",
     "build_sarvam_teacher_prompt",
+    "build_failure_seed",
+    "build_failure_seed_from_language_sentences",
+    "build_failure_seed_from_golden_translit",
     "parse_sarvam_teacher_response",
     "mine_sarvam_teacher_candidate",
     "load_sarvam_teacher_inputs_jsonl",
     "dump_sarvam_teacher_records_jsonl",
+    "dump_teacher_seed_jsonl",
     "init_review_record",
     "init_review_records_from_candidates",
     "load_reviewed_records_jsonl",

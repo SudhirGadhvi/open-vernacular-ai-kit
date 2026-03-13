@@ -357,6 +357,63 @@ def load_sarvam_teacher_inputs_jsonl(path: str | Path) -> list[SarvamTeacherInpu
     return out
 
 
+def load_sarvam_teacher_records_jsonl(path: str | Path) -> list[SarvamTeacherCandidateRecord]:
+    rows: list[SarvamTeacherCandidateRecord] = []
+    p = Path(path)
+    with p.open("r", encoding="utf-8") as f:
+        for line in f:
+            s = (line or "").strip()
+            if not s:
+                continue
+            rec = json.loads(s)
+            if not isinstance(rec, dict):
+                continue
+            english_keep = []
+            english_keep_raw = rec.get("english_tokens_keep")
+            if isinstance(english_keep_raw, list):
+                for token in english_keep_raw:
+                    value = str(token or "").strip()
+                    if value:
+                        english_keep.append(value)
+
+            candidates: list[SarvamTeacherTokenCandidate] = []
+            candidates_raw = rec.get("candidate_tokens")
+            if isinstance(candidates_raw, list):
+                for candidate in candidates_raw:
+                    if not isinstance(candidate, dict):
+                        continue
+                    roman = str(candidate.get("roman", "") or "").strip()
+                    native = str(candidate.get("native", "") or "").strip()
+                    if not roman or not native:
+                        continue
+                    candidates.append(
+                        SarvamTeacherTokenCandidate(
+                            roman=roman,
+                            native=native,
+                            candidate_type=_parse_candidate_type(candidate.get("type")),
+                            confidence=_coerce_confidence(candidate.get("confidence")),
+                            notes=_clip_notes(candidate.get("notes")),
+                        )
+                    )
+            rows.append(
+                SarvamTeacherCandidateRecord(
+                    input=str(rec.get("input", "") or ""),
+                    language_hint=_normalize_language_hint(rec.get("language_hint")),
+                    source=str(rec.get("source", "unknown") or "unknown"),
+                    model=str(rec.get("model", "sarvam-m") or "sarvam-m"),
+                    ovak_baseline=str(rec.get("ovak_baseline", "") or ""),
+                    sarvam_native=str(rec.get("sarvam_native", "") or "").strip(),
+                    sarvam_canonical=str(rec.get("sarvam_canonical", "") or "").strip(),
+                    english_tokens_keep=english_keep,
+                    candidate_tokens=candidates,
+                    notes=_clip_notes(rec.get("notes")),
+                    raw_response=str(rec.get("raw_response", "") or ""),
+                    meta=(rec.get("meta") if isinstance(rec.get("meta"), dict) else None),
+                )
+            )
+    return rows
+
+
 def dump_sarvam_teacher_records_jsonl(
     path: str | Path,
     records: Iterable[SarvamTeacherCandidateRecord],

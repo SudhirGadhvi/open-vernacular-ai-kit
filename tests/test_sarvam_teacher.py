@@ -6,6 +6,7 @@ from open_vernacular_ai_kit.sarvam_teacher import (
     build_sarvam_teacher_prompt,
     dump_sarvam_teacher_records_jsonl,
     load_sarvam_teacher_inputs_jsonl,
+    load_sarvam_teacher_records_jsonl,
     mine_sarvam_teacher_candidate,
     parse_sarvam_teacher_response,
 )
@@ -122,3 +123,44 @@ def test_teacher_jsonl_round_trip(tmp_path) -> None:
     out = json.loads(out_path.read_text(encoding="utf-8").strip())
     assert out["sarvam_canonical"] == "શું તમે મને મદદ કરી શકો?"
     assert "raw_response" not in out
+
+
+def test_load_teacher_records_jsonl_preserves_raw_response_and_normalizes_candidates(tmp_path) -> None:
+    out_path = tmp_path / "teacher_output.jsonl"
+    out_path.write_text(
+        json.dumps(
+            {
+                "input": "mujhe order status batayiye",
+                "language_hint": "Hindi",
+                "source": "unit-test",
+                "model": "sarvam-m",
+                "ovak_baseline": "मुझे order status बतायीये",
+                "sarvam_native": "मुझे order status बताइए",
+                "sarvam_canonical": "मुझे order status बताइए",
+                "english_tokens_keep": ["order", "", "status"],
+                "candidate_tokens": [
+                    {
+                        "roman": "batayiye",
+                        "native": "बताइए",
+                        "type": "verb phrase",
+                        "confidence": "0.91",
+                        "notes": "imperative support request",
+                    }
+                ],
+                "notes": "keep product terms in English",
+                "raw_response": "```json {\"language_hint\":\"hi\"} ```",
+                "meta": {"domain": "support"},
+            },
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    rows = load_sarvam_teacher_records_jsonl(out_path)
+    rec = rows[0]
+    assert rec.language_hint == "hi"
+    assert rec.english_tokens_keep == ["order", "status"]
+    assert rec.candidate_tokens[0].candidate_type == "verb_phrase"
+    assert rec.candidate_tokens[0].confidence == 0.91
+    assert rec.raw_response == "```json {\"language_hint\":\"hi\"} ```"

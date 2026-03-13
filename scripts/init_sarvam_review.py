@@ -20,44 +20,7 @@ from open_vernacular_ai_kit.sarvam_review import (  # noqa: E402
     dump_reviewed_records_jsonl,
     init_review_records_from_candidates,
 )
-from open_vernacular_ai_kit.sarvam_teacher import SarvamTeacherCandidateRecord  # noqa: E402
-
-
-def _load_candidate_rows(path: str | Path) -> list[SarvamTeacherCandidateRecord]:
-    import json
-    from pathlib import Path
-
-    p = Path(path)
-    rows: list[SarvamTeacherCandidateRecord] = []
-    from open_vernacular_ai_kit.sarvam_teacher import parse_sarvam_teacher_response
-
-    for line in p.read_text(encoding="utf-8").splitlines():
-        s = line.strip()
-        if not s:
-            continue
-        rec = json.loads(s)
-        rows.append(
-            parse_sarvam_teacher_response(
-                json.dumps(
-                    {
-                        "language_hint": rec.get("language_hint"),
-                        "sarvam_native": rec.get("sarvam_native"),
-                        "sarvam_canonical": rec.get("sarvam_canonical"),
-                        "english_tokens_keep": rec.get("english_tokens_keep", []),
-                        "candidate_tokens": rec.get("candidate_tokens", []),
-                        "notes": rec.get("notes", ""),
-                    },
-                    ensure_ascii=False,
-                ),
-                input_text=str(rec.get("input", "") or ""),
-                source=str(rec.get("source", "unknown") or "unknown"),
-                model=str(rec.get("model", "sarvam-m") or "sarvam-m"),
-                ovak_baseline=str(rec.get("ovak_baseline", "") or ""),
-                meta=(rec.get("meta") if isinstance(rec.get("meta"), dict) else None),
-                fallback_language_hint=rec.get("language_hint"),
-            )
-        )
-    return rows
+from open_vernacular_ai_kit.sarvam_teacher import load_sarvam_teacher_records_jsonl  # noqa: E402
 
 
 def main() -> None:
@@ -74,7 +37,7 @@ def main() -> None:
     args = ap.parse_args()
 
     try:
-        rows = _load_candidate_rows(args.input)
+        rows = load_sarvam_teacher_records_jsonl(args.input)
         reviewed = init_review_records_from_candidates(rows, default_action=args.default_action)
         dump_reviewed_records_jsonl(args.output, reviewed, include_raw_response=False)
         print(

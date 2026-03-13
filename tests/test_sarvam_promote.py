@@ -4,11 +4,16 @@ import json
 
 from open_vernacular_ai_kit.sarvam_promote import (
     LanguageSentenceCaseRecord,
+    infer_profile_candidate_language,
     infer_sentence_case_language,
+    promote_profile_candidates_from_review,
     promote_sentence_cases_from_review,
 )
 from open_vernacular_ai_kit.sarvam_review import init_review_record
-from open_vernacular_ai_kit.sarvam_teacher import mine_sarvam_teacher_candidate
+from open_vernacular_ai_kit.sarvam_teacher import (
+    SarvamTeacherTokenCandidate,
+    mine_sarvam_teacher_candidate,
+)
 
 
 def _candidate(text: str, language_hint: str, canonical: str):
@@ -115,3 +120,174 @@ def test_promote_sentence_cases_skips_validation_failures_by_default() -> None:
     assert len(merged) == 0
     assert report["n_added"] == 0
     assert report["n_validation_failures"] == 1
+
+
+def test_infer_profile_candidate_language_prefers_native_script() -> None:
+    reviewed = init_review_record(
+        _candidate("mujhe madad chahiye", "mixed", "मुझे मदद चाहिए"),
+        review_action="accept_lexicon",
+        reviewed_expected="मुझे मदद चाहिए",
+        approved_candidate_tokens=[
+            SarvamTeacherTokenCandidate(
+                roman="madad",
+                native="मदद",
+                candidate_type="lexicon",
+            )
+        ],
+        prefer_meta_expected=False,
+    )
+    assert infer_profile_candidate_language(
+        reviewed,
+        native_text=reviewed.approved_candidate_tokens[0].native,
+    ) == "hi"
+
+
+def test_promote_profile_candidates_adds_lexicon_and_context_entries() -> None:
+    reviewed_rows = [
+        init_review_record(
+            _candidate("tamne support ma jawab malse", "gu", "તમને support માં જવાબ મળશે"),
+            review_action="accept_context_rule",
+            reviewed_expected="તમને support માં જવાબ મળશે",
+            approved_candidate_tokens=[
+                SarvamTeacherTokenCandidate(
+                    roman="jawab",
+                    native="જવાબ",
+                    candidate_type="context_token",
+                )
+            ],
+            prefer_meta_expected=False,
+        ),
+        init_review_record(
+            _candidate("mujhe voucher bhej dijiye", "hi", "मुझे voucher भेज दीजिए"),
+            review_action="accept_lexicon",
+            reviewed_expected="मुझे voucher भेज दीजिए",
+            approved_candidate_tokens=[
+                SarvamTeacherTokenCandidate(
+                    roman="voucher",
+                    native="वाउचर",
+                    candidate_type="lexicon",
+                )
+            ],
+            prefer_meta_expected=False,
+        ),
+    ]
+    profiles = {
+        "gu": {
+            "code": "gu",
+            "common_roman_tokens": ["tame"],
+            "context_roman_tokens": ["ma"],
+            "roman_clusters": [],
+            "roman_suffixes": [],
+            "default_exceptions": {"ma": "માં"},
+        },
+        "hi": {
+            "code": "hi",
+            "common_roman_tokens": ["mujhe"],
+            "context_roman_tokens": ["me"],
+            "roman_clusters": [],
+            "roman_suffixes": [],
+            "default_exceptions": {"me": "में"},
+        },
+    }
+
+    merged, report = promote_profile_candidates_from_review(
+        reviewed_rows,
+        existing_profiles=profiles,
+    )
+
+    assert report["n_tokens_promoted"] == 2
+    assert report["n_mapping_conflicts"] == 0
+    assert merged["gu"]["default_exceptions"]["jawab"] == "જવાબ"
+    assert "jawab" in merged["gu"]["context_roman_tokens"]
+    assert merged["hi"]["default_exceptions"]["voucher"] == "वाउचर"
+    assert "voucher" in merged["hi"]["common_roman_tokens"]
+
+
+def test_promote_profile_candidates_reports_mapping_conflicts() -> None:
+    reviewed_rows = [
+        init_review_record(
+            _candidate("mara paisa kyare avse", "gu", "મારા પૈસા ક્યારે આવશે"),
+            review_action="accept_lexicon",
+            reviewed_expected="મારા પૈસા ક્યારે આવશે",
+            approved_candidate_tokens=[
+                SarvamTeacherTokenCandidate(
+                    roman="paisa",
+                    native="પૈસા",
+                    candidate_type="lexicon",
+                )
+            ],
+            prefer_meta_expected=False,
+        )
+    ]
+    profiles = {
+        "gu": {
+            "code": "gu",
+            "common_roman_tokens": [],
+            "context_roman_tokens": [],
+            "roman_clusters": [],
+            "roman_suffixes": [],
+            "default_exceptions": {"paisa": "પૈસો"},
+        },
+        "hi": {
+            "code": "hi",
+            "common_roman_tokens": [],
+            "context_roman_tokens": [],
+            "roman_clusters": [],
+            "roman_suffixes": [],
+            "default_exceptions": {},
+        },
+    }
+
+    merged, report = promote_profile_candidates_from_review(
+        reviewed_rows,
+        existing_profiles=profiles,
+    )
+
+    assert merged["gu"]["default_exceptions"]["paisa"] == "પૈસો"
+    assert report["n_tokens_promoted"] == 0
+    assert report["n_mapping_conflicts"] == 1
+
+
+def test_promote_profile_candidates_reports_cross_bucket_conflicts() -> None:
+    reviewed_rows = [
+        init_review_record(
+            _candidate("office ma aavo", "gu", "office માં આવો"),
+            review_action="accept_lexicon",
+            reviewed_expected="office માં આવો",
+            approved_candidate_tokens=[
+                SarvamTeacherTokenCandidate(
+                    roman="ma",
+                    native="માં",
+                    candidate_type="lexicon",
+                )
+            ],
+            prefer_meta_expected=False,
+        )
+    ]
+    profiles = {
+        "gu": {
+            "code": "gu",
+            "common_roman_tokens": [],
+            "context_roman_tokens": ["ma"],
+            "roman_clusters": [],
+            "roman_suffixes": [],
+            "default_exceptions": {"ma": "માં"},
+        },
+        "hi": {
+            "code": "hi",
+            "common_roman_tokens": [],
+            "context_roman_tokens": [],
+            "roman_clusters": [],
+            "roman_suffixes": [],
+            "default_exceptions": {},
+        },
+    }
+
+    merged, report = promote_profile_candidates_from_review(
+        reviewed_rows,
+        existing_profiles=profiles,
+    )
+
+    assert merged["gu"]["common_roman_tokens"] == []
+    assert report["n_tokens_promoted"] == 0
+    assert report["n_bucket_conflicts"] == 1

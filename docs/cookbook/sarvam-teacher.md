@@ -167,3 +167,24 @@ This script:
 - skips exact duplicates already present in the packaged dataset
 - reports conflicts instead of silently overwriting existing cases
 - infers `gu` or `hi` for reviewed `mixed` rows from the expected script
+
+## Promote Profile Candidates
+
+Only after explicit token-level review, promote accepted lexicon and context-rule candidates:
+
+```bash
+python3 scripts/promote_sarvam_profile_candidates.py \
+  --input eval/datasets/sarvam_teacher_seed_reviewed.jsonl \
+  --report eval/out/sarvam_candidates/seed_profile_promotion_report.json
+```
+
+This script:
+
+- uses only `approved_candidate_tokens`
+- promotes `accept_lexicon` rows into `common_roman_tokens` + `default_exceptions`
+- promotes `accept_context_rule` rows into `context_roman_tokens` + `default_exceptions`
+- blocks mapping conflicts by default when an existing roman token maps to a different native form
+- blocks cross-bucket moves by default when a context token is being promoted as a common token, or vice versa
+
+This is intentionally stricter than sentence-case promotion. If a token is ambiguous enough to need a bucket move,
+do that as a manual profile edit after review rather than through automatic promotion.

@@ -40,6 +40,7 @@ Bundled starter dataset:
 - `eval/datasets/sarvam_teacher_large_seed.jsonl`
 - `eval/datasets/sarvam_teacher_realworld_seed.jsonl`
 - `eval/datasets/sarvam_teacher_realworld_seed_followup.jsonl`
+- `eval/datasets/sarvam_teacher_noisy_chat_seed.jsonl`
 
 ## Build A Failure-Driven Seed
 
@@ -96,6 +97,26 @@ Use it for the next Sarvam cycle after the first real-world pack has already pro
 python3 scripts/mine_sarvam_candidates.py \
   --input eval/datasets/sarvam_teacher_realworld_seed_followup.jsonl \
   --output eval/out/sarvam_candidates/realworld_seed_followup.jsonl \
+  --model sarvam-m
+```
+
+After the follow-up pack also starts yielding mostly mixed-script or loanword-heavy leftovers, switch to
+the noisy chat pack:
+
+- `eval/datasets/sarvam_teacher_noisy_chat_seed.jsonl`
+
+It keeps the same `30/30/30` Gujarati/Hindi/mixed split, but the prompts are intentionally noisier:
+
+- abbreviations like `pls`, `stts`, `nthi`, `nhi`, `krdo`
+- WhatsApp-style short messages and typo-heavy support text
+- code-mixed customer-service phrasing closer to raw inbound chat than templated support copy
+
+Use it to mine harder real-world vernacular behavior once the cleaner transactional packs plateau:
+
+```bash
+python3 scripts/mine_sarvam_candidates.py \
+  --input eval/datasets/sarvam_teacher_noisy_chat_seed.jsonl \
+  --output eval/out/sarvam_candidates/noisy_chat_seed.jsonl \
   --model sarvam-m
 ```
 

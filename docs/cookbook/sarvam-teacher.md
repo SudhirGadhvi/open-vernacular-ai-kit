@@ -39,6 +39,7 @@ Bundled starter dataset:
 - `eval/datasets/sarvam_teacher_seed.jsonl`
 - `eval/datasets/sarvam_teacher_large_seed.jsonl`
 - `eval/datasets/sarvam_teacher_realworld_seed.jsonl`
+- `eval/datasets/sarvam_teacher_realworld_seed_followup.jsonl`
 
 ## Build A Failure-Driven Seed
 
@@ -71,6 +72,30 @@ Use it when the failure-driven seed is empty:
 python3 scripts/mine_sarvam_candidates.py \
   --input eval/datasets/sarvam_teacher_realworld_seed.jsonl \
   --output eval/out/sarvam_candidates/realworld_seed.jsonl \
+  --model sarvam-m
+```
+
+After the first real-world review batches plateau, use the follow-up pack instead of repeatedly mining
+the same `90` prompts:
+
+- `eval/datasets/sarvam_teacher_realworld_seed_followup.jsonl`
+
+It contains another `90` prompts across the same `30/30/30` Gujarati/Hindi/mixed split, but shifts
+the domains toward harder operational flows such as:
+
+- COD and duplicate charges
+- exchange and replacement prechecks
+- document submission and address-proof failures
+- subscription and autorenew problems
+- payout, EMI, and gift-card issues
+- landmark, gate-number, and self-collect logistics prompts
+
+Use it for the next Sarvam cycle after the first real-world pack has already produced its safe promotions:
+
+```bash
+python3 scripts/mine_sarvam_candidates.py \
+  --input eval/datasets/sarvam_teacher_realworld_seed_followup.jsonl \
+  --output eval/out/sarvam_candidates/realworld_seed_followup.jsonl \
   --model sarvam-m
 ```
 

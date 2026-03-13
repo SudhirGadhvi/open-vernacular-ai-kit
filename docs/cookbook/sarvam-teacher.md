@@ -41,6 +41,7 @@ Bundled starter dataset:
 - `eval/datasets/sarvam_teacher_realworld_seed.jsonl`
 - `eval/datasets/sarvam_teacher_realworld_seed_followup.jsonl`
 - `eval/datasets/sarvam_teacher_noisy_chat_seed.jsonl`
+- `eval/datasets/sarvam_teacher_whatsapp_export_seed.jsonl`
 
 ## Build A Failure-Driven Seed
 
@@ -117,6 +118,28 @@ Use it to mine harder real-world vernacular behavior once the cleaner transactio
 python3 scripts/mine_sarvam_candidates.py \
   --input eval/datasets/sarvam_teacher_noisy_chat_seed.jsonl \
   --output eval/out/sarvam_candidates/noisy_chat_seed.jsonl \
+  --model sarvam-m
+```
+
+After the noisy chat pack starts yielding mostly single-message shorthand leftovers, switch to the
+WhatsApp/export-style pack:
+
+- `eval/datasets/sarvam_teacher_whatsapp_export_seed.jsonl`
+
+It also keeps the `30/30/30` Gujarati/Hindi/mixed split, but the prompts are written to feel like
+message exports and threaded support conversations rather than isolated support asks:
+
+- last-message references like `last 3 msgs` or `kal bhi msg kiya tha`
+- voice-note, screenshot, and chat-export references
+- gate number, landmark, proof, and callback follow-ups phrased like ongoing chat threads
+- WhatsApp-style code-mixed phrasing where context from earlier messages is assumed
+
+Use it when the next Sarvam cycle needs conversational continuity instead of one-shot complaint text:
+
+```bash
+python3 scripts/mine_sarvam_candidates.py \
+  --input eval/datasets/sarvam_teacher_whatsapp_export_seed.jsonl \
+  --output eval/out/sarvam_candidates/whatsapp_export_seed.jsonl \
   --model sarvam-m
 ```
 

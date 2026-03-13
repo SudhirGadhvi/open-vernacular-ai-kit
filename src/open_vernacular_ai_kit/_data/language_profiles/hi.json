@@ -173,7 +173,8 @@
     "jaldi",
     "bilkul",
     "dubara",
-    "dopahar"
+    "dopahar",
+    "baar"
   ],
   "context_roman_tokens": [
     "ka",
@@ -407,6 +408,7 @@
     "dopahar": "दोपहर",
     "baad": "बाद",
     "aj": "आज",
-    "tk": "तक"
+    "tk": "तक",
+    "baar": "बार"
   }
 }

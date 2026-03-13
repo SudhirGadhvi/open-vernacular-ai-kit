@@ -90,16 +90,22 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("pickup savare aavse ke bapor pachi?", "pickup સવારે aavse કે બપોર પછી?"),
         ("parcel kya sudhi pohnchyoo?", "parcel ક્યાં સુધી પહોંચ્યો?"),
         ("verify mate photo dubara upload krdo", "verify માટે photo ફરીથી upload krdo"),
-        ("payment fail thayu pn paisa cut thai gaya", "payment fail થયું pn પૈસા cut થઈ gaya"),
+        ("payment fail thayu pn paisa cut thai gaya", "payment fail થયું pn પૈસા cut થઈ ગયા"),
         ("refund initiate thai gyo pn sms nathi aavyo", "refund initiate થઈ gyo pn sms નથી આવ્યો"),
         ("nearest store javun pade?", "nearest store જવું pade?"),
         ("wallet ma paisa ochha batave chhe", "wallet માં પૈસા ઓછા બતાવે છે"),
         ("mara refund vishe kal pan msg karyo hato", "મારા refund વિશે kal pan msg karyo હતો"),
-        ("aa parcel building niche muki gaya ke shu?", "આ parcel building નીચે muki gaya કે શું?"),
+        ("aa parcel building niche muki gaya ke shu?", "આ parcel building નીચે muki ગયા કે શું?"),
         ("tamari side thi koi callback aavyo nathi haju", "તમારી side થી koi callback આવ્યો નથી હજુ"),
         ("tamne invoice ni pic moklu to chale?", "તમને invoice ની pic moklu તો ચાલે?"),
         ("warehouse sudhi parcel pohchi gayu ke nahi?", "warehouse સુધી parcel pohchi ગયું કે nahi?"),
         ("screenshot moklyo chhe ema error batave chhe", "screenshot મોકલ્યો છે ema error બતાવે છે"),
+        ("aa chat export ma badha msg chhe tame joi lo", "આ chat export માં બધા msg છે તમે joi lo"),
+        ("mne otp 2 var try kari pachi pan nathi malyo", "મને otp 2 var try કરી પછી pan નથી મળ્યો"),
+        ("group ma je number mukyo hato e par koi uthadto nathi", "group માં જે number mukyo હતો e par koi uthadto નથી"),
+        ("tamaro app crash thay chhe jyare payment karu chu", "તમારો app crash thay છે જ્યારે payment કરું છું"),
+        ("exchange ni jagyae simple refund joiye have", "exchange ની જગ્યાએ simple refund જોઈએ હવે"),
+        ("wallet ma paisa gaya but order place nahi thayu", "wallet માં પૈસા ગયા but order place nahi થયું"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
@@ -139,6 +145,7 @@ def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
         ("coupon code bilkul work nhi kr rha", "coupon code बिल्कुल work nhi kr rha"),
         ("verify ke liye photo dubara upload kr do", "verify के लिए photo दुबारा upload kr do"),
         ("pickup subah hoga ya dopahar baad?", "pickup सुबह होगा ya दोपहर बाद?"),
+        ("mere account se same amount do baar debit hua", "मेरे account से same amount do बार debit hua"),
     ],
 )
 def test_render_codemix_hindi_quality_cases(raw: str, expected: str) -> None:

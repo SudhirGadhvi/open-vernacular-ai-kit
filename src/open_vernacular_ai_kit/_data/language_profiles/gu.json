@@ -101,19 +101,31 @@
     "have",
     "joie",
     "amdavad",
+    "paisa",
+    "avse",
     "chhiye",
     "aavo",
     "jao",
     "pachi",
     "savare",
     "sanje",
-    "ratre"
+    "ratre",
+    "aahi",
+    "tyaa",
+    "tamare",
+    "aa",
+    "vage",
+    "fari",
+    "jagyae"
   ],
   "context_roman_tokens": [
     "ma",
     "ne",
     "na",
-    "to"
+    "to",
+    "ni",
+    "ke",
+    "nu"
   ],
   "roman_clusters": [
     "aa",
@@ -140,6 +152,7 @@
     "nathi",
     "aavu",
     "gayu",
+    "avse",
     "joie",
     "shako",
     "kari",
@@ -233,12 +246,24 @@
     "have": "હવે",
     "joie": "જોઈએ",
     "amdavad": "અમદાવાદ",
+    "paisa": "પૈસા",
+    "avse": "આવશે",
     "chhiye": "છીએ",
     "aavo": "આવો",
     "jao": "જાઓ",
     "pachi": "પછી",
     "savare": "સવારે",
     "sanje": "સાંજે",
-    "ratre": "રાત્રે"
+    "ratre": "રાત્રે",
+    "aahi": "અહીં",
+    "tyaa": "ત્યાં",
+    "ni": "ની",
+    "ke": "કે",
+    "tamare": "તમારે",
+    "aa": "આ",
+    "vage": "વાગે",
+    "fari": "ફરી",
+    "nu": "નું",
+    "jagyae": "જગ્યાએ"
   }
 }

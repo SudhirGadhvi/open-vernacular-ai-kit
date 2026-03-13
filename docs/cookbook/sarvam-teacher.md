@@ -186,6 +186,29 @@ Recommended actions:
 - `reject`
 - `pending`
 
+## Build A Triage Report
+
+Before manual review, generate a report that buckets mined candidates into:
+
+- novel single-token candidates
+- already-known mappings
+- mapping conflicts
+- phrase candidates
+- English-keep candidates
+- ambiguous candidates
+
+Use it to focus review on low-risk profile additions and to avoid spending time on obvious loanwords
+or phrase-like candidates that should not be auto-promoted.
+
+```bash
+python3 scripts/report_sarvam_candidates.py \
+  --input eval/out/sarvam_candidates/realworld_seed.jsonl \
+  --output eval/out/sarvam_candidates/realworld_seed_report.json
+```
+
+The report compares mined tokens against the current shipped `gu.json` and `hi.json` profiles and
+surfaces the likely review buckets up front.
+
 ## Promote Sentence Cases
 
 Only after review, promote accepted sentence cases:

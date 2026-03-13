@@ -134,7 +134,11 @@
     "thase",
     "padse",
     "thato",
-    "rakho"
+    "rakho",
+    "pohnchyoo",
+    "krjo",
+    "karjo",
+    "chu"
   ],
   "context_roman_tokens": [
     "ma",
@@ -149,7 +153,8 @@
     "pela",
     "mate",
     "haju",
-    "vagar"
+    "vagar",
+    "bapor"
   ],
   "roman_clusters": [
     "aa",
@@ -312,6 +317,11 @@
     "thase": "થશે",
     "padse": "પડશે",
     "thato": "થતો",
-    "rakho": "રાખો"
+    "rakho": "રાખો",
+    "pohnchyoo": "પહોંચ્યો",
+    "krjo": "કરજો",
+    "bapor": "બપોર",
+    "karjo": "કરજો",
+    "chu": "છું"
   }
 }

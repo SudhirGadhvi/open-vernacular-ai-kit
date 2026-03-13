@@ -84,6 +84,11 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("cod order mate exact cash ready rakho please", "cod order માટે exact cash ready રાખો please"),
         ("nearest branch ma document physical submit karva padse", "nearest branch માં document physical submit karva પડશે"),
         ("tamaro plan auto renew off kem nathi thato", "તમારો plan auto renew off કેમ નથી થતો"),
+        ("callback sanje j karjo ok?", "callback સાંજે j કરજો ok?"),
+        ("office ma chu pachi call karjo", "office માં છું પછી call કરજો"),
+        ("invoice pdf mail krjo pls", "invoice pdf mail કરજો pls"),
+        ("pickup savare aavse ke bapor pachi?", "pickup સવારે aavse કે બપોર પછી?"),
+        ("parcel kya sudhi pohnchyoo?", "parcel ક્યાં sudhi પહોંચ્યો?"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
@@ -117,6 +122,11 @@ def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
         ("nearest branch me document physically submit karna padega", "nearest branch में document physically submit करना पड़ेगा"),
         ("address proof clear nahin tha isliye reject hua", "address proof clear नहीं था इसलिए reject hua"),
         ("mujhe jaldi refund chahiye", "मुझे जल्दी refund चाहिए"),
+        ("discount apply nhi hua aj bhi", "discount apply nhi hua आज bhi"),
+        ("otp aj tk nahi aaya yrr", "otp आज तक नहीं aaya yrr"),
+        ("office me hu baad me call krna", "office में hu बाद में call krna"),
+        ("coupon code bilkul work nhi kr rha", "coupon code बिल्कुल work nhi kr rha"),
+        ("verify ke liye photo dubara upload kr do", "verify के लिए photo दुबारा upload kr do"),
     ],
 )
 def test_render_codemix_hindi_quality_cases(raw: str, expected: str) -> None:

@@ -170,7 +170,9 @@
     "mila",
     "turant",
     "padega",
-    "jaldi"
+    "jaldi",
+    "bilkul",
+    "dubara"
   ],
   "context_roman_tokens": [
     "ka",
@@ -184,7 +186,10 @@
     "dobara",
     "abhi",
     "niche",
-    "isliye"
+    "isliye",
+    "baad",
+    "aj",
+    "tk"
   ],
   "roman_clusters": [
     "aa",
@@ -395,6 +400,11 @@
     "turant": "तुरंत",
     "padega": "पड़ेगा",
     "isliye": "इसलिए",
-    "jaldi": "जल्दी"
+    "jaldi": "जल्दी",
+    "bilkul": "बिल्कुल",
+    "dubara": "दुबारा",
+    "baad": "बाद",
+    "aj": "आज",
+    "tk": "तक"
   }
 }

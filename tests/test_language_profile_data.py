@@ -61,6 +61,12 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["javun"] == "જવું"
     assert gu.default_exceptions["ochha"] == "ઓછા"
     assert gu.default_exceptions["dubara"] == "ફરીથી"
+    assert gu.default_exceptions["vishe"] == "વિશે"
+    assert gu.default_exceptions["niche"] == "નીચે"
+    assert gu.default_exceptions["thi"] == "થી"
+    assert gu.default_exceptions["chale"] == "ચાલે"
+    assert gu.default_exceptions["sudhi"] == "સુધી"
+    assert gu.default_exceptions["moklyo"] == "મોકલ્યો"
     assert gu.default_exceptions["mate"] == "માટે"
     assert gu.default_exceptions["haju"] == "હજુ"
     assert gu.default_exceptions["vagar"] == "વગર"
@@ -90,6 +96,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "aavyo" in gu.common_roman_tokens
     assert "javun" in gu.common_roman_tokens
     assert "ochha" in gu.common_roman_tokens
+    assert "niche" in gu.common_roman_tokens
+    assert "chale" in gu.common_roman_tokens
+    assert "moklyo" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
     assert "sathe" in gu.context_roman_tokens
@@ -100,6 +109,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "vagar" in gu.context_roman_tokens
     assert "bapor" in gu.context_roman_tokens
     assert "dubara" in gu.context_roman_tokens
+    assert "vishe" in gu.context_roman_tokens
+    assert "thi" in gu.context_roman_tokens
+    assert "sudhi" in gu.context_roman_tokens
     assert "lekin" in hi.common_roman_tokens
     assert hi.default_exceptions["dobara"] == "दोबारा"
     assert hi.default_exceptions["abhi"] == "अभी"

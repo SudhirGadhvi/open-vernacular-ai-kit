@@ -142,7 +142,10 @@
     "ochha",
     "krjo",
     "karjo",
-    "chu"
+    "chu",
+    "niche",
+    "chale",
+    "moklyo"
   ],
   "context_roman_tokens": [
     "ma",
@@ -159,7 +162,10 @@
     "haju",
     "vagar",
     "bapor",
-    "dubara"
+    "dubara",
+    "vishe",
+    "thi",
+    "sudhi"
   ],
   "roman_clusters": [
     "aa",
@@ -332,6 +338,12 @@
     "bapor": "બપોર",
     "dubara": "ફરીથી",
     "karjo": "કરજો",
-    "chu": "છું"
+    "chu": "છું",
+    "vishe": "વિશે",
+    "niche": "નીચે",
+    "thi": "થી",
+    "chale": "ચાલે",
+    "sudhi": "સુધી",
+    "moklyo": "મોકલ્યો"
   }
 }

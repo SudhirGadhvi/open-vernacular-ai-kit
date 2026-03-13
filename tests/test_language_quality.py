@@ -75,6 +75,12 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("aa coupon code kem kaam nathi karto", "આ coupon code કેમ કામ નથી કરતો"),
         ("mobile number change karvu chhe", "mobile number change કરવું છે"),
         ("customer care vala mane callback kare", "customer care vala મને callback કરે"),
+        ("cod order mate exact cash ready rakhjo", "cod order માટે exact cash ready રાખજો"),
+        ("tamaro otp expire thai gayo ke haju valid chhe", "તમારો otp expire થઈ gayo કે હજુ valid છે"),
+        ("bank account verify thayu chhata payout atkyu chhe", "bank account verify thayu છતાં payout અટક્યું છે"),
+        ("tamaro promo code minimum amount vagar kaam nathi karto", "તમારો promo code minimum amount વગર કામ નથી કરતો"),
+        ("order hold mathi release kyare thase", "order hold mathi release ક્યારે થશે"),
+        ("cash memo pdf turant share karo", "cash memo pdf તુરંત share કરો"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
@@ -104,6 +110,7 @@ def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
         ("return pickup kal subah chahiye", "return pickup कल सुबह चाहिए"),
         ("coupon apply karyo but discount nahin mila", "coupon apply karyo but discount नहीं मिला"),
         ("delivery boy ghar ke niche wait kari raha hai", "delivery boy घर के नीचे wait kari रहा है"),
+        ("cash memo pdf turant bhej dijiye", "cash memo pdf तुरंत भेज दीजिए"),
     ],
 )
 def test_render_codemix_hindi_quality_cases(raw: str, expected: str) -> None:

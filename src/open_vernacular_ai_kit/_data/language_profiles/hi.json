@@ -167,7 +167,8 @@
     "kyon",
     "bhejo",
     "subah",
-    "mila"
+    "mila",
+    "turant"
   ],
   "context_roman_tokens": [
     "ka",
@@ -387,6 +388,7 @@
     "bhejo": "भेजो",
     "subah": "सुबह",
     "mila": "मिला",
-    "niche": "नीचे"
+    "niche": "नीचे",
+    "turant": "तुरंत"
   }
 }

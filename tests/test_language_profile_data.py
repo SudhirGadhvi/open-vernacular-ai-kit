@@ -43,6 +43,14 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["karto"] == "કરતો"
     assert gu.default_exceptions["karvu"] == "કરવું"
     assert gu.default_exceptions["kare"] == "કરે"
+    assert gu.default_exceptions["rakhjo"] == "રાખજો"
+    assert gu.default_exceptions["chhata"] == "છતાં"
+    assert gu.default_exceptions["atkyu"] == "અટક્યું"
+    assert gu.default_exceptions["turant"] == "તુરંત"
+    assert gu.default_exceptions["thase"] == "થશે"
+    assert gu.default_exceptions["mate"] == "માટે"
+    assert gu.default_exceptions["haju"] == "હજુ"
+    assert gu.default_exceptions["vagar"] == "વગર"
     assert "tamare" in gu.common_roman_tokens
     assert "aa" in gu.common_roman_tokens
     assert "fari" in gu.common_roman_tokens
@@ -53,11 +61,19 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "karto" in gu.common_roman_tokens
     assert "karvu" in gu.common_roman_tokens
     assert "kare" in gu.common_roman_tokens
+    assert "rakhjo" in gu.common_roman_tokens
+    assert "chhata" in gu.common_roman_tokens
+    assert "atkyu" in gu.common_roman_tokens
+    assert "turant" in gu.common_roman_tokens
+    assert "thase" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
     assert "sathe" in gu.context_roman_tokens
     assert "etle" in gu.context_roman_tokens
     assert "pela" in gu.context_roman_tokens
+    assert "mate" in gu.context_roman_tokens
+    assert "haju" in gu.context_roman_tokens
+    assert "vagar" in gu.context_roman_tokens
     assert "lekin" in hi.common_roman_tokens
     assert hi.default_exceptions["dobara"] == "दोबारा"
     assert hi.default_exceptions["abhi"] == "अभी"
@@ -68,12 +84,14 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert hi.default_exceptions["subah"] == "सुबह"
     assert hi.default_exceptions["mila"] == "मिला"
     assert hi.default_exceptions["niche"] == "नीचे"
+    assert hi.default_exceptions["turant"] == "तुरंत"
     assert "galat" in hi.common_roman_tokens
     assert "batayiye" in hi.common_roman_tokens
     assert "kyon" in hi.common_roman_tokens
     assert "bhejo" in hi.common_roman_tokens
     assert "subah" in hi.common_roman_tokens
     assert "mila" in hi.common_roman_tokens
+    assert "turant" in hi.common_roman_tokens
     assert "dobara" in hi.context_roman_tokens
     assert "abhi" in hi.context_roman_tokens
     assert "niche" in hi.context_roman_tokens

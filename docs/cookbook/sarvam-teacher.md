@@ -39,6 +39,21 @@ Bundled starter dataset:
 - `eval/datasets/sarvam_teacher_seed.jsonl`
 - `eval/datasets/sarvam_teacher_large_seed.jsonl`
 
+## Build A Failure-Driven Seed
+
+When a review cycle is exhausted, start the next one from actual eval regressions instead of another
+manual seed list:
+
+```bash
+python3 scripts/build_sarvam_failure_seed.py \
+  --output eval/out/sarvam_candidates/failure_seed.jsonl \
+  --report eval/out/sarvam_candidates/failure_seed_report.json
+```
+
+This replays the packaged `language_sentences` and `golden_translit` evals and emits only rows that
+currently fail. If the output is empty, the current shipped eval set is green and the next mining
+cycle should use new real-world text instead of forcing more promotions from old seed data.
+
 ## Run Mining
 
 Install the optional Sarvam dependency first:

@@ -81,6 +81,9 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("tamaro promo code minimum amount vagar kaam nathi karto", "તમારો promo code minimum amount વગર કામ નથી કરતો"),
         ("order hold mathi release kyare thase", "order hold mathi release ક્યારે થશે"),
         ("cash memo pdf turant share karo", "cash memo pdf તુરંત share કરો"),
+        ("cod order mate exact cash ready rakho please", "cod order માટે exact cash ready રાખો please"),
+        ("nearest branch ma document physical submit karva padse", "nearest branch માં document physical submit karva પડશે"),
+        ("tamaro plan auto renew off kem nathi thato", "તમારો plan auto renew off કેમ નથી થતો"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
@@ -111,6 +114,9 @@ def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
         ("coupon apply karyo but discount nahin mila", "coupon apply karyo but discount नहीं मिला"),
         ("delivery boy ghar ke niche wait kari raha hai", "delivery boy घर के नीचे wait kari रहा है"),
         ("cash memo pdf turant bhej dijiye", "cash memo pdf तुरंत भेज दीजिए"),
+        ("nearest branch me document physically submit karna padega", "nearest branch में document physically submit करना पड़ेगा"),
+        ("address proof clear nahin tha isliye reject hua", "address proof clear नहीं था इसलिए reject hua"),
+        ("mujhe jaldi refund chahiye", "मुझे जल्दी refund चाहिए"),
     ],
 )
 def test_render_codemix_hindi_quality_cases(raw: str, expected: str) -> None:

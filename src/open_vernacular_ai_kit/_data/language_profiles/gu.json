@@ -131,7 +131,10 @@
     "chhata",
     "atkyu",
     "turant",
-    "thase"
+    "thase",
+    "padse",
+    "thato",
+    "rakho"
   ],
   "context_roman_tokens": [
     "ma",
@@ -306,6 +309,9 @@
     "atkyu": "અટક્યું",
     "vagar": "વગર",
     "turant": "તુરંત",
-    "thase": "થશે"
+    "thase": "થશે",
+    "padse": "પડશે",
+    "thato": "થતો",
+    "rakho": "રાખો"
   }
 }

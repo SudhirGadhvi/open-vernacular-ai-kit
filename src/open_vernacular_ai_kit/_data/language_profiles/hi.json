@@ -168,7 +168,9 @@
     "bhejo",
     "subah",
     "mila",
-    "turant"
+    "turant",
+    "padega",
+    "jaldi"
   ],
   "context_roman_tokens": [
     "ka",
@@ -181,7 +183,8 @@
     "to",
     "dobara",
     "abhi",
-    "niche"
+    "niche",
+    "isliye"
   ],
   "roman_clusters": [
     "aa",
@@ -389,6 +392,9 @@
     "subah": "सुबह",
     "mila": "मिला",
     "niche": "नीचे",
-    "turant": "तुरंत"
+    "turant": "तुरंत",
+    "padega": "पड़ेगा",
+    "isliye": "इसलिए",
+    "jaldi": "जल्दी"
   }
 }

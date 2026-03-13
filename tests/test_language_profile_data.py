@@ -48,6 +48,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["atkyu"] == "અટક્યું"
     assert gu.default_exceptions["turant"] == "તુરંત"
     assert gu.default_exceptions["thase"] == "થશે"
+    assert gu.default_exceptions["rakho"] == "રાખો"
+    assert gu.default_exceptions["padse"] == "પડશે"
+    assert gu.default_exceptions["thato"] == "થતો"
     assert gu.default_exceptions["mate"] == "માટે"
     assert gu.default_exceptions["haju"] == "હજુ"
     assert gu.default_exceptions["vagar"] == "વગર"
@@ -66,6 +69,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "atkyu" in gu.common_roman_tokens
     assert "turant" in gu.common_roman_tokens
     assert "thase" in gu.common_roman_tokens
+    assert "rakho" in gu.common_roman_tokens
+    assert "padse" in gu.common_roman_tokens
+    assert "thato" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
     assert "sathe" in gu.context_roman_tokens
@@ -85,6 +91,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert hi.default_exceptions["mila"] == "मिला"
     assert hi.default_exceptions["niche"] == "नीचे"
     assert hi.default_exceptions["turant"] == "तुरंत"
+    assert hi.default_exceptions["padega"] == "पड़ेगा"
+    assert hi.default_exceptions["isliye"] == "इसलिए"
+    assert hi.default_exceptions["jaldi"] == "जल्दी"
     assert "galat" in hi.common_roman_tokens
     assert "batayiye" in hi.common_roman_tokens
     assert "kyon" in hi.common_roman_tokens
@@ -92,6 +101,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "subah" in hi.common_roman_tokens
     assert "mila" in hi.common_roman_tokens
     assert "turant" in hi.common_roman_tokens
+    assert "padega" in hi.common_roman_tokens
+    assert "jaldi" in hi.common_roman_tokens
     assert "dobara" in hi.context_roman_tokens
     assert "abhi" in hi.context_roman_tokens
     assert "niche" in hi.context_roman_tokens
+    assert "isliye" in hi.context_roman_tokens

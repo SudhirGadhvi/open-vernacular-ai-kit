@@ -126,7 +126,12 @@
     "moklo",
     "karto",
     "karvu",
-    "kare"
+    "kare",
+    "rakhjo",
+    "chhata",
+    "atkyu",
+    "turant",
+    "thase"
   ],
   "context_roman_tokens": [
     "ma",
@@ -138,7 +143,10 @@
     "nu",
     "sathe",
     "etle",
-    "pela"
+    "pela",
+    "mate",
+    "haju",
+    "vagar"
   ],
   "roman_clusters": [
     "aa",
@@ -290,6 +298,14 @@
     "moklo": "મોકલો",
     "karto": "કરતો",
     "karvu": "કરવું",
-    "kare": "કરે"
+    "kare": "કરે",
+    "mate": "માટે",
+    "rakhjo": "રાખજો",
+    "haju": "હજુ",
+    "chhata": "છતાં",
+    "atkyu": "અટક્યું",
+    "vagar": "વગર",
+    "turant": "તુરંત",
+    "thase": "થશે"
   }
 }

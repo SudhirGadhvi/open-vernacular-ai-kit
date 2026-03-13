@@ -136,6 +136,10 @@
     "thato",
     "rakho",
     "pohnchyoo",
+    "thayu",
+    "aavyo",
+    "javun",
+    "ochha",
     "krjo",
     "karjo",
     "chu"
@@ -154,7 +158,8 @@
     "mate",
     "haju",
     "vagar",
-    "bapor"
+    "bapor",
+    "dubara"
   ],
   "roman_clusters": [
     "aa",
@@ -319,8 +324,13 @@
     "thato": "થતો",
     "rakho": "રાખો",
     "pohnchyoo": "પહોંચ્યો",
+    "thayu": "થયું",
+    "aavyo": "આવ્યો",
+    "javun": "જવું",
+    "ochha": "ઓછા",
     "krjo": "કરજો",
     "bapor": "બપોર",
+    "dubara": "ફરીથી",
     "karjo": "કરજો",
     "chu": "છું"
   }

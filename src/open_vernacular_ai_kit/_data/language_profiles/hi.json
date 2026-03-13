@@ -172,7 +172,8 @@
     "padega",
     "jaldi",
     "bilkul",
-    "dubara"
+    "dubara",
+    "dopahar"
   ],
   "context_roman_tokens": [
     "ka",
@@ -403,6 +404,7 @@
     "jaldi": "जल्दी",
     "bilkul": "बिल्कुल",
     "dubara": "दुबारा",
+    "dopahar": "दोपहर",
     "baad": "बाद",
     "aj": "आज",
     "tk": "तक"

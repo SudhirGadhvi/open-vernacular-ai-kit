@@ -38,6 +38,7 @@ Bundled starter dataset:
 
 - `eval/datasets/sarvam_teacher_seed.jsonl`
 - `eval/datasets/sarvam_teacher_large_seed.jsonl`
+- `eval/datasets/sarvam_teacher_realworld_seed.jsonl`
 
 ## Build A Failure-Driven Seed
 
@@ -53,6 +54,25 @@ python3 scripts/build_sarvam_failure_seed.py \
 This replays the packaged `language_sentences` and `golden_translit` evals and emits only rows that
 currently fail. If the output is empty, the current shipped eval set is green and the next mining
 cycle should use new real-world text instead of forcing more promotions from old seed data.
+
+The bundled real-world pack exists for exactly that case:
+
+- `eval/datasets/sarvam_teacher_realworld_seed.jsonl`
+
+It contains `90` support, billing, logistics, account, and ecommerce-style prompts across:
+
+- `30` Gujarati
+- `30` Hindi
+- `30` mixed Hindi/Gujarati + English
+
+Use it when the failure-driven seed is empty:
+
+```bash
+python3 scripts/mine_sarvam_candidates.py \
+  --input eval/datasets/sarvam_teacher_realworld_seed.jsonl \
+  --output eval/out/sarvam_candidates/realworld_seed.jsonl \
+  --model sarvam-m
+```
 
 ## Run Mining
 

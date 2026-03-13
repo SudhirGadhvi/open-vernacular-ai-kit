@@ -54,6 +54,13 @@ from .rag_datasets import (
     load_gujarat_facts_tiny,
     load_vernacular_facts_tiny,
 )
+from .sarvam_review import (
+    SarvamTeacherReviewedRecord,
+    dump_reviewed_records_jsonl,
+    init_review_record,
+    init_review_records_from_candidates,
+    load_reviewed_records_jsonl,
+)
 from .sarvam_teacher import (
     SarvamTeacherCandidateRecord,
     SarvamTeacherInput,
@@ -114,11 +121,16 @@ __all__ = [
     "SarvamTeacherInput",
     "SarvamTeacherTokenCandidate",
     "SarvamTeacherCandidateRecord",
+    "SarvamTeacherReviewedRecord",
     "build_sarvam_teacher_prompt",
     "parse_sarvam_teacher_response",
     "mine_sarvam_teacher_candidate",
     "load_sarvam_teacher_inputs_jsonl",
     "dump_sarvam_teacher_records_jsonl",
+    "init_review_record",
+    "init_review_records_from_candidates",
+    "load_reviewed_records_jsonl",
+    "dump_reviewed_records_jsonl",
 ]
 
 __version__ = "1.1.0"

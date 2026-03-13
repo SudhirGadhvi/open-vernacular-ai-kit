@@ -108,3 +108,29 @@ Use them as reviewed candidates only. The next step should be:
 2. accept or reject candidates
 3. promote approved items into profile data or eval datasets
 4. rerun tests and evals
+
+## Initialize Review Scaffold
+
+Create a reviewed JSONL scaffold from mined output:
+
+```bash
+python3 scripts/init_sarvam_review.py \
+  --input eval/out/sarvam_candidates/seed.jsonl \
+  --output eval/datasets/sarvam_teacher_seed_reviewed.jsonl
+```
+
+Reviewed records add:
+
+- `review_action`
+- `reviewed_expected`
+- `approved_candidate_tokens`
+- `review_notes`
+
+Recommended actions:
+
+- `accept_sentence_case`
+- `accept_lexicon`
+- `accept_context_rule`
+- `accept_dialect_case`
+- `reject`
+- `pending`

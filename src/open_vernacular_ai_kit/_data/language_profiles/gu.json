@@ -116,7 +116,14 @@
     "aa",
     "vage",
     "fari",
-    "jagyae"
+    "jagyae",
+    "ochhu",
+    "paise",
+    "malyo",
+    "batave",
+    "avsho",
+    "atki",
+    "moklo"
   ],
   "context_roman_tokens": [
     "ma",
@@ -125,7 +132,10 @@
     "to",
     "ni",
     "ke",
-    "nu"
+    "nu",
+    "sathe",
+    "etle",
+    "pela"
   ],
   "roman_clusters": [
     "aa",
@@ -264,6 +274,16 @@
     "vage": "વાગે",
     "fari": "ફરી",
     "nu": "નું",
-    "jagyae": "જગ્યાએ"
+    "jagyae": "જગ્યાએ",
+    "sathe": "સાથે",
+    "ochhu": "ઓછું",
+    "etle": "એટલે",
+    "pela": "પહેલા",
+    "paise": "પૈસા",
+    "malyo": "મળ્યો",
+    "batave": "બતાવે",
+    "avsho": "આવશો",
+    "atki": "અટકી",
+    "moklo": "મોકલો"
   }
 }

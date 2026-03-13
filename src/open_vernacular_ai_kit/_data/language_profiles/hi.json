@@ -161,7 +161,9 @@
     "kar",
     "jagah",
     "kijiye",
-    "lekin"
+    "lekin",
+    "galat",
+    "batayiye"
   ],
   "context_roman_tokens": [
     "ka",
@@ -171,7 +173,9 @@
     "se",
     "me",
     "na",
-    "to"
+    "to",
+    "dobara",
+    "abhi"
   ],
   "roman_clusters": [
     "aa",
@@ -369,6 +373,10 @@
     "kar": "कर",
     "jagah": "जगह",
     "kijiye": "कीजिए",
-    "lekin": "लेकिन"
+    "lekin": "लेकिन",
+    "dobara": "दोबारा",
+    "galat": "गलत",
+    "abhi": "अभी",
+    "batayiye": "बताइए"
   }
 }

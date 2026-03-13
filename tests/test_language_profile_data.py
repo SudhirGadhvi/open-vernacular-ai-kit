@@ -30,10 +30,34 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["nu"] == "નું"
     assert gu.default_exceptions["vage"] == "વાગે"
     assert gu.default_exceptions["jagyae"] == "જગ્યાએ"
+    assert gu.default_exceptions["sathe"] == "સાથે"
+    assert gu.default_exceptions["ochhu"] == "ઓછું"
+    assert gu.default_exceptions["etle"] == "એટલે"
+    assert gu.default_exceptions["pela"] == "પહેલા"
+    assert gu.default_exceptions["paise"] == "પૈસા"
+    assert gu.default_exceptions["malyo"] == "મળ્યો"
+    assert gu.default_exceptions["batave"] == "બતાવે"
+    assert gu.default_exceptions["avsho"] == "આવશો"
+    assert gu.default_exceptions["atki"] == "અટકી"
+    assert gu.default_exceptions["moklo"] == "મોકલો"
     assert "tamare" in gu.common_roman_tokens
     assert "aa" in gu.common_roman_tokens
     assert "fari" in gu.common_roman_tokens
     assert "jagyae" in gu.common_roman_tokens
+    assert "ochhu" in gu.common_roman_tokens
+    assert "paise" in gu.common_roman_tokens
+    assert "moklo" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
+    assert "sathe" in gu.context_roman_tokens
+    assert "etle" in gu.context_roman_tokens
+    assert "pela" in gu.context_roman_tokens
     assert "lekin" in hi.common_roman_tokens
+    assert hi.default_exceptions["dobara"] == "दोबारा"
+    assert hi.default_exceptions["abhi"] == "अभी"
+    assert hi.default_exceptions["galat"] == "गलत"
+    assert hi.default_exceptions["batayiye"] == "बताइए"
+    assert "galat" in hi.common_roman_tokens
+    assert "batayiye" in hi.common_roman_tokens
+    assert "dobara" in hi.context_roman_tokens
+    assert "abhi" in hi.context_roman_tokens

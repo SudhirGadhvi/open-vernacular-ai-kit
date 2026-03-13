@@ -206,7 +206,12 @@ def promote_profile_candidates_from_review(
             tokens_considered += 1
             roman = str(candidate.roman or "").strip().lower()
             native = str(candidate.native or "").strip()
-            if not roman or not native or candidate.candidate_type == "english_keep":
+            if (
+                not roman
+                or not native
+                or candidate.candidate_type == "english_keep"
+                or any(ch.isspace() for ch in roman)
+            ):
                 invalid_candidates.append(
                     {
                         "input": reviewed.candidate.input,

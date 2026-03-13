@@ -181,6 +181,7 @@ python3 scripts/promote_sarvam_profile_candidates.py \
 This script:
 
 - uses only `approved_candidate_tokens`
+- accepts only single-token roman candidates for profile promotion
 - promotes `accept_lexicon` rows into `common_roman_tokens` + `default_exceptions`
 - promotes `accept_context_rule` rows into `context_roman_tokens` + `default_exceptions`
 - blocks mapping conflicts by default when an existing roman token maps to a different native form

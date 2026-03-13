@@ -291,3 +291,48 @@ def test_promote_profile_candidates_reports_cross_bucket_conflicts() -> None:
     assert merged["gu"]["common_roman_tokens"] == []
     assert report["n_tokens_promoted"] == 0
     assert report["n_bucket_conflicts"] == 1
+
+
+def test_promote_profile_candidates_rejects_phrase_like_tokens() -> None:
+    reviewed_rows = [
+        init_review_record(
+            _candidate("kya ghar par sab theek hai", "hi", "क्या घर पर सब ठीक है"),
+            review_action="accept_context_rule",
+            reviewed_expected="क्या घर पर सब ठीक है",
+            approved_candidate_tokens=[
+                SarvamTeacherTokenCandidate(
+                    roman="ghar par",
+                    native="घर पर",
+                    candidate_type="context_token",
+                )
+            ],
+            prefer_meta_expected=False,
+        )
+    ]
+    profiles = {
+        "gu": {
+            "code": "gu",
+            "common_roman_tokens": [],
+            "context_roman_tokens": [],
+            "roman_clusters": [],
+            "roman_suffixes": [],
+            "default_exceptions": {},
+        },
+        "hi": {
+            "code": "hi",
+            "common_roman_tokens": [],
+            "context_roman_tokens": [],
+            "roman_clusters": [],
+            "roman_suffixes": [],
+            "default_exceptions": {},
+        },
+    }
+
+    merged, report = promote_profile_candidates_from_review(
+        reviewed_rows,
+        existing_profiles=profiles,
+    )
+
+    assert merged["hi"]["context_roman_tokens"] == []
+    assert report["n_tokens_promoted"] == 0
+    assert report["n_invalid_candidates"] == 1

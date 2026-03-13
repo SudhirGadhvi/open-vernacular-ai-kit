@@ -18,7 +18,20 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert hi.default_exceptions["dijiye"] == "दीजिए"
     assert hi.default_exceptions["madad"] == "मदद"
     assert hi.default_exceptions["bhej"] == "भेज"
+    assert hi.default_exceptions["lekin"] == "लेकिन"
     assert gu.default_exceptions["chhiye"] == "છીએ"
     assert gu.default_exceptions["aavo"] == "આવો"
     assert gu.default_exceptions["paisa"] == "પૈસા"
     assert gu.default_exceptions["avse"] == "આવશે"
+    assert gu.default_exceptions["tamare"] == "તમારે"
+    assert gu.default_exceptions["aa"] == "આ"
+    assert gu.default_exceptions["fari"] == "ફરી"
+    assert gu.default_exceptions["ni"] == "ની"
+    assert gu.default_exceptions["nu"] == "નું"
+    assert gu.default_exceptions["vage"] == "વાગે"
+    assert "tamare" in gu.common_roman_tokens
+    assert "aa" in gu.common_roman_tokens
+    assert "fari" in gu.common_roman_tokens
+    assert "ni" in gu.context_roman_tokens
+    assert "nu" in gu.context_roman_tokens
+    assert "lekin" in hi.common_roman_tokens

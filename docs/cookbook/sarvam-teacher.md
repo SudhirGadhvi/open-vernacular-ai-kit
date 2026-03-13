@@ -37,6 +37,7 @@ Accepted fields:
 Bundled starter dataset:
 
 - `eval/datasets/sarvam_teacher_seed.jsonl`
+- `eval/datasets/sarvam_teacher_large_seed.jsonl`
 
 ## Run Mining
 
@@ -56,6 +57,18 @@ python3 scripts/mine_sarvam_candidates.py \
 ```
 
 Use `SARVAM_API_KEY` in your shell, or pass `--api-key`.
+
+For a broader batch that mixes packaged sentence cases with extra support and ecommerce-style prompts:
+
+```bash
+python3 scripts/mine_sarvam_candidates.py \
+  --input eval/datasets/sarvam_teacher_large_seed.jsonl \
+  --output eval/out/sarvam_candidates/large_seed.jsonl \
+  --model sarvam-m
+```
+
+The bundled large seed currently contains `165` rows and is intended for deeper review passes before
+lexicon or context-rule promotion.
 
 ## Output Schema
 
@@ -118,6 +131,9 @@ python3 scripts/init_sarvam_review.py \
   --input eval/out/sarvam_candidates/seed.jsonl \
   --output eval/datasets/sarvam_teacher_seed_reviewed.jsonl
 ```
+
+For larger mining batches, keep the initialized review scaffold under `eval/out/` until the review is
+curated enough to become a committed dataset.
 
 Reviewed records add:
 

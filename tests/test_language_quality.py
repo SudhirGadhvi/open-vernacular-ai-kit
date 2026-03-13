@@ -77,7 +77,7 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("customer care vala mane callback kare", "customer care vala મને callback કરે"),
         ("cod order mate exact cash ready rakhjo", "cod order માટે exact cash ready રાખજો"),
         ("tamaro otp expire thai gayo ke haju valid chhe", "તમારો otp expire થઈ gayo કે હજુ valid છે"),
-        ("bank account verify thayu chhata payout atkyu chhe", "bank account verify thayu છતાં payout અટક્યું છે"),
+        ("bank account verify thayu chhata payout atkyu chhe", "bank account verify થયું છતાં payout અટક્યું છે"),
         ("tamaro promo code minimum amount vagar kaam nathi karto", "તમારો promo code minimum amount વગર કામ નથી કરતો"),
         ("order hold mathi release kyare thase", "order hold mathi release ક્યારે થશે"),
         ("cash memo pdf turant share karo", "cash memo pdf તુરંત share કરો"),
@@ -89,6 +89,11 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("invoice pdf mail krjo pls", "invoice pdf mail કરજો pls"),
         ("pickup savare aavse ke bapor pachi?", "pickup સવારે aavse કે બપોર પછી?"),
         ("parcel kya sudhi pohnchyoo?", "parcel ક્યાં sudhi પહોંચ્યો?"),
+        ("verify mate photo dubara upload krdo", "verify માટે photo ફરીથી upload krdo"),
+        ("payment fail thayu pn paisa cut thai gaya", "payment fail થયું pn પૈસા cut થઈ gaya"),
+        ("refund initiate thai gyo pn sms nathi aavyo", "refund initiate થઈ gyo pn sms નથી આવ્યો"),
+        ("nearest store javun pade?", "nearest store જવું pade?"),
+        ("wallet ma paisa ochha batave chhe", "wallet માં પૈસા ઓછા બતાવે છે"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
@@ -127,6 +132,7 @@ def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
         ("office me hu baad me call krna", "office में hu बाद में call krna"),
         ("coupon code bilkul work nhi kr rha", "coupon code बिल्कुल work nhi kr rha"),
         ("verify ke liye photo dubara upload kr do", "verify के लिए photo दुबारा upload kr do"),
+        ("pickup subah hoga ya dopahar baad?", "pickup सुबह होगा ya दोपहर बाद?"),
     ],
 )
 def test_render_codemix_hindi_quality_cases(raw: str, expected: str) -> None:

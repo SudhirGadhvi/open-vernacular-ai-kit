@@ -149,7 +149,15 @@
     "badha",
     "mne",
     "joiye",
-    "gaya"
+    "gaya",
+    "aavse",
+    "samajhatu",
+    "batavyu",
+    "ochho",
+    "jaldi",
+    "aapo",
+    "adhuro",
+    "badhu"
   ],
   "context_roman_tokens": [
     "ma",
@@ -356,6 +364,14 @@
     "je": "જે",
     "jyare": "જ્યારે",
     "joiye": "જોઈએ",
-    "gaya": "ગયા"
+    "gaya": "ગયા",
+    "aavse": "આવશે",
+    "samajhatu": "સમજાતું",
+    "batavyu": "બતાવ્યું",
+    "ochho": "ઓછો",
+    "jaldi": "જલ્દી",
+    "aapo": "આપો",
+    "adhuro": "અધૂરો",
+    "badhu": "બધું"
   }
 }

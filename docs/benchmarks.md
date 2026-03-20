@@ -71,6 +71,14 @@ These compare raw vs OVAK-normalized inputs and report absolute uplift deltas:
 - `retrieval_uplift`: top-k retrieval recall for raw queries vs normalized queries
 - `prompt_stability_uplift`: pairwise similarity for Sarvam outputs under raw prompts vs normalized prompts
 
+For retrieval uplift, query preprocessing is intentionally conservative:
+
+- English-first queries are left unchanged
+- code-mixed / vernacular-bearing queries are normalized
+
+This avoids inflating negative uplift by transliterating English retrieval prompts that should remain
+in Latin script.
+
 ## Quality / Coverage (Gujarati Baseline Eval)
 
 This project also includes a lightweight, reproducible "coverage-style" eval on public Gujarati

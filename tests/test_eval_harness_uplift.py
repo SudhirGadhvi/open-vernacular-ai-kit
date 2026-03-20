@@ -116,3 +116,46 @@ def test_run_eval_dispatches_prompt_stability_uplift(monkeypatch) -> None:
     assert res["dataset"] == "prompt_stability_uplift"
     assert res["kwargs"]["model"] == "sarvam-m"
     assert res["kwargs"]["n_variants"] == 12
+
+
+def test_preprocess_retrieval_query_skips_english_first_queries(monkeypatch) -> None:
+    monkeypatch.setattr(
+        eval_harness,
+        "analyze_codemix",
+        lambda text: type(
+            "A",
+            (),
+            {
+                "codemix": "વ્હિચ language ...",
+                "n_gu_native_tokens": 0,
+                "n_gu_roman_tokens": 1,
+                "n_en_tokens": 10,
+                "n_tokens": 12,
+            },
+        )(),
+    )
+
+    assert eval_harness._preprocess_retrieval_query("Which language ...") == "Which language ..."
+
+
+def test_preprocess_retrieval_query_keeps_code_mixed_queries(monkeypatch) -> None:
+    monkeypatch.setattr(
+        eval_harness,
+        "analyze_codemix",
+        lambda text: type(
+            "A",
+            (),
+            {
+                "codemix": "મારું order status શું છે",
+                "n_gu_native_tokens": 0,
+                "n_gu_roman_tokens": 4,
+                "n_en_tokens": 2,
+                "n_tokens": 6,
+            },
+        )(),
+    )
+
+    assert (
+        eval_harness._preprocess_retrieval_query("maru order status shu chhe")
+        == "મારું order status શું છે"
+    )

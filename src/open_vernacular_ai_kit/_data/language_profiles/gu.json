@@ -162,7 +162,8 @@
     "bijo",
     "dekhatu",
     "didhu",
-    "htu"
+    "htu",
+    "aavya"
   ],
   "context_roman_tokens": [
     "ma",
@@ -184,7 +185,8 @@
     "thi",
     "sudhi",
     "je",
-    "jyare"
+    "jyare",
+    "mathi"
   ],
   "roman_clusters": [
     "aa",
@@ -382,6 +384,8 @@
     "bijo": "બીજો",
     "dekhatu": "દેખાતું",
     "didhu": "દીધું",
-    "htu": "હતું"
+    "htu": "હતું",
+    "aavya": "આવ્યા",
+    "mathi": "માંથી"
   }
 }

@@ -31,6 +31,7 @@ gck eval --dataset golden_translit --language all --translit-mode sentence
 gck eval --dataset language_sentences --language all --translit-mode sentence
 gck eval --dataset retrieval_uplift --k 5
 gck eval --dataset retrieval_uplift --retrieval-query-pack codemix --k 5
+gck eval --dataset retrieval_uplift --retrieval-query-pack codemix_hard --k 5
 gck eval --dataset prompt_stability_uplift --n-variants 10
 ```
 
@@ -41,6 +42,7 @@ For downstream-quality checks, use:
 
 - `retrieval_uplift`: compares retrieval recall with raw queries vs OVAK-normalized queries
 - `--retrieval-query-pack codemix`: uses the packaged code-mixed retrieval query pack
+- `--retrieval-query-pack codemix_hard`: uses the harder noisy/code-mixed retrieval pack
 - `prompt_stability_uplift`: compares Sarvam prompt-stability with raw prompts vs OVAK-normalized prompts
 
 Note: eval dependencies are optional; install with `pip install -e ".[eval]"`.

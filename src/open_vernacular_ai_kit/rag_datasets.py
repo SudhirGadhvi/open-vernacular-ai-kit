@@ -76,17 +76,32 @@ def load_vernacular_facts_tiny(*, query_pack: str = "default") -> RagDataset:
 
     docs_path = packaged_data_path("vernacular_facts_tiny_docs.jsonl")
     pack = str(query_pack or "default").strip().lower()
-    query_filename = "vernacular_facts_tiny_queries.jsonl"
-    if pack in {"codemix", "code-mix", "mixed"}:
-        query_filename = "vernacular_facts_tiny_codemix_queries.jsonl"
+    query_pack_map = {
+        "default": "vernacular_facts_tiny_queries.jsonl",
+        "codemix": "vernacular_facts_tiny_codemix_queries.jsonl",
+        "code-mix": "vernacular_facts_tiny_codemix_queries.jsonl",
+        "mixed": "vernacular_facts_tiny_codemix_queries.jsonl",
+        "codemix_hard": "vernacular_facts_tiny_codemix_hard_queries.jsonl",
+        "codemix-hard": "vernacular_facts_tiny_codemix_hard_queries.jsonl",
+        "hard": "vernacular_facts_tiny_codemix_hard_queries.jsonl",
+    }
+    query_filename = query_pack_map.get(pack)
+    if query_filename is None:
+        raise ValueError("query_pack must be one of: default, codemix, codemix_hard")
+    if pack in {"code-mix", "mixed"}:
         pack = "codemix"
-    elif pack != "default":
-        raise ValueError("query_pack must be one of: default, codemix")
+    if pack in {"codemix-hard", "hard"}:
+        pack = "codemix_hard"
 
     queries_path = packaged_data_path(query_filename)
     docs = load_rag_docs_jsonl(docs_path)
     queries = load_rag_queries_jsonl(queries_path)
-    name = "vernacular_facts_tiny" if pack == "default" else "vernacular_facts_tiny_codemix"
+    if pack == "default":
+        name = "vernacular_facts_tiny"
+    elif pack == "codemix":
+        name = "vernacular_facts_tiny_codemix"
+    else:
+        name = "vernacular_facts_tiny_codemix_hard"
     return RagDataset(name=name, docs=docs, queries=queries, source="packaged")
 
 

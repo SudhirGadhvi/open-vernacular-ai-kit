@@ -145,7 +145,11 @@
     "chu",
     "niche",
     "chale",
-    "moklyo"
+    "moklyo",
+    "badha",
+    "mne",
+    "joiye",
+    "gaya"
   ],
   "context_roman_tokens": [
     "ma",
@@ -165,7 +169,9 @@
     "dubara",
     "vishe",
     "thi",
-    "sudhi"
+    "sudhi",
+    "je",
+    "jyare"
   ],
   "roman_clusters": [
     "aa",
@@ -344,6 +350,12 @@
     "thi": "થી",
     "chale": "ચાલે",
     "sudhi": "સુધી",
-    "moklyo": "મોકલ્યો"
+    "moklyo": "મોકલ્યો",
+    "badha": "બધા",
+    "mne": "મને",
+    "je": "જે",
+    "jyare": "જ્યારે",
+    "joiye": "જોઈએ",
+    "gaya": "ગયા"
   }
 }

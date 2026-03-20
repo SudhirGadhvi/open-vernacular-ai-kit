@@ -1,0 +1,118 @@
+from __future__ import annotations
+
+import pytest
+
+from open_vernacular_ai_kit import eval_harness
+
+
+def test_run_retrieval_uplift_eval_compares_raw_vs_normalized(monkeypatch) -> None:
+    calls: list[bool] = []
+
+    def _fake_run_retrieval_eval(*, k_values, embedding_model, preprocess_query):
+        calls.append(bool(preprocess_query))
+        recall = {"1": 0.5, "3": 0.75, "5": 1.0}
+        if preprocess_query:
+            recall = {"1": 0.75, "3": 1.0, "5": 1.0}
+        return {
+            "dataset": "retrieval",
+            "embedding_model_used": "test-model",
+            "k_values": list(k_values),
+            "recall_at_k": recall,
+        }
+
+    monkeypatch.setattr(eval_harness, "run_retrieval_eval", _fake_run_retrieval_eval)
+
+    res = eval_harness.run_retrieval_uplift_eval(k_values=(1, 3, 5), embedding_model="test-model")
+
+    assert res["dataset"] == "retrieval_uplift"
+    assert calls == [False, True]
+    assert res["recall_uplift"]["1"]["raw"] == 0.5
+    assert res["recall_uplift"]["1"]["normalized"] == 0.75
+    assert res["recall_uplift"]["1"]["absolute_uplift"] == 0.25
+    assert res["recall_uplift"]["3"]["absolute_uplift"] == 0.25
+    assert res["recall_uplift"]["5"]["absolute_uplift"] == 0.0
+
+
+def test_run_prompt_stability_uplift_eval_compares_raw_vs_normalized(monkeypatch) -> None:
+    calls: list[bool] = []
+
+    def _fake_run_prompt_stability_eval(
+        *,
+        model,
+        n_variants,
+        base_question_gu,
+        embedding_model,
+        cache_dir,
+        api_key,
+        preprocess,
+    ):
+        calls.append(bool(preprocess))
+        pairwise_similarity = {
+            "mean_offdiag": 0.61,
+            "min_offdiag": 0.4,
+            "max_offdiag": 0.9,
+            "ref_mean": 0.63,
+            "ref_min": 0.45,
+        }
+        if preprocess:
+            pairwise_similarity = {
+                "mean_offdiag": 0.82,
+                "min_offdiag": 0.67,
+                "max_offdiag": 0.94,
+                "ref_mean": 0.85,
+                "ref_min": 0.7,
+            }
+        return {
+            "dataset": "prompt_stability",
+            "model": model,
+            "embedding_model_used": embedding_model,
+            "pairwise_similarity": pairwise_similarity,
+        }
+
+    monkeypatch.setattr(eval_harness, "run_prompt_stability_eval", _fake_run_prompt_stability_eval)
+
+    res = eval_harness.run_prompt_stability_uplift_eval(
+        model="sarvam-m",
+        n_variants=8,
+        embedding_model="test-model",
+    )
+
+    assert res["dataset"] == "prompt_stability_uplift"
+    assert calls == [False, True]
+    assert res["pairwise_similarity_uplift"]["mean_offdiag"]["raw"] == 0.61
+    assert res["pairwise_similarity_uplift"]["mean_offdiag"]["normalized"] == 0.82
+    assert res["pairwise_similarity_uplift"]["mean_offdiag"]["absolute_uplift"] == pytest.approx(0.21)
+    assert res["pairwise_similarity_uplift"]["ref_min"]["absolute_uplift"] == pytest.approx(0.25)
+
+
+def test_run_eval_dispatches_retrieval_uplift(monkeypatch) -> None:
+    monkeypatch.setattr(
+        eval_harness,
+        "run_retrieval_uplift_eval",
+        lambda **kwargs: {"dataset": "retrieval_uplift", "kwargs": kwargs},
+    )
+
+    res = eval_harness.run_eval(dataset="retrieval_uplift", k=7, embedding_model="test-model")
+
+    assert res["dataset"] == "retrieval_uplift"
+    assert res["kwargs"]["k_values"] == (1, 3, 7)
+
+
+def test_run_eval_dispatches_prompt_stability_uplift(monkeypatch) -> None:
+    monkeypatch.setattr(
+        eval_harness,
+        "run_prompt_stability_uplift_eval",
+        lambda **kwargs: {"dataset": "prompt_stability_uplift", "kwargs": kwargs},
+    )
+
+    res = eval_harness.run_eval(
+        dataset="prompt_stability_uplift",
+        sarvam_model="sarvam-m",
+        n_variants=12,
+        embedding_model="test-model",
+        api_key="x",
+    )
+
+    assert res["dataset"] == "prompt_stability_uplift"
+    assert res["kwargs"]["model"] == "sarvam-m"
+    assert res["kwargs"]["n_variants"] == 12

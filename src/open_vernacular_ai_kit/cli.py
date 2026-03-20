@@ -120,8 +120,9 @@ def eval(
     dataset: str = typer.Option(
         "gujlish",
         help=(
-            "Eval dataset/suite: gujlish, golden_translit, language_sentences, retrieval, prompt_stability, "
-            "dialect_id, dialect_normalization."
+            "Eval dataset/suite: gujlish, golden_translit, language_sentences, retrieval, "
+            "retrieval_uplift, prompt_stability, prompt_stability_uplift, dialect_id, "
+            "dialect_normalization."
         ),
     ),
     report: Optional[Path] = typer.Option(
@@ -138,23 +139,38 @@ def eval(
     translit_mode: str = typer.Option(
         "token", help="Transliteration mode: token or sentence (golden_translit/language_sentences)."
     ),
-    k: int = typer.Option(5, help="Top-k for retrieval recall (retrieval)."),
+    k: int = typer.Option(5, help="Top-k for retrieval recall (retrieval/retrieval_uplift)."),
     embedding_model: str = typer.Option(
         "ai4bharat/indic-bert",
         help=(
             "HF model for embeddings (retrieval/prompt_stability). "
+            "Also used by retrieval_uplift/prompt_stability_uplift. "
             "Note: ai4bharat/indic-bert may be gated on HF (the eval will fall back automatically)."
         ),
     ),
     sarvam_model: str = typer.Option(
-        "sarvam-m", help="Sarvam chat model (prompt_stability; current hosted provider in this release)."
+        "sarvam-m",
+        help=(
+            "Sarvam chat model (prompt_stability/prompt_stability_uplift; current hosted "
+            "provider in this release)."
+        ),
     ),
-    n_variants: int = typer.Option(10, help="Number of prompt variants (prompt_stability)."),
+    n_variants: int = typer.Option(
+        10, help="Number of prompt variants (prompt_stability/prompt_stability_uplift)."
+    ),
     api_key: Optional[str] = typer.Option(
-        None, help="Sarvam API key override (prompt_stability; future providers planned via PRs)."
+        None,
+        help=(
+            "Sarvam API key override (prompt_stability/prompt_stability_uplift; "
+            "future providers planned via PRs)."
+        ),
     ),
     preprocess: bool = typer.Option(
-        True, help="Preprocess text with normalize+codemix before eval (retrieval/prompt_stability)."
+        True,
+        help=(
+            "Preprocess text with normalize+codemix before eval "
+            "(retrieval/prompt_stability only; uplift evals compare raw vs normalized automatically)."
+        ),
     ),
     dialect_dataset: Optional[Path] = typer.Option(
         None, "--dialect-dataset", help="Path to dialect-id JSONL (dialect_id eval)."

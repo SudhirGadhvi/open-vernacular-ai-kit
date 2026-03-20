@@ -134,6 +134,27 @@ def _analyze_one(text: str, *, topk: int = 1, language: str = "gu") -> dict[str,
     }
 
 
+def _preprocess_retrieval_query(text: str) -> str:
+    """
+    Conservatively preprocess retrieval queries.
+
+    Retrieval prompts are often English-first even when they mention Indian-language labels.
+    Blind codemix rendering can hurt recall by transliterating English words like "Which".
+    Only apply codemix rendering when the query shows enough vernacular signal to justify it.
+    """
+    analysis = analyze_codemix(text)
+    target_token_count = int(analysis.n_gu_native_tokens + analysis.n_gu_roman_tokens)
+    if analysis.n_gu_native_tokens > 0:
+        return analysis.codemix
+    if target_token_count < 2:
+        return text
+    if int(analysis.n_en_tokens) >= max(1, int(analysis.n_tokens) - 2):
+        return text
+    if int(analysis.n_en_tokens) >= (2 * target_token_count):
+        return text
+    return analysis.codemix
+
+
 def _sha256_hex(s: str) -> str:
     return hashlib.sha256((s or "").encode("utf-8", errors="replace")).hexdigest()
 
@@ -783,8 +804,9 @@ def run_retrieval_eval(
     for q in queries:
         s = q.query
         if preprocess_query:
-            # Allows running romanized queries through the same normalization pipeline.
-            s = render_codemix(normalize_text(s))
+            # Allows running romanized queries through the same normalization pipeline
+            # without mangling English-first retrieval prompts.
+            s = _preprocess_retrieval_query(normalize_text(s))
         q_texts.append(s)
 
     used_model, tok, model = _get_tokenizer_and_model_with_fallback(embedding_model)

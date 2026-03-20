@@ -157,7 +157,11 @@
     "jaldi",
     "aapo",
     "adhuro",
-    "badhu"
+    "badhu",
+    "be",
+    "bijo",
+    "dekhatu",
+    "didhu"
   ],
   "context_roman_tokens": [
     "ma",
@@ -372,6 +376,10 @@
     "jaldi": "જલ્દી",
     "aapo": "આપો",
     "adhuro": "અધૂરો",
-    "badhu": "બધું"
+    "badhu": "બધું",
+    "be": "બે",
+    "bijo": "બીજો",
+    "dekhatu": "દેખાતું",
+    "didhu": "દીધું"
   }
 }

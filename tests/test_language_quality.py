@@ -107,11 +107,12 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("exchange ni jagyae simple refund joiye have", "exchange ની જગ્યાએ simple refund જોઈએ હવે"),
         ("wallet ma paisa gaya but order place nahi thayu", "wallet માં પૈસા ગયા but order place nahi થયું"),
         ("mne refund kyare aavse e j samajhatu nathi karan ke paisa cut thai gaya pan order confirm nathi thayu", "મને refund ક્યારે આવશે e j સમજાતું નથી karan કે પૈસા cut થઈ ગયા pan order confirm નથી થયું"),
-        ("mara wallet mathi paisa gaya pachi app freeze thai gayu ane payment success batavyu pan order dekhatu nathi", "મારા wallet mathi પૈસા ગયા પછી app freeze થઈ ગયું ane payment success બતાવ્યું pan order dekhatu નથી"),
-        ("mara order ma ek item ochho aavyo chhe ane invoice ma pan be item j chhe tame check karo", "મારા order માં ek item ઓછો આવ્યો છે ane invoice માં pan be item j છે તમે check કરો"),
+        ("mara wallet mathi paisa gaya pachi app freeze thai gayu ane payment success batavyu pan order dekhatu nathi", "મારા wallet mathi પૈસા ગયા પછી app freeze થઈ ગયું ane payment success બતાવ્યું pan order દેખાતું નથી"),
         ("cash memo joiye chhe karan ke reimbursement mate office ma submit karvu chhe jaldi moklo", "cash memo જોઈએ છે karan કે reimbursement માટે office માં submit કરવું છે જલ્દી મોકલો"),
-        ("group ma je support number moklyo hato e par koi phone uthadvatu nathi to bijo number aapo", "group માં જે support number મોકલ્યો હતો e par koi phone uthadvatu નથી તો bijo number આપો"),
-        ("pickup boy aavyo hato pan kehva lagyo ke address adhuro chhe jyare hu badhu voice note ma kahi didhu hatu", "pickup boy આવ્યો હતો pan kehva lagyo કે address અધૂરો છે જ્યારે હું બધું voice note માં kahi didhu hatu"),
+        ("mara order ma ek item ochho aavyo chhe ane invoice ma pan be item j chhe tame check karo", "મારા order માં ek item ઓછો આવ્યો છે ane invoice માં pan બે item j છે તમે check કરો"),
+        ("group ma je support number moklyo hato e par koi phone uthadvatu nathi to bijo number aapo", "group માં જે support number મોકલ્યો હતો e par koi phone uthadvatu નથી તો બીજો number આપો"),
+        ("mara wallet mathi paisa gaya pachi app freeze thai gayu ane payment success batavyu pan order dekhatu nathi", "મારા wallet mathi પૈસા ગયા પછી app freeze થઈ ગયું ane payment success બતાવ્યું pan order દેખાતું નથી"),
+        ("pickup boy aavyo hato pan kehva lagyo ke address adhuro chhe jyare hu badhu voice note ma kahi didhu hatu", "pickup boy આવ્યો હતો pan kehva lagyo કે address અધૂરો છે જ્યારે હું બધું voice note માં kahi દીધું hatu"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
@@ -149,9 +150,12 @@ def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:
         ("otp aj tk nahi aaya yrr", "otp आज तक नहीं aaya yrr"),
         ("office me hu baad me call krna", "office में hu बाद में call krna"),
         ("coupon code bilkul work nhi kr rha", "coupon code बिल्कुल work nhi kr rha"),
-        ("verify ke liye photo dubara upload kr do", "verify के लिए photo दुबारा upload kr do"),
+        ("verify ke liye photo dubara upload kr do", "verify के लिए photo दुबारा upload kr दो"),
         ("pickup subah hoga ya dopahar baad?", "pickup सुबह होगा ya दोपहर बाद?"),
-        ("mere account se same amount do baar debit hua", "मेरे account से same amount do बार debit hua"),
+        ("mere account se same amount do baar debit hua", "मेरे account से same amount दो बार debit hua"),
+        ("mere order me ek item kam aaya hai aur invoice me bhi do hi item dikh rahe hain", "मेरे order में एक item kam aaya है और invoice में bhi दो hi item dikh रहे हैं"),
+        ("group me jo support number bheja tha us par koi phone nahi utha raha to dusra number dijiye", "group में जो support number bheja था us पर koi phone नहीं utha रहा तो dusra number दीजिए"),
+        ("exchange nahi simple refund chahiye kyunki main same item dubara nahi mangwana chahta", "exchange नहीं simple refund चाहिए क्योंकि मैं same item दुबारा नहीं mangwana chahta"),
     ],
 )
 def test_render_codemix_hindi_quality_cases(raw: str, expected: str) -> None:

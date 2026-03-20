@@ -63,6 +63,7 @@ To measure whether normalization improves downstream behavior rather than just t
 
 ```bash
 gck eval --dataset retrieval_uplift --k 5
+gck eval --dataset retrieval_uplift --retrieval-query-pack codemix --k 5
 gck eval --dataset prompt_stability_uplift --n-variants 10
 ```
 
@@ -70,6 +71,11 @@ These compare raw vs OVAK-normalized inputs and report absolute uplift deltas:
 
 - `retrieval_uplift`: top-k retrieval recall for raw queries vs normalized queries
 - `prompt_stability_uplift`: pairwise similarity for Sarvam outputs under raw prompts vs normalized prompts
+
+The packaged retrieval uplift benchmark now supports two query packs:
+
+- `default`: English-first retrieval prompts
+- `codemix`: code-mixed/romanized retrieval prompts closer to OVAK’s target use case
 
 For retrieval uplift, query preprocessing is intentionally conservative:
 

@@ -8,7 +8,7 @@ from open_vernacular_ai_kit import eval_harness
 def test_run_retrieval_uplift_eval_compares_raw_vs_normalized(monkeypatch) -> None:
     calls: list[bool] = []
 
-    def _fake_run_retrieval_eval(*, k_values, embedding_model, preprocess_query):
+    def _fake_run_retrieval_eval(*, k_values, embedding_model, preprocess_query, retrieval_query_pack):
         calls.append(bool(preprocess_query))
         recall = {"1": 0.5, "3": 0.75, "5": 1.0}
         if preprocess_query:
@@ -17,6 +17,7 @@ def test_run_retrieval_uplift_eval_compares_raw_vs_normalized(monkeypatch) -> No
             "dataset": "retrieval",
             "embedding_model_used": "test-model",
             "k_values": list(k_values),
+            "retrieval_query_pack": retrieval_query_pack,
             "recall_at_k": recall,
         }
 
@@ -31,6 +32,7 @@ def test_run_retrieval_uplift_eval_compares_raw_vs_normalized(monkeypatch) -> No
     assert res["recall_uplift"]["1"]["absolute_uplift"] == 0.25
     assert res["recall_uplift"]["3"]["absolute_uplift"] == 0.25
     assert res["recall_uplift"]["5"]["absolute_uplift"] == 0.0
+    assert res["retrieval_query_pack"] == "default"
 
 
 def test_run_prompt_stability_uplift_eval_compares_raw_vs_normalized(monkeypatch) -> None:
@@ -92,10 +94,16 @@ def test_run_eval_dispatches_retrieval_uplift(monkeypatch) -> None:
         lambda **kwargs: {"dataset": "retrieval_uplift", "kwargs": kwargs},
     )
 
-    res = eval_harness.run_eval(dataset="retrieval_uplift", k=7, embedding_model="test-model")
+    res = eval_harness.run_eval(
+        dataset="retrieval_uplift",
+        k=7,
+        embedding_model="test-model",
+        retrieval_query_pack="codemix",
+    )
 
     assert res["dataset"] == "retrieval_uplift"
     assert res["kwargs"]["k_values"] == (1, 3, 7)
+    assert res["kwargs"]["retrieval_query_pack"] == "codemix"
 
 
 def test_run_eval_dispatches_prompt_stability_uplift(monkeypatch) -> None:

@@ -59,6 +59,65 @@ def test_parse_sarvam_teacher_response_handles_code_fence_and_filters_invalid_ca
     assert rec.candidate_tokens[1].candidate_type == "verb_phrase"
 
 
+def test_parse_sarvam_teacher_response_recovers_first_balanced_object_with_trailing_text() -> None:
+    raw = """Here is the analysis:
+{
+  "language_hint": "gu",
+  "sarvam_native": "invoice pic માં gst no half cut થયો છે તમે full copy મોકલો",
+  "sarvam_canonical": "invoice pic માં GST નો half cut થયો છે તમે full copy મોકલો",
+  "english_tokens_keep": ["invoice", "pic", "GST", "half", "copy"],
+  "candidate_tokens": [
+    {"roman": "ma", "native": "માં", "type": "context_token", "confidence": 0.98}
+  ],
+  "notes": "keep invoice terms in English"
+}
+Additional explanation that should be ignored.
+"""
+
+    rec = parse_sarvam_teacher_response(
+        raw,
+        input_text="invoice pic ma gst no half cut thay gyo chhe tame full copy moklo",
+        source="unit-test",
+        model="sarvam-m",
+        ovak_baseline="invoice pic માં gst no half cut thay gyo છે તમે full copy મોકલો",
+        fallback_language_hint="gu",
+    )
+
+    assert rec.language_hint == "gu"
+    assert rec.sarvam_canonical == "invoice pic માં GST નો half cut થયો છે તમે full copy મોકલો"
+    assert rec.candidate_tokens[0].roman == "ma"
+
+
+def test_parse_sarvam_teacher_response_recovers_first_object_from_generic_code_fence() -> None:
+    raw = """```
+preface text
+{
+  "language_hint": "hi",
+  "sarvam_native": "मेरे account से same amount दो बार debit hua",
+  "sarvam_canonical": "मेरे account से same amount दो बार debit hua",
+  "english_tokens_keep": ["account", "same", "debit"],
+  "candidate_tokens": [
+    {"roman": "do", "native": "दो", "type": "lexicon", "confidence": 0.91}
+  ],
+  "notes": "keep account terms in English"
+}
+```
+"""
+
+    rec = parse_sarvam_teacher_response(
+        raw,
+        input_text="mere account se same amount do baar debit hua",
+        source="unit-test",
+        model="sarvam-m",
+        ovak_baseline="मेरे account से same amount do बार debit hua",
+        fallback_language_hint="hi",
+    )
+
+    assert rec.language_hint == "hi"
+    assert rec.candidate_tokens[0].roman == "do"
+    assert rec.candidate_tokens[0].native == "दो"
+
+
 def test_mine_sarvam_teacher_candidate_uses_injected_call_model() -> None:
     def fake_call(prompt: str) -> str:
         assert "meri maa ka naam kya hai" in prompt

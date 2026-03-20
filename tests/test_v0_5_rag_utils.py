@@ -62,3 +62,10 @@ def test_rag_index_json_roundtrip(tmp_path) -> None:
     assert res
     assert res[0].doc_id == "doc_marathi_admin"
 
+
+def test_load_vernacular_facts_tiny_supports_codemix_query_pack() -> None:
+    ds = load_vernacular_facts_tiny(query_pack="codemix")
+    assert ds.name == "vernacular_facts_tiny_codemix"
+    assert len(ds.docs) >= 8
+    assert len(ds.queries) >= 6
+    assert "use thay chhe" in ds.queries[0].query

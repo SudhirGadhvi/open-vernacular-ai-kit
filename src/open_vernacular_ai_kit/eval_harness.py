@@ -785,6 +785,7 @@ def run_retrieval_eval(
     k_values: Sequence[int] = (1, 3, 5),
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
     preprocess_query: bool = True,
+    retrieval_query_pack: str = "default",
 ) -> dict[str, Any]:
     """
     Tiny retrieval benchmark: IndicBERT embeddings + top-k recall on curated snippets.
@@ -793,7 +794,7 @@ def run_retrieval_eval(
     if not k_values:
         raise InvalidConfigError("k_values must contain at least one positive integer")
 
-    ds = load_vernacular_facts_tiny()
+    ds = load_vernacular_facts_tiny(query_pack=retrieval_query_pack)
     docs = ds.docs
     queries = ds.queries
 
@@ -844,6 +845,7 @@ def run_retrieval_eval(
         "dataset": "retrieval",
         "retrieval_dataset": ds.name,
         "retrieval_dataset_source": ds.source,
+        "retrieval_query_pack": retrieval_query_pack,
         "embedding_model_requested": embedding_model,
         "embedding_model_used": used_model,
         "k_values": list(k_values),
@@ -867,6 +869,7 @@ def run_retrieval_uplift_eval(
     *,
     k_values: Sequence[int] = (1, 3, 5),
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
+    retrieval_query_pack: str = "default",
 ) -> dict[str, Any]:
     """
     Compare retrieval quality with and without OVAK preprocessing.
@@ -875,11 +878,13 @@ def run_retrieval_uplift_eval(
         k_values=k_values,
         embedding_model=embedding_model,
         preprocess_query=False,
+        retrieval_query_pack=retrieval_query_pack,
     )
     normalized_eval = run_retrieval_eval(
         k_values=k_values,
         embedding_model=embedding_model,
         preprocess_query=True,
+        retrieval_query_pack=retrieval_query_pack,
     )
     recall_delta = {
         key: _metric_delta(
@@ -890,6 +895,7 @@ def run_retrieval_uplift_eval(
     }
     return {
         "dataset": "retrieval_uplift",
+        "retrieval_query_pack": retrieval_query_pack,
         "embedding_model_requested": embedding_model,
         "embedding_model_used": normalized_eval["embedding_model_used"],
         "k_values": list(normalized_eval["k_values"]),
@@ -1111,6 +1117,7 @@ def run_eval(
     preserve_numbers: bool = True,
     aggressive_normalize: bool = False,
     k: int = 5,
+    retrieval_query_pack: str = "default",
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
     sarvam_model: str = "sarvam-m",
     n_variants: int = 10,
@@ -1154,11 +1161,13 @@ def run_eval(
             k_values=(1, 3, int(k)),
             embedding_model=embedding_model,
             preprocess_query=preprocess,
+            retrieval_query_pack=retrieval_query_pack,
         )
     if dataset in {"retrieval_uplift", "retrieval-uplift"}:
         return run_retrieval_uplift_eval(
             k_values=(1, 3, int(k)),
             embedding_model=embedding_model,
+            retrieval_query_pack=retrieval_query_pack,
         )
     if dataset in {"prompt_stability", "prompt-stability"}:
         return run_prompt_stability_eval(

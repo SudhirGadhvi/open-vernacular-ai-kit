@@ -140,6 +140,10 @@ def eval(
         "token", help="Transliteration mode: token or sentence (golden_translit/language_sentences)."
     ),
     k: int = typer.Option(5, help="Top-k for retrieval recall (retrieval/retrieval_uplift)."),
+    retrieval_query_pack: str = typer.Option(
+        "default",
+        help="Retrieval query pack: default or codemix (retrieval/retrieval_uplift).",
+    ),
     embedding_model: str = typer.Option(
         "ai4bharat/indic-bert",
         help=(
@@ -223,6 +227,7 @@ def eval(
             max_rows=max_rows,
             translit_mode=translit_mode,
             k=k,
+            retrieval_query_pack=retrieval_query_pack,
             embedding_model=embedding_model,
             sarvam_model=sarvam_model,
             n_variants=n_variants,

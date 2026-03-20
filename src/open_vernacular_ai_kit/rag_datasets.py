@@ -63,7 +63,7 @@ def load_rag_queries_jsonl(path: str | Path) -> list[RagQuery]:
     return out
 
 
-def load_vernacular_facts_tiny() -> RagDataset:
+def load_vernacular_facts_tiny(*, query_pack: str = "default") -> RagDataset:
     """
     Load a tiny curated India-focused vernacular snippets dataset (docs + queries).
 
@@ -75,10 +75,19 @@ def load_vernacular_facts_tiny() -> RagDataset:
     """
 
     docs_path = packaged_data_path("vernacular_facts_tiny_docs.jsonl")
-    queries_path = packaged_data_path("vernacular_facts_tiny_queries.jsonl")
+    pack = str(query_pack or "default").strip().lower()
+    query_filename = "vernacular_facts_tiny_queries.jsonl"
+    if pack in {"codemix", "code-mix", "mixed"}:
+        query_filename = "vernacular_facts_tiny_codemix_queries.jsonl"
+        pack = "codemix"
+    elif pack != "default":
+        raise ValueError("query_pack must be one of: default, codemix")
+
+    queries_path = packaged_data_path(query_filename)
     docs = load_rag_docs_jsonl(docs_path)
     queries = load_rag_queries_jsonl(queries_path)
-    return RagDataset(name="vernacular_facts_tiny", docs=docs, queries=queries, source="packaged")
+    name = "vernacular_facts_tiny" if pack == "default" else "vernacular_facts_tiny_codemix"
+    return RagDataset(name=name, docs=docs, queries=queries, source="packaged")
 
 
 def _download(url: str, dest: Path) -> None:
@@ -165,4 +174,3 @@ def download_gujarat_facts_dataset(
         cache_dir=cache_dir,
         force=force,
     )
-

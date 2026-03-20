@@ -86,6 +86,8 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["dekhatu"] == "દેખાતું"
     assert gu.default_exceptions["didhu"] == "દીધું"
     assert gu.default_exceptions["htu"] == "હતું"
+    assert gu.default_exceptions["aavya"] == "આવ્યા"
+    assert gu.default_exceptions["mathi"] == "માંથી"
     assert gu.default_exceptions["mate"] == "માટે"
     assert gu.default_exceptions["haju"] == "હજુ"
     assert gu.default_exceptions["vagar"] == "વગર"
@@ -135,6 +137,7 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "dekhatu" in gu.common_roman_tokens
     assert "didhu" in gu.common_roman_tokens
     assert "htu" in gu.common_roman_tokens
+    assert "aavya" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
     assert "sathe" in gu.context_roman_tokens
@@ -148,6 +151,7 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "vishe" in gu.context_roman_tokens
     assert "thi" in gu.context_roman_tokens
     assert "sudhi" in gu.context_roman_tokens
+    assert "mathi" in gu.context_roman_tokens
     assert "je" in gu.context_roman_tokens
     assert "jyare" in gu.context_roman_tokens
     assert "lekin" in hi.common_roman_tokens

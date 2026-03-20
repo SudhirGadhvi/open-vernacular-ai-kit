@@ -43,6 +43,7 @@ Bundled starter dataset:
 - `eval/datasets/sarvam_teacher_noisy_chat_seed.jsonl`
 - `eval/datasets/sarvam_teacher_whatsapp_export_seed.jsonl`
 - `eval/datasets/sarvam_teacher_voice_note_seed.jsonl`
+- `eval/datasets/sarvam_teacher_ocr_screenshot_seed.jsonl`
 
 ## Build A Failure-Driven Seed
 
@@ -164,6 +165,29 @@ message-thread fragments:
 python3 scripts/mine_sarvam_candidates.py \
   --input eval/datasets/sarvam_teacher_voice_note_seed.jsonl \
   --output eval/out/sarvam_candidates/voice_note_seed.jsonl \
+  --model sarvam-m
+```
+
+After the voice-note pack starts yielding mostly spoken fillers or malformed-response leftovers,
+switch to the OCR / screenshot-style pack:
+
+- `eval/datasets/sarvam_teacher_ocr_screenshot_seed.jsonl`
+
+It keeps the same `30/30/30` Gujarati/Hindi/mixed split, but the prompts are shaped like text
+lifted from screenshots, cropped invoices, OCR-ed labels, and broken UI captures:
+
+- screenshot and OCR abbreviations like `stts`, `delvry`, and partially cut labels
+- broken spacing and digit confusion in invoice, payout, and shipping text
+- cropped field names, missing zeros, and line-break artifacts from screenshots
+- image-derived support complaints where users refer to what the screenshot is showing
+
+Use it when the next Sarvam cycle should target OCR-ish normalization and screenshot-derived
+support text rather than more spoken or chatty inputs:
+
+```bash
+python3 scripts/mine_sarvam_candidates.py \
+  --input eval/datasets/sarvam_teacher_ocr_screenshot_seed.jsonl \
+  --output eval/out/sarvam_candidates/ocr_screenshot_seed.jsonl \
   --model sarvam-m
 ```
 

@@ -120,34 +120,82 @@ def _parse_candidate_type(value: Any) -> str:
     return "lexicon"
 
 
+def _find_balanced_json_object(text: str) -> str | None:
+    in_string = False
+    escape = False
+    depth = 0
+    start = -1
+
+    for idx, ch in enumerate(text):
+        if start < 0:
+            if ch == "{":
+                start = idx
+                depth = 1
+                in_string = False
+                escape = False
+            continue
+
+        if escape:
+            escape = False
+            continue
+        if ch == "\\" and in_string:
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            depth += 1
+            continue
+        if ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start : idx + 1]
+
+    return None
+
+
+def _try_parse_json_object(candidate: str) -> dict[str, Any] | None:
+    try:
+        obj = json.loads(candidate)
+    except Exception:
+        return None
+    if isinstance(obj, dict):
+        return obj
+    return None
+
+
 def _extract_json_object(raw: str) -> dict[str, Any]:
     text = str(raw or "").strip()
     if not text:
         raise IntegrationError("Sarvam teacher returned an empty response")
 
-    fenced_marker = "```json"
-    if fenced_marker in text:
+    for fenced_marker in ("```json", "```JSON", "```"):
+        if fenced_marker not in text:
+            continue
         start = text.find(fenced_marker)
         end = text.find("```", start + len(fenced_marker))
         if start >= 0 and end > start:
             candidate = text[start + len(fenced_marker) : end].strip()
-            try:
-                obj = json.loads(candidate)
-                if isinstance(obj, dict):
-                    return obj
-            except Exception:
-                pass
-
-    lo = text.find("{")
-    hi = text.rfind("}")
-    if lo >= 0 and hi > lo:
-        candidate = text[lo : hi + 1]
-        try:
-            obj = json.loads(candidate)
-            if isinstance(obj, dict):
+            obj = _try_parse_json_object(candidate)
+            if obj is not None:
                 return obj
+            balanced = _find_balanced_json_object(candidate)
+            if balanced:
+                obj = _try_parse_json_object(balanced)
+                if obj is not None:
+                    return obj
+
+    balanced = _find_balanced_json_object(text)
+    if balanced:
+        try:
+            obj = json.loads(balanced)
         except Exception as e:
             raise IntegrationError(f"Sarvam teacher returned invalid JSON: {e}") from e
+        if isinstance(obj, dict):
+            return obj
 
     raise IntegrationError("Sarvam teacher response did not contain a JSON object")
 

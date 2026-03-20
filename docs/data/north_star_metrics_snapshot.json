@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-09T07:59:02.365256Z",
+  "generated_at_utc": "2026-03-20T19:56:48.450683Z",
   "environment": {
     "python": "3.13.5",
     "platform": "macOS-26.3-arm64-arm-64bit-Mach-O"
@@ -247,9 +247,9 @@
       "backend": "heuristic"
     },
     "p95_latency_ms": {
-      "value": 0.20479096565395594,
-      "p50_ms": 0.19097901531495154,
-      "mean_ms": 0.18296250035443032,
+      "value": 0.21562492474913597,
+      "p50_ms": 0.19981246441602707,
+      "mean_ms": 0.19197426377407587,
       "n_calls": 1200,
       "iterations": 200,
       "sample_inputs": 6,

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SudhirGadhvi/open-vernacular-ai-kit/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/SudhirGadhvi/open-vernacular-ai-kit/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://sudhirgadhvi.github.io/open-vernacular-ai-kit/)
-[![Version](https://img.shields.io/badge/version-1.1.0-brightgreen)](pyproject.toml)
+[![Version](https://img.shields.io/badge/version-1.2.0--rc.1-brightgreen)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
  
  `open-vernacular-ai-kit` is an open-source SDK + CLI for cleaning up Indian vernacular-English code-mixed
@@ -87,13 +87,13 @@ Generate the snapshot:
 python3 scripts/snapshot_north_star_metrics.py --output docs/data/north_star_metrics_snapshot.json --iterations 200
 ```
 
-Current snapshot (`2026-03-09T07:59:02Z`):
+Current snapshot (`2026-03-20T19:42:33Z`):
 
 | Metric | Value | Notes |
 | --- | --- | --- |
 | `transliteration_success` | `1.000` | Golden transliteration accuracy across packaged Hindi/Gujarati cases (`90/90`; backend=`none`) |
 | `dialect_accuracy` | `0.833` | Heuristic dialect-id accuracy (`5/6`) |
-| `p95_latency_ms` | `0.205` | Pipeline p95 latency in ms (`iterations=200`, `n_calls=1200`) |
+| `p95_latency_ms` | `0.212` | Pipeline p95 latency in ms (`iterations=200`, `n_calls=1200`) |
 
 ## Indian Language Coverage (This Release)
 

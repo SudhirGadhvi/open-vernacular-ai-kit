@@ -4,6 +4,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import Any
 
 
 def _repo_root() -> Path:
@@ -21,6 +22,21 @@ from open_vernacular_ai_kit.sarvam_teacher import (  # noqa: E402
     load_sarvam_teacher_inputs_jsonl,
     mine_sarvam_teacher_candidate,
 )
+
+
+def _default_error_output_path(output_path: str | Path) -> Path:
+    out = Path(output_path)
+    if out.suffix:
+        return out.with_name(f"{out.stem}.errors{out.suffix}")
+    return out.with_name(f"{out.name}.errors.jsonl")
+
+
+def _dump_error_rows(path: str | Path, rows: list[dict[str, Any]]) -> None:
+    out = Path(path)
+    out.parent.mkdir(parents=True, exist_ok=True)
+    with out.open("w", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
 def main() -> None:
@@ -47,6 +63,16 @@ def main() -> None:
         action="store_true",
         help="Do not write the raw model response into output JSONL.",
     )
+    ap.add_argument(
+        "--fail-fast",
+        action="store_true",
+        help="Abort on the first row-level Sarvam mining error.",
+    )
+    ap.add_argument(
+        "--error-output",
+        default=None,
+        help="Optional JSONL path for row-level mining failures. Defaults next to --output.",
+    )
     args = ap.parse_args()
 
     try:
@@ -55,15 +81,30 @@ def main() -> None:
             inputs = inputs[: args.max_rows]
 
         out = []
+        errors: list[dict[str, Any]] = []
         for row in inputs:
-            rec = mine_sarvam_teacher_candidate(
-                row.text,
-                model=args.model,
-                api_key=args.api_key,
-                language_hint=args.language_hint or row.language_hint,
-                source=row.source,
-                meta=row.meta,
-            )
+            try:
+                rec = mine_sarvam_teacher_candidate(
+                    row.text,
+                    model=args.model,
+                    api_key=args.api_key,
+                    language_hint=args.language_hint or row.language_hint,
+                    source=row.source,
+                    meta=row.meta,
+                )
+            except GckError as e:
+                if args.fail_fast:
+                    raise
+                errors.append(
+                    {
+                        "input": row.text,
+                        "language_hint": row.language_hint,
+                        "source": row.source,
+                        "meta": row.meta or {},
+                        "error": str(e),
+                    }
+                )
+                continue
             out.append(rec)
 
         dump_sarvam_teacher_records_jsonl(
@@ -71,6 +112,10 @@ def main() -> None:
             out,
             include_raw_response=not args.exclude_raw_response,
         )
+        error_output_path = None
+        if errors:
+            error_output_path = Path(args.error_output) if args.error_output else _default_error_output_path(args.output)
+            _dump_error_rows(error_output_path, errors)
 
         print(
             json.dumps(
@@ -79,11 +124,15 @@ def main() -> None:
                     "output_path": str(args.output),
                     "model": args.model,
                     "n_rows": len(out),
+                    "n_errors": len(errors),
+                    "error_output_path": str(error_output_path) if error_output_path else None,
                 },
                 ensure_ascii=False,
                 indent=2,
             )
         )
+        if not out and errors:
+            raise SystemExit(2)
     except GckError as e:
         sys.stderr.write(f"mine_sarvam_candidates: {e}\n")
         raise SystemExit(2)

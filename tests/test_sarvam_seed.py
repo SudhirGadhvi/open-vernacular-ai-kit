@@ -173,3 +173,23 @@ def test_whatsapp_export_seed_pack_is_loadable_and_balanced() -> None:
     assert all(isinstance(row.get("meta"), dict) for row in rows)
     assert all(row["meta"].get("category") for row in rows)
     assert all(row["meta"].get("domain") for row in rows)
+
+
+def test_voice_note_seed_pack_is_loadable_and_balanced() -> None:
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "eval"
+        / "datasets"
+        / "sarvam_teacher_voice_note_seed.jsonl"
+    )
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+
+    assert len(rows) == 90
+    assert {row["source"] for row in rows} == {"teacher_voice_note_pack"}
+    assert {row["language_hint"] for row in rows} == {"gu", "hi", "mixed"}
+    assert sum(1 for row in rows if row["language_hint"] == "gu") == 30
+    assert sum(1 for row in rows if row["language_hint"] == "hi") == 30
+    assert sum(1 for row in rows if row["language_hint"] == "mixed") == 30
+    assert all(isinstance(row.get("meta"), dict) for row in rows)
+    assert all(row["meta"].get("category") for row in rows)
+    assert all(row["meta"].get("domain") for row in rows)

@@ -42,6 +42,7 @@ Bundled starter dataset:
 - `eval/datasets/sarvam_teacher_realworld_seed_followup.jsonl`
 - `eval/datasets/sarvam_teacher_noisy_chat_seed.jsonl`
 - `eval/datasets/sarvam_teacher_whatsapp_export_seed.jsonl`
+- `eval/datasets/sarvam_teacher_voice_note_seed.jsonl`
 
 ## Build A Failure-Driven Seed
 
@@ -140,6 +141,29 @@ Use it when the next Sarvam cycle needs conversational continuity instead of one
 python3 scripts/mine_sarvam_candidates.py \
   --input eval/datasets/sarvam_teacher_whatsapp_export_seed.jsonl \
   --output eval/out/sarvam_candidates/whatsapp_export_seed.jsonl \
+  --model sarvam-m
+```
+
+After the WhatsApp/export pack starts yielding mostly short, risky fragments, switch to the
+voice-note / ASR-style pack:
+
+- `eval/datasets/sarvam_teacher_voice_note_seed.jsonl`
+
+It keeps the same `30/30/30` Gujarati/Hindi/mixed split, but the prompts are shaped like
+spoken transcripts rather than typed chat:
+
+- longer punctuation-light voice-note phrasing
+- ASR-style merged clauses and lighter formatting
+- repeated references to what was already said in audio
+- support and logistics complaints phrased like someone speaking, not typing
+
+Use it when the next Sarvam cycle should target spoken vernacular normalization instead of
+message-thread fragments:
+
+```bash
+python3 scripts/mine_sarvam_candidates.py \
+  --input eval/datasets/sarvam_teacher_voice_note_seed.jsonl \
+  --output eval/out/sarvam_candidates/voice_note_seed.jsonl \
   --model sarvam-m
 ```
 

@@ -26,10 +26,27 @@ from .token_lid import tokenize
 from .transliterate import transliteration_backend
 
 _GUJARATI_RE = re.compile(r"[\p{Gujarati}]")
+_SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([?!.,:;])")
 
 _DEFAULT_EMBEDDING_MODEL = "ai4bharat/indic-bert"
 # Fallback used when IndicBERT is gated on Hugging Face (no auth token).
 _FALLBACK_EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+_RETRIEVAL_PROTECTED_TOKENS = {
+    "bengali",
+    "gujarat",
+    "gujarati",
+    "hindi",
+    "india",
+    "kannada",
+    "karnataka",
+    "kerala",
+    "maharashtra",
+    "malayalam",
+    "marathi",
+    "punjab",
+    "punjabi",
+    "tamil",
+}
 
 
 @dataclass(frozen=True)
@@ -152,7 +169,31 @@ def _preprocess_retrieval_query(text: str) -> str:
         return text
     if int(analysis.n_en_tokens) >= (2 * target_token_count):
         return text
-    return analysis.codemix
+    return _restore_protected_retrieval_tokens(text, analysis.codemix)
+
+
+def _restore_protected_retrieval_tokens(raw: str, rendered: str) -> str:
+    """
+    Keep benchmark labels and place names stable in retrieval queries.
+
+    Retrieval prompts can contain Indian language/state names as labels rather than
+    vernacular tokens. If the Gujarati pipeline transliterates those named entities,
+    the benchmark becomes less realistic even when recall is unchanged.
+    """
+    raw_tokens = tokenize(raw)
+    rendered_tokens = tokenize(rendered)
+    if len(raw_tokens) != len(rendered_tokens):
+        return rendered
+
+    out_tokens: list[str] = []
+    for raw_tok, rendered_tok in zip(raw_tokens, rendered_tokens, strict=False):
+        if raw_tok.casefold() in _RETRIEVAL_PROTECTED_TOKENS:
+            out_tokens.append(raw_tok)
+            continue
+        out_tokens.append(rendered_tok)
+
+    out = " ".join(out_tokens)
+    return _SPACE_BEFORE_PUNCT_RE.sub(r"\1", out)
 
 
 def _sha256_hex(s: str) -> str:

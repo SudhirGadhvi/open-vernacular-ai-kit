@@ -167,3 +167,13 @@ def test_preprocess_retrieval_query_keeps_code_mixed_queries(monkeypatch) -> Non
         eval_harness._preprocess_retrieval_query("maru order status shu chhe")
         == "મારું order status શું છે"
     )
+
+
+def test_preprocess_retrieval_query_preserves_language_and_state_labels() -> None:
+    out = eval_harness._preprocess_retrieval_query(
+        "maharashtra civic services ma konsi language broadly use thay chhe Marathi?"
+    )
+
+    assert out.startswith("maharashtra civic services")
+    assert out.endswith("Marathi?")
+    assert "માં" in out

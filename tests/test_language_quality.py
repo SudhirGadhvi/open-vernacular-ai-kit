@@ -87,7 +87,7 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("callback sanje j karjo ok?", "callback સાંજે j કરજો ok?"),
         ("office ma chu pachi call karjo", "office માં છું પછી call કરજો"),
         ("invoice pdf mail krjo pls", "invoice pdf mail કરજો pls"),
-        ("pickup savare aavse ke bapor pachi?", "pickup સવારે aavse કે બપોર પછી?"),
+        ("pickup savare aavse ke bapor pachi?", "pickup સવારે આવશે કે બપોર પછી?"),
         ("parcel kya sudhi pohnchyoo?", "parcel ક્યાં સુધી પહોંચ્યો?"),
         ("verify mate photo dubara upload krdo", "verify માટે photo ફરીથી upload krdo"),
         ("payment fail thayu pn paisa cut thai gaya", "payment fail થયું pn પૈસા cut થઈ ગયા"),
@@ -106,6 +106,12 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("tamaro app crash thay chhe jyare payment karu chu", "તમારો app crash thay છે જ્યારે payment કરું છું"),
         ("exchange ni jagyae simple refund joiye have", "exchange ની જગ્યાએ simple refund જોઈએ હવે"),
         ("wallet ma paisa gaya but order place nahi thayu", "wallet માં પૈસા ગયા but order place nahi થયું"),
+        ("mne refund kyare aavse e j samajhatu nathi karan ke paisa cut thai gaya pan order confirm nathi thayu", "મને refund ક્યારે આવશે e j સમજાતું નથી karan કે પૈસા cut થઈ ગયા pan order confirm નથી થયું"),
+        ("mara wallet mathi paisa gaya pachi app freeze thai gayu ane payment success batavyu pan order dekhatu nathi", "મારા wallet mathi પૈસા ગયા પછી app freeze થઈ ગયું ane payment success બતાવ્યું pan order dekhatu નથી"),
+        ("mara order ma ek item ochho aavyo chhe ane invoice ma pan be item j chhe tame check karo", "મારા order માં ek item ઓછો આવ્યો છે ane invoice માં pan be item j છે તમે check કરો"),
+        ("cash memo joiye chhe karan ke reimbursement mate office ma submit karvu chhe jaldi moklo", "cash memo જોઈએ છે karan કે reimbursement માટે office માં submit કરવું છે જલ્દી મોકલો"),
+        ("group ma je support number moklyo hato e par koi phone uthadvatu nathi to bijo number aapo", "group માં જે support number મોકલ્યો હતો e par koi phone uthadvatu નથી તો bijo number આપો"),
+        ("pickup boy aavyo hato pan kehva lagyo ke address adhuro chhe jyare hu badhu voice note ma kahi didhu hatu", "pickup boy આવ્યો હતો pan kehva lagyo કે address અધૂરો છે જ્યારે હું બધું voice note માં kahi didhu hatu"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:

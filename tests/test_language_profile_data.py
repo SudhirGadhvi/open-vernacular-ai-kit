@@ -73,6 +73,14 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["jyare"] == "જ્યારે"
     assert gu.default_exceptions["joiye"] == "જોઈએ"
     assert gu.default_exceptions["gaya"] == "ગયા"
+    assert gu.default_exceptions["aavse"] == "આવશે"
+    assert gu.default_exceptions["samajhatu"] == "સમજાતું"
+    assert gu.default_exceptions["batavyu"] == "બતાવ્યું"
+    assert gu.default_exceptions["ochho"] == "ઓછો"
+    assert gu.default_exceptions["jaldi"] == "જલ્દી"
+    assert gu.default_exceptions["aapo"] == "આપો"
+    assert gu.default_exceptions["adhuro"] == "અધૂરો"
+    assert gu.default_exceptions["badhu"] == "બધું"
     assert gu.default_exceptions["mate"] == "માટે"
     assert gu.default_exceptions["haju"] == "હજુ"
     assert gu.default_exceptions["vagar"] == "વગર"
@@ -109,6 +117,14 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "mne" in gu.common_roman_tokens
     assert "joiye" in gu.common_roman_tokens
     assert "gaya" in gu.common_roman_tokens
+    assert "aavse" in gu.common_roman_tokens
+    assert "samajhatu" in gu.common_roman_tokens
+    assert "batavyu" in gu.common_roman_tokens
+    assert "ochho" in gu.common_roman_tokens
+    assert "jaldi" in gu.common_roman_tokens
+    assert "aapo" in gu.common_roman_tokens
+    assert "adhuro" in gu.common_roman_tokens
+    assert "badhu" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
     assert "sathe" in gu.context_roman_tokens

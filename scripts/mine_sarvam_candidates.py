@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import signal
 import sys
 from pathlib import Path
 from typing import Any
@@ -39,6 +40,48 @@ def _dump_error_rows(path: str | Path, rows: list[dict[str, Any]]) -> None:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
+class _RowTimeoutError(RuntimeError):
+    pass
+
+
+def _mine_with_timeout(
+    *,
+    row: Any,
+    model: str,
+    api_key: str | None,
+    language_hint: str | None,
+    row_timeout_seconds: float,
+):
+    if row_timeout_seconds <= 0 or not hasattr(signal, "SIGALRM") or not hasattr(signal, "setitimer"):
+        return mine_sarvam_teacher_candidate(
+            row.text,
+            model=model,
+            api_key=api_key,
+            language_hint=language_hint or row.language_hint,
+            source=row.source,
+            meta=row.meta,
+        )
+
+    def _handle_timeout(_signum: int, _frame: object) -> None:
+        raise _RowTimeoutError(f"row timed out after {row_timeout_seconds:g}s")
+
+    previous_handler = signal.getsignal(signal.SIGALRM)
+    signal.signal(signal.SIGALRM, _handle_timeout)
+    signal.setitimer(signal.ITIMER_REAL, row_timeout_seconds)
+    try:
+        return mine_sarvam_teacher_candidate(
+            row.text,
+            model=model,
+            api_key=api_key,
+            language_hint=language_hint or row.language_hint,
+            source=row.source,
+            meta=row.meta,
+        )
+    finally:
+        signal.setitimer(signal.ITIMER_REAL, 0)
+        signal.signal(signal.SIGALRM, previous_handler)
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(
         description="Mine reviewable Hindi/Gujarati normalization candidates using Sarvam."
@@ -73,6 +116,12 @@ def main() -> None:
         default=None,
         help="Optional JSONL path for row-level mining failures. Defaults next to --output.",
     )
+    ap.add_argument(
+        "--row-timeout-seconds",
+        type=float,
+        default=0.0,
+        help="Optional per-row timeout for remote mining calls. Use 0 to disable.",
+    )
     args = ap.parse_args()
 
     try:
@@ -84,17 +133,29 @@ def main() -> None:
         errors: list[dict[str, Any]] = []
         for row in inputs:
             try:
-                rec = mine_sarvam_teacher_candidate(
-                    row.text,
+                rec = _mine_with_timeout(
+                    row=row,
                     model=args.model,
                     api_key=args.api_key,
-                    language_hint=args.language_hint or row.language_hint,
-                    source=row.source,
-                    meta=row.meta,
+                    language_hint=args.language_hint,
+                    row_timeout_seconds=float(args.row_timeout_seconds or 0.0),
                 )
             except GckError as e:
                 if args.fail_fast:
                     raise
+                errors.append(
+                    {
+                        "input": row.text,
+                        "language_hint": row.language_hint,
+                        "source": row.source,
+                        "meta": row.meta or {},
+                        "error": str(e),
+                    }
+                )
+                continue
+            except _RowTimeoutError as e:
+                if args.fail_fast:
+                    raise GckError(str(e)) from e
                 errors.append(
                     {
                         "input": row.text,

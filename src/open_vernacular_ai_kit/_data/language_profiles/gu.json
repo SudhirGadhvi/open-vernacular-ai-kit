@@ -161,7 +161,8 @@
     "be",
     "bijo",
     "dekhatu",
-    "didhu"
+    "didhu",
+    "htu"
   ],
   "context_roman_tokens": [
     "ma",
@@ -380,6 +381,7 @@
     "be": "બે",
     "bijo": "બીજો",
     "dekhatu": "દેખાતું",
-    "didhu": "દીધું"
+    "didhu": "દીધું",
+    "htu": "હતું"
   }
 }

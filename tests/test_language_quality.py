@@ -113,6 +113,7 @@ def test_short_context_tokens_do_not_become_global_target_words() -> None:
         ("group ma je support number moklyo hato e par koi phone uthadvatu nathi to bijo number aapo", "group માં જે support number મોકલ્યો હતો e par koi phone uthadvatu નથી તો બીજો number આપો"),
         ("mara wallet mathi paisa gaya pachi app freeze thai gayu ane payment success batavyu pan order dekhatu nathi", "મારા wallet mathi પૈસા ગયા પછી app freeze થઈ ગયું ane payment success બતાવ્યું pan order દેખાતું નથી"),
         ("pickup boy aavyo hato pan kehva lagyo ke address adhuro chhe jyare hu badhu voice note ma kahi didhu hatu", "pickup boy આવ્યો હતો pan kehva lagyo કે address અધૂરો છે જ્યારે હું બધું voice note માં kahi દીધું hatu"),
+        ("kyc screen shot ma surname blur dekhae chhe pn original clear htu", "kyc screen shot માં surname blur dekhae છે pn original clear હતું"),
     ],
 )
 def test_render_codemix_gujarati_quality_cases(raw: str, expected: str) -> None:

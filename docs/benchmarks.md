@@ -57,6 +57,20 @@ The packaged dataset currently contains `120` exact-match sentence cases:
 - `56` Hindi textbook/dialog-derived cases
 - `64` Gujarati grammar and support-style cases
 
+## Downstream Uplift Benchmarks
+
+To measure whether normalization improves downstream behavior rather than just token-level quality, run:
+
+```bash
+gck eval --dataset retrieval_uplift --k 5
+gck eval --dataset prompt_stability_uplift --n-variants 10
+```
+
+These compare raw vs OVAK-normalized inputs and report absolute uplift deltas:
+
+- `retrieval_uplift`: top-k retrieval recall for raw queries vs normalized queries
+- `prompt_stability_uplift`: pairwise similarity for Sarvam outputs under raw prompts vs normalized prompts
+
 ## Quality / Coverage (Gujarati Baseline Eval)
 
 This project also includes a lightweight, reproducible "coverage-style" eval on public Gujarati

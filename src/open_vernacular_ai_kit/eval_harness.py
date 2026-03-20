@@ -833,6 +833,50 @@ def run_retrieval_eval(
     }
 
 
+def _metric_delta(after: float, before: float) -> dict[str, float]:
+    return {
+        "raw": float(before),
+        "normalized": float(after),
+        "absolute_uplift": float(after - before),
+    }
+
+
+def run_retrieval_uplift_eval(
+    *,
+    k_values: Sequence[int] = (1, 3, 5),
+    embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
+) -> dict[str, Any]:
+    """
+    Compare retrieval quality with and without OVAK preprocessing.
+    """
+    raw_eval = run_retrieval_eval(
+        k_values=k_values,
+        embedding_model=embedding_model,
+        preprocess_query=False,
+    )
+    normalized_eval = run_retrieval_eval(
+        k_values=k_values,
+        embedding_model=embedding_model,
+        preprocess_query=True,
+    )
+    recall_delta = {
+        key: _metric_delta(
+            float(normalized_eval["recall_at_k"][key]),
+            float(raw_eval["recall_at_k"][key]),
+        )
+        for key in normalized_eval["recall_at_k"].keys()
+    }
+    return {
+        "dataset": "retrieval_uplift",
+        "embedding_model_requested": embedding_model,
+        "embedding_model_used": normalized_eval["embedding_model_used"],
+        "k_values": list(normalized_eval["k_values"]),
+        "raw_eval": raw_eval,
+        "normalized_eval": normalized_eval,
+        "recall_uplift": recall_delta,
+    }
+
+
 def _prompt_variants(base_question_gu: str, *, n_variants: int) -> list[str]:
     """
     Deterministic prompt variants (no LLM) to test model sensitivity.
@@ -973,6 +1017,67 @@ def run_prompt_stability_eval(
     }
 
 
+def run_prompt_stability_uplift_eval(
+    *,
+    model: str = "sarvam-m",
+    n_variants: int = 10,
+    base_question_gu: str = "અમદાવાદમાં શિયાળામાં કઈ ખાસ વાનગી લોકપ્રિય છે?",
+    embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
+    cache_dir: Optional[Path] = None,
+    api_key: Optional[str] = None,
+) -> dict[str, Any]:
+    """
+    Compare prompt-stability with and without OVAK preprocessing.
+    """
+    raw_eval = run_prompt_stability_eval(
+        model=model,
+        n_variants=n_variants,
+        base_question_gu=base_question_gu,
+        embedding_model=embedding_model,
+        cache_dir=cache_dir,
+        api_key=api_key,
+        preprocess=False,
+    )
+    normalized_eval = run_prompt_stability_eval(
+        model=model,
+        n_variants=n_variants,
+        base_question_gu=base_question_gu,
+        embedding_model=embedding_model,
+        cache_dir=cache_dir,
+        api_key=api_key,
+        preprocess=True,
+    )
+    raw_stats = raw_eval["pairwise_similarity"]
+    normalized_stats = normalized_eval["pairwise_similarity"]
+    return {
+        "dataset": "prompt_stability_uplift",
+        "model": model,
+        "n_variants": int(n_variants),
+        "embedding_model_requested": embedding_model,
+        "embedding_model_used": normalized_eval["embedding_model_used"],
+        "raw_eval": raw_eval,
+        "normalized_eval": normalized_eval,
+        "pairwise_similarity_uplift": {
+            "mean_offdiag": _metric_delta(
+                float(normalized_stats["mean_offdiag"]),
+                float(raw_stats["mean_offdiag"]),
+            ),
+            "min_offdiag": _metric_delta(
+                float(normalized_stats["min_offdiag"]),
+                float(raw_stats["min_offdiag"]),
+            ),
+            "ref_mean": _metric_delta(
+                float(normalized_stats["ref_mean"]),
+                float(raw_stats["ref_mean"]),
+            ),
+            "ref_min": _metric_delta(
+                float(normalized_stats["ref_min"]),
+                float(raw_stats["ref_min"]),
+            ),
+        },
+    }
+
+
 def run_eval(
     dataset: str = "gujlish",
     *,
@@ -1028,6 +1133,11 @@ def run_eval(
             embedding_model=embedding_model,
             preprocess_query=preprocess,
         )
+    if dataset in {"retrieval_uplift", "retrieval-uplift"}:
+        return run_retrieval_uplift_eval(
+            k_values=(1, 3, int(k)),
+            embedding_model=embedding_model,
+        )
     if dataset in {"prompt_stability", "prompt-stability"}:
         return run_prompt_stability_eval(
             model=sarvam_model,
@@ -1035,6 +1145,13 @@ def run_eval(
             embedding_model=embedding_model,
             api_key=api_key,
             preprocess=preprocess,
+        )
+    if dataset in {"prompt_stability_uplift", "prompt-stability-uplift"}:
+        return run_prompt_stability_uplift_eval(
+            model=sarvam_model,
+            n_variants=n_variants,
+            embedding_model=embedding_model,
+            api_key=api_key,
         )
     if dataset in {"dialect_id", "dialect-id"}:
         return run_dialect_id_eval(
@@ -1054,7 +1171,7 @@ def run_eval(
         )
     if dataset != "gujlish":
         raise InvalidConfigError(
-            "Unsupported dataset. Try one of: gujlish, golden_translit, language_sentences, retrieval, prompt_stability, dialect_id, dialect_normalization"
+            "Unsupported dataset. Try one of: gujlish, golden_translit, language_sentences, retrieval, retrieval_uplift, prompt_stability, prompt_stability_uplift, dialect_id, dialect_normalization"
         )
 
     requested_language = str(language or "gu").strip().lower()

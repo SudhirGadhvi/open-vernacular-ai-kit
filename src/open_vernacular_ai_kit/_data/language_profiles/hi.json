@@ -174,7 +174,8 @@
     "bilkul",
     "dubara",
     "dopahar",
-    "baar"
+    "baar",
+    "do"
   ],
   "context_roman_tokens": [
     "ka",
@@ -191,7 +192,9 @@
     "isliye",
     "baad",
     "aj",
-    "tk"
+    "tk",
+    "jo",
+    "kyunki"
   ],
   "roman_clusters": [
     "aa",
@@ -409,6 +412,9 @@
     "baad": "बाद",
     "aj": "आज",
     "tk": "तक",
-    "baar": "बार"
+    "baar": "बार",
+    "do": "दो",
+    "jo": "जो",
+    "kyunki": "क्योंकि"
   }
 }

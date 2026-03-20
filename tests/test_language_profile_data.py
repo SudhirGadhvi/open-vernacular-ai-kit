@@ -81,6 +81,10 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert gu.default_exceptions["aapo"] == "આપો"
     assert gu.default_exceptions["adhuro"] == "અધૂરો"
     assert gu.default_exceptions["badhu"] == "બધું"
+    assert gu.default_exceptions["be"] == "બે"
+    assert gu.default_exceptions["bijo"] == "બીજો"
+    assert gu.default_exceptions["dekhatu"] == "દેખાતું"
+    assert gu.default_exceptions["didhu"] == "દીધું"
     assert gu.default_exceptions["mate"] == "માટે"
     assert gu.default_exceptions["haju"] == "હજુ"
     assert gu.default_exceptions["vagar"] == "વગર"
@@ -125,6 +129,10 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "aapo" in gu.common_roman_tokens
     assert "adhuro" in gu.common_roman_tokens
     assert "badhu" in gu.common_roman_tokens
+    assert "be" in gu.common_roman_tokens
+    assert "bijo" in gu.common_roman_tokens
+    assert "dekhatu" in gu.common_roman_tokens
+    assert "didhu" in gu.common_roman_tokens
     assert "ni" in gu.context_roman_tokens
     assert "nu" in gu.context_roman_tokens
     assert "sathe" in gu.context_roman_tokens
@@ -158,6 +166,9 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert hi.default_exceptions["dubara"] == "दुबारा"
     assert hi.default_exceptions["dopahar"] == "दोपहर"
     assert hi.default_exceptions["baar"] == "बार"
+    assert hi.default_exceptions["do"] == "दो"
+    assert hi.default_exceptions["jo"] == "जो"
+    assert hi.default_exceptions["kyunki"] == "क्योंकि"
     assert hi.default_exceptions["aj"] == "आज"
     assert hi.default_exceptions["tk"] == "तक"
     assert hi.default_exceptions["baad"] == "बाद"
@@ -174,6 +185,7 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "dubara" in hi.common_roman_tokens
     assert "dopahar" in hi.common_roman_tokens
     assert "baar" in hi.common_roman_tokens
+    assert "do" in hi.common_roman_tokens
     assert "dobara" in hi.context_roman_tokens
     assert "abhi" in hi.context_roman_tokens
     assert "niche" in hi.context_roman_tokens
@@ -181,3 +193,5 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "aj" in hi.context_roman_tokens
     assert "tk" in hi.context_roman_tokens
     assert "baad" in hi.context_roman_tokens
+    assert "jo" in hi.context_roman_tokens
+    assert "kyunki" in hi.context_roman_tokens

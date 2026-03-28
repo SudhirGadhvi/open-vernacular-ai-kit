@@ -8,6 +8,7 @@ from typing import Any, Optional, Sequence
 
 from .eval_harness import (
     _DEFAULT_EMBEDDING_MODEL,
+    run_answer_quality_uplift_eval,
     run_prompt_stability_uplift_eval,
     run_retrieval_uplift_eval,
 )
@@ -42,11 +43,29 @@ def _compact_prompt_stability_uplift(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _compact_answer_quality_uplift(result: dict[str, Any]) -> dict[str, Any]:
+    raw_eval = result["raw_eval"]
+    normalized_eval = result["normalized_eval"]
+    return {
+        "model": str(result["model"]),
+        "embedding_model_requested": str(result["embedding_model_requested"]),
+        "embedding_model_used": str(result["embedding_model_used"]),
+        "raw_metrics": dict(raw_eval["metrics"]),
+        "normalized_metrics": dict(normalized_eval["metrics"]),
+        "answer_quality_uplift": dict(result["answer_quality_uplift"]),
+        "raw_used_cache_n": int(raw_eval["used_cache_n"]),
+        "normalized_used_cache_n": int(normalized_eval["used_cache_n"]),
+    }
+
+
 def snapshot_downstream_uplift(
     *,
     retrieval_query_packs: Sequence[str] = ("default", "codemix", "codemix_hard"),
     k_values: Sequence[int] = (1, 3, 5),
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
+    include_answer_quality: bool = False,
+    answer_model: str = "sarvam-m",
+    answer_cache_dir: Optional[Path] = None,
     include_prompt_stability: bool = False,
     prompt_model: str = "sarvam-m",
     prompt_n_variants: int = 10,
@@ -82,6 +101,26 @@ def snapshot_downstream_uplift(
         "k_values": [int(k) for k in k_values],
         "embedding_model_requested": embedding_model,
     }
+
+    if include_answer_quality:
+        answer_result = run_answer_quality_uplift_eval(
+            model=answer_model,
+            embedding_model=embedding_model,
+            cache_dir=answer_cache_dir,
+            api_key=api_key,
+        )
+        downstream_metrics["answer_quality_uplift"] = _compact_answer_quality_uplift(answer_result)
+        metric_definitions["answer_quality_uplift"] = (
+            "Short-answer quality delta from run_answer_quality_uplift_eval: compares Sarvam "
+            "answers under raw questions vs OVAK-normalized questions using packaged gold contexts."
+        )
+        snapshot_config["answer_quality"] = {
+            "included": True,
+            "model": answer_model,
+            "cache_dir": str(answer_cache_dir) if answer_cache_dir else None,
+        }
+    else:
+        snapshot_config["answer_quality"] = {"included": False}
 
     if include_prompt_stability:
         prompt_result = run_prompt_stability_uplift_eval(

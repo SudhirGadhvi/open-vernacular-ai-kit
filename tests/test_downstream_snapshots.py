@@ -106,3 +106,61 @@ def test_snapshot_downstream_uplift_can_include_prompt_stability(monkeypatch) ->
         ]["absolute_uplift"]
         == 0.2
     )
+
+
+def test_snapshot_downstream_uplift_can_include_answer_quality(monkeypatch) -> None:
+    monkeypatch.setattr(
+        downstream_snapshots,
+        "run_retrieval_uplift_eval",
+        lambda **kwargs: {
+            "dataset": "retrieval_uplift",
+            "retrieval_query_pack": kwargs["retrieval_query_pack"],
+            "embedding_model_requested": kwargs["embedding_model"],
+            "embedding_model_used": "test-model",
+            "k_values": list(kwargs["k_values"]),
+            "raw_eval": {"n_queries": 6, "recall_at_k": {"1": 1.0}},
+            "normalized_eval": {"n_queries": 6, "recall_at_k": {"1": 1.0}},
+            "recall_uplift": {"1": {"raw": 1.0, "normalized": 1.0, "absolute_uplift": 0.0}},
+        },
+    )
+    monkeypatch.setattr(
+        downstream_snapshots,
+        "run_answer_quality_uplift_eval",
+        lambda **kwargs: {
+            "dataset": "answer_quality_uplift",
+            "model": kwargs["model"],
+            "embedding_model_requested": kwargs["embedding_model"],
+            "embedding_model_used": "test-model",
+            "raw_eval": {
+                "used_cache_n": 4,
+                "metrics": {"exact_match_rate": 0.5, "mean_answer_similarity": 0.7},
+            },
+            "normalized_eval": {
+                "used_cache_n": 4,
+                "metrics": {"exact_match_rate": 0.75, "mean_answer_similarity": 0.85},
+            },
+            "answer_quality_uplift": {
+                "exact_match_rate": {"raw": 0.5, "normalized": 0.75, "absolute_uplift": 0.25},
+                "mean_answer_similarity": {
+                    "raw": 0.7,
+                    "normalized": 0.85,
+                    "absolute_uplift": 0.15,
+                },
+            },
+        },
+    )
+
+    payload = downstream_snapshots.snapshot_downstream_uplift(
+        retrieval_query_packs=("default",),
+        include_answer_quality=True,
+        answer_model="sarvam-m",
+    )
+
+    assert payload["snapshot_config"]["answer_quality"]["included"] is True
+    assert payload["snapshot_config"]["answer_quality"]["model"] == "sarvam-m"
+    assert (
+        payload["downstream_uplift_metrics"]["answer_quality_uplift"]["answer_quality_uplift"][
+            "exact_match_rate"
+        ]["absolute_uplift"]
+        == 0.25
+    )

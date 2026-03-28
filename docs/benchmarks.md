@@ -66,12 +66,14 @@ gck eval --dataset retrieval_uplift --k 5
 gck eval --dataset retrieval_uplift --retrieval-query-pack codemix --k 5
 gck eval --dataset retrieval_uplift --retrieval-query-pack codemix_hard --k 5
 gck eval --dataset prompt_stability_uplift --n-variants 10
+gck eval --dataset answer_quality_uplift
 ```
 
 These compare raw vs OVAK-normalized inputs and report absolute uplift deltas:
 
 - `retrieval_uplift`: top-k retrieval recall for raw queries vs normalized queries
 - `prompt_stability_uplift`: pairwise similarity for Sarvam outputs under raw prompts vs normalized prompts
+- `answer_quality_uplift`: short-answer quality for Sarvam under raw questions vs normalized questions using packaged gold contexts
 
 The packaged retrieval uplift benchmark now supports three query packs:
 
@@ -93,6 +95,7 @@ To snapshot these packaged downstream uplift baselines into a committed JSON art
 python3 scripts/snapshot_downstream_uplift_metrics.py --output docs/data/downstream_uplift_snapshot.json
 python3 scripts/snapshot_downstream_uplift_metrics.py \
   --output docs/data/downstream_uplift_snapshot.json \
+  --include-answer-quality \
   --include-prompt-stability
 ```
 
@@ -120,6 +123,26 @@ The prompt-stability snapshot requires:
 - Sarvam API access
 - eval dependencies installed
 - cached prompt-stability generations or a live Sarvam run
+
+The answer-quality uplift benchmark uses a packaged tiny QA set with:
+
+- gold context doc ids
+- short expected English answers
+- code-mixed questions that are normalized before prompt construction
+
+This keeps the benchmark focused on downstream prompt conditioning instead of retrieval noise.
+
+Current answer-quality snapshot details from the same artifact:
+
+- model: `sarvam-m`
+- raw `exact_match_rate`: `1.0`
+- normalized `exact_match_rate`: `1.0`
+- raw `mean_answer_similarity`: `0.5564`
+- normalized `mean_answer_similarity`: `0.5353`
+- uplift `mean_answer_similarity`: `-0.0211`
+
+That means the benchmark is now real and reproducible, but the current packaged answer set is
+already saturated on exact-match and does not yet show positive semantic uplift from normalization.
 
 ## Quality / Coverage (Gujarati Baseline Eval)
 

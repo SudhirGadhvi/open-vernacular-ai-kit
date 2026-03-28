@@ -3,7 +3,10 @@ from __future__ import annotations
 import pytest
 
 from open_vernacular_ai_kit.rag import RagIndex
-from open_vernacular_ai_kit.rag_datasets import load_vernacular_facts_tiny
+from open_vernacular_ai_kit.rag_datasets import (
+    load_vernacular_facts_tiny,
+    load_vernacular_facts_tiny_answer_cases,
+)
 
 
 def _keyword_embed(texts: list[str]) -> list[list[float]]:
@@ -84,3 +87,10 @@ def test_load_vernacular_facts_tiny_supports_hard_codemix_query_pack() -> None:
 def test_load_vernacular_facts_tiny_rejects_unknown_query_pack() -> None:
     with pytest.raises(ValueError, match="query_pack must be one of"):
         load_vernacular_facts_tiny(query_pack="unknown-pack")
+
+
+def test_load_vernacular_facts_tiny_answer_cases() -> None:
+    rows = load_vernacular_facts_tiny_answer_cases()
+    assert len(rows) >= 8
+    assert rows[0].expected_answer
+    assert rows[0].context_doc_ids

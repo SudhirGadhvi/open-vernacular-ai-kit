@@ -126,6 +126,65 @@ def test_run_eval_dispatches_prompt_stability_uplift(monkeypatch) -> None:
     assert res["kwargs"]["n_variants"] == 12
 
 
+def test_run_answer_quality_uplift_eval_compares_raw_vs_normalized(monkeypatch) -> None:
+    calls: list[bool] = []
+
+    def _fake_run_answer_quality_eval(*, model, embedding_model, cache_dir, api_key, preprocess_question):
+        calls.append(bool(preprocess_question))
+        metrics = {
+            "exact_match_rate": 0.5,
+            "mean_answer_similarity": 0.7,
+            "min_answer_similarity": 0.55,
+        }
+        if preprocess_question:
+            metrics = {
+                "exact_match_rate": 0.75,
+                "mean_answer_similarity": 0.88,
+                "min_answer_similarity": 0.71,
+            }
+        return {
+            "dataset": "answer_quality",
+            "model": model,
+            "embedding_model_used": embedding_model,
+            "metrics": metrics,
+        }
+
+    monkeypatch.setattr(eval_harness, "run_answer_quality_eval", _fake_run_answer_quality_eval)
+
+    res = eval_harness.run_answer_quality_uplift_eval(
+        model="sarvam-m",
+        embedding_model="test-model",
+    )
+
+    assert res["dataset"] == "answer_quality_uplift"
+    assert calls == [False, True]
+    assert res["answer_quality_uplift"]["exact_match_rate"]["absolute_uplift"] == pytest.approx(0.25)
+    assert res["answer_quality_uplift"]["mean_answer_similarity"]["absolute_uplift"] == pytest.approx(0.18)
+
+
+def test_answer_matches_expected_allows_short_label_inside_longer_output() -> None:
+    assert eval_harness._answer_matches_expected("Gujarati", "The answer is Gujarati language.")
+    assert not eval_harness._answer_matches_expected("Gujarati", "Hindi")
+
+
+def test_run_eval_dispatches_answer_quality_uplift(monkeypatch) -> None:
+    monkeypatch.setattr(
+        eval_harness,
+        "run_answer_quality_uplift_eval",
+        lambda **kwargs: {"dataset": "answer_quality_uplift", "kwargs": kwargs},
+    )
+
+    res = eval_harness.run_eval(
+        dataset="answer_quality_uplift",
+        sarvam_model="sarvam-m",
+        embedding_model="test-model",
+        api_key="x",
+    )
+
+    assert res["dataset"] == "answer_quality_uplift"
+    assert res["kwargs"]["model"] == "sarvam-m"
+
+
 def test_preprocess_retrieval_query_skips_english_first_queries(monkeypatch) -> None:
     monkeypatch.setattr(
         eval_harness,

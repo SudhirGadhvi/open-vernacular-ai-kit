@@ -1,0 +1,141 @@
+{
+  "generated_at_utc": "2026-03-28T06:33:29.775991Z",
+  "environment": {
+    "python": "3.13.5",
+    "platform": "macOS-26.3-arm64-arm-64bit-Mach-O"
+  },
+  "metric_definitions": {
+    "retrieval_uplift": "Top-k retrieval recall delta from run_retrieval_uplift_eval: compares raw queries vs OVAK-normalized queries on packaged retrieval query packs."
+  },
+  "snapshot_config": {
+    "retrieval_query_packs": [
+      "default",
+      "codemix",
+      "codemix_hard"
+    ],
+    "k_values": [
+      1,
+      3,
+      5
+    ],
+    "embedding_model_requested": "ai4bharat/indic-bert"
+  },
+  "downstream_uplift_metrics": {
+    "retrieval_uplift": {
+      "default": {
+        "retrieval_query_pack": "default",
+        "embedding_model_requested": "ai4bharat/indic-bert",
+        "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "k_values": [
+          1,
+          3,
+          5
+        ],
+        "n_queries": 6,
+        "raw_recall_at_k": {
+          "1": 1.0,
+          "3": 1.0,
+          "5": 1.0
+        },
+        "normalized_recall_at_k": {
+          "1": 1.0,
+          "3": 1.0,
+          "5": 1.0
+        },
+        "recall_uplift": {
+          "1": {
+            "raw": 1.0,
+            "normalized": 1.0,
+            "absolute_uplift": 0.0
+          },
+          "3": {
+            "raw": 1.0,
+            "normalized": 1.0,
+            "absolute_uplift": 0.0
+          },
+          "5": {
+            "raw": 1.0,
+            "normalized": 1.0,
+            "absolute_uplift": 0.0
+          }
+        }
+      },
+      "codemix": {
+        "retrieval_query_pack": "codemix",
+        "embedding_model_requested": "ai4bharat/indic-bert",
+        "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "k_values": [
+          1,
+          3,
+          5
+        ],
+        "n_queries": 6,
+        "raw_recall_at_k": {
+          "1": 1.0,
+          "3": 1.0,
+          "5": 1.0
+        },
+        "normalized_recall_at_k": {
+          "1": 1.0,
+          "3": 1.0,
+          "5": 1.0
+        },
+        "recall_uplift": {
+          "1": {
+            "raw": 1.0,
+            "normalized": 1.0,
+            "absolute_uplift": 0.0
+          },
+          "3": {
+            "raw": 1.0,
+            "normalized": 1.0,
+            "absolute_uplift": 0.0
+          },
+          "5": {
+            "raw": 1.0,
+            "normalized": 1.0,
+            "absolute_uplift": 0.0
+          }
+        }
+      },
+      "codemix_hard": {
+        "retrieval_query_pack": "codemix_hard",
+        "embedding_model_requested": "ai4bharat/indic-bert",
+        "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+        "k_values": [
+          1,
+          3,
+          5
+        ],
+        "n_queries": 10,
+        "raw_recall_at_k": {
+          "1": 0.8,
+          "3": 0.9,
+          "5": 1.0
+        },
+        "normalized_recall_at_k": {
+          "1": 1.0,
+          "3": 1.0,
+          "5": 1.0
+        },
+        "recall_uplift": {
+          "1": {
+            "raw": 0.8,
+            "normalized": 1.0,
+            "absolute_uplift": 0.19999999999999996
+          },
+          "3": {
+            "raw": 0.9,
+            "normalized": 1.0,
+            "absolute_uplift": 0.09999999999999998
+          },
+          "5": {
+            "raw": 1.0,
+            "normalized": 1.0,
+            "absolute_uplift": 0.0
+          }
+        }
+      }
+    }
+  }
+}

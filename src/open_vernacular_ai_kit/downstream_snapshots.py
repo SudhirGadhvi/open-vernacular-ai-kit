@@ -3,9 +3,14 @@ from __future__ import annotations
 import platform
 import sys
 from datetime import datetime, timezone
-from typing import Any, Sequence
+from pathlib import Path
+from typing import Any, Optional, Sequence
 
-from .eval_harness import _DEFAULT_EMBEDDING_MODEL, run_retrieval_uplift_eval
+from .eval_harness import (
+    _DEFAULT_EMBEDDING_MODEL,
+    run_prompt_stability_uplift_eval,
+    run_retrieval_uplift_eval,
+)
 
 
 def _compact_retrieval_uplift(result: dict[str, Any]) -> dict[str, Any]:
@@ -21,11 +26,33 @@ def _compact_retrieval_uplift(result: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _compact_prompt_stability_uplift(result: dict[str, Any]) -> dict[str, Any]:
+    raw_eval = result["raw_eval"]
+    normalized_eval = result["normalized_eval"]
+    return {
+        "model": str(result["model"]),
+        "n_variants": int(result["n_variants"]),
+        "embedding_model_requested": str(result["embedding_model_requested"]),
+        "embedding_model_used": str(result["embedding_model_used"]),
+        "raw_pairwise_similarity": dict(raw_eval["pairwise_similarity"]),
+        "normalized_pairwise_similarity": dict(normalized_eval["pairwise_similarity"]),
+        "pairwise_similarity_uplift": dict(result["pairwise_similarity_uplift"]),
+        "raw_used_cache_n": int(raw_eval["used_cache_n"]),
+        "normalized_used_cache_n": int(normalized_eval["used_cache_n"]),
+    }
+
+
 def snapshot_downstream_uplift(
     *,
     retrieval_query_packs: Sequence[str] = ("default", "codemix", "codemix_hard"),
     k_values: Sequence[int] = (1, 3, 5),
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
+    include_prompt_stability: bool = False,
+    prompt_model: str = "sarvam-m",
+    prompt_n_variants: int = 10,
+    prompt_base_question_gu: str = "અમદાવાદમાં શિયાળામાં કઈ ખાસ વાનગી લોકપ્રિય છે?",
+    prompt_cache_dir: Optional[Path] = None,
+    api_key: Optional[str] = None,
 ) -> dict[str, Any]:
     packs = [str(x).strip() for x in retrieval_query_packs if str(x).strip()]
     if not packs:
@@ -40,24 +67,53 @@ def snapshot_downstream_uplift(
         )
         retrieval_snapshots[pack] = _compact_retrieval_uplift(result)
 
+    downstream_metrics: dict[str, Any] = {
+        "retrieval_uplift": retrieval_snapshots,
+    }
+    metric_definitions = {
+        "retrieval_uplift": (
+            "Top-k retrieval recall delta from run_retrieval_uplift_eval: compares raw "
+            "queries vs OVAK-normalized queries on packaged retrieval query packs."
+        ),
+    }
+
+    snapshot_config: dict[str, Any] = {
+        "retrieval_query_packs": packs,
+        "k_values": [int(k) for k in k_values],
+        "embedding_model_requested": embedding_model,
+    }
+
+    if include_prompt_stability:
+        prompt_result = run_prompt_stability_uplift_eval(
+            model=prompt_model,
+            n_variants=int(prompt_n_variants),
+            base_question_gu=prompt_base_question_gu,
+            embedding_model=embedding_model,
+            cache_dir=prompt_cache_dir,
+            api_key=api_key,
+        )
+        downstream_metrics["prompt_stability_uplift"] = _compact_prompt_stability_uplift(prompt_result)
+        metric_definitions["prompt_stability_uplift"] = (
+            "Pairwise semantic similarity delta from run_prompt_stability_uplift_eval: compares "
+            "raw prompts vs OVAK-normalized prompts for the configured Sarvam model."
+        )
+        snapshot_config["prompt_stability"] = {
+            "included": True,
+            "model": prompt_model,
+            "n_variants": int(prompt_n_variants),
+            "base_question_gu": prompt_base_question_gu,
+            "cache_dir": str(prompt_cache_dir) if prompt_cache_dir else None,
+        }
+    else:
+        snapshot_config["prompt_stability"] = {"included": False}
+
     return {
         "generated_at_utc": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         "environment": {
             "python": sys.version.split()[0],
             "platform": platform.platform(),
         },
-        "metric_definitions": {
-            "retrieval_uplift": (
-                "Top-k retrieval recall delta from run_retrieval_uplift_eval: compares raw "
-                "queries vs OVAK-normalized queries on packaged retrieval query packs."
-            ),
-        },
-        "snapshot_config": {
-            "retrieval_query_packs": packs,
-            "k_values": [int(k) for k in k_values],
-            "embedding_model_requested": embedding_model,
-        },
-        "downstream_uplift_metrics": {
-            "retrieval_uplift": retrieval_snapshots,
-        },
+        "metric_definitions": metric_definitions,
+        "snapshot_config": snapshot_config,
+        "downstream_uplift_metrics": downstream_metrics,
     }

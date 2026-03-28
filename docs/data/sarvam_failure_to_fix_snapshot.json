@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-28T07:15:55.446346Z",
+  "generated_at_utc": "2026-03-28T07:28:34.230960Z",
   "n_review_files": 16,
   "review_files": [
     "eval/datasets/sarvam_teacher_large_profile_reviewed_batch1.jsonl",
@@ -39,10 +39,10 @@
   },
   "accepted_summary": {
     "n_accepted_rows": 107,
-    "n_fixed_rows": 106,
+    "n_fixed_rows": 107,
     "acceptance_rate_vs_reviewed": 0.9067796610169492,
-    "fix_conversion_rate_vs_reviewed": 0.8983050847457628,
-    "fix_rate_vs_accepted": 0.9906542056074766
+    "fix_conversion_rate_vs_reviewed": 0.9067796610169492,
+    "fix_rate_vs_accepted": 1.0
   },
   "profile_token_summary": {
     "n_token_checks": 97,
@@ -68,10 +68,10 @@
     },
     "accept_sentence_case": {
       "n_rows": 15,
-      "n_fixed_rows": 14,
+      "n_fixed_rows": 15,
       "n_token_checks": 0,
       "n_token_fixed": 0,
-      "fix_rate": 0.9333333333333333,
+      "fix_rate": 1.0,
       "token_fix_rate": 0.0
     },
     "reject": {
@@ -83,14 +83,5 @@
       "token_fix_rate": 0.0
     }
   },
-  "unfixed_examples": [
-    {
-      "action": "accept_sentence_case",
-      "input": "tamne aaje office ma aavu chhe",
-      "expected": "\u0aa4\u0aae\u0aa8\u0ac7 \u0a86\u0a9c\u0ac7 office \u0aae\u0abe\u0a82 \u0a86\u0ab5\u0ab5\u0ac1\u0a82 \u0a9b\u0ac7",
-      "actual": "\u0aa4\u0aae\u0aa8\u0ac7 \u0a86\u0a9c\u0ac7 office \u0aae\u0abe\u0a82 \u0a86\u0ab5\u0ac1\u0a82 \u0a9b\u0ac7",
-      "source": "teacher_seed",
-      "review_file": "eval/datasets/sarvam_teacher_seed_reviewed.jsonl"
-    }
-  ]
+  "unfixed_examples": []
 }

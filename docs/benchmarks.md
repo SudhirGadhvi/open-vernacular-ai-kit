@@ -87,6 +87,20 @@ For retrieval uplift, query preprocessing is intentionally conservative:
 This avoids inflating negative uplift by transliterating English retrieval prompts that should remain
 in Latin script.
 
+To snapshot these packaged retrieval uplift baselines into a committed JSON artifact:
+
+```bash
+python3 scripts/snapshot_downstream_uplift_metrics.py --output docs/data/downstream_uplift_snapshot.json
+```
+
+Current downstream snapshot (`docs/data/downstream_uplift_snapshot.json`):
+
+| Query Pack | Raw recall@1 | Normalized recall@1 | Raw recall@3 | Normalized recall@3 | Notes |
+| --- | --- | --- | --- | --- | --- |
+| `default` | `1.0` | `1.0` | `1.0` | `1.0` | English-first baseline; no expected uplift |
+| `codemix` | `1.0` | `1.0` | `1.0` | `1.0` | Light code-mix pack; structurally useful but still easy |
+| `codemix_hard` | `0.8` | `1.0` | `0.9` | `1.0` | First packaged retrieval pack with non-trivial uplift (`+0.2` @1, `+0.1` @3) |
+
 ## Quality / Coverage (Gujarati Baseline Eval)
 
 This project also includes a lightweight, reproducible "coverage-style" eval on public Gujarati

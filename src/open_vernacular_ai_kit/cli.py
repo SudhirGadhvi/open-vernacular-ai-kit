@@ -121,8 +121,8 @@ def eval(
         "gujlish",
         help=(
             "Eval dataset/suite: gujlish, golden_translit, language_sentences, retrieval, "
-            "retrieval_uplift, prompt_stability, prompt_stability_uplift, dialect_id, "
-            "dialect_normalization."
+            "retrieval_uplift, prompt_stability, prompt_stability_uplift, answer_quality, "
+            "answer_quality_uplift, dialect_id, dialect_normalization."
         ),
     ),
     report: Optional[Path] = typer.Option(
@@ -148,14 +148,15 @@ def eval(
         "ai4bharat/indic-bert",
         help=(
             "HF model for embeddings (retrieval/prompt_stability). "
-            "Also used by retrieval_uplift/prompt_stability_uplift. "
+            "Also used by retrieval_uplift/prompt_stability_uplift/answer_quality_uplift. "
             "Note: ai4bharat/indic-bert may be gated on HF (the eval will fall back automatically)."
         ),
     ),
     sarvam_model: str = typer.Option(
         "sarvam-m",
         help=(
-            "Sarvam chat model (prompt_stability/prompt_stability_uplift; current hosted "
+            "Sarvam chat model (prompt_stability/prompt_stability_uplift/answer_quality/"
+            "answer_quality_uplift; current hosted "
             "provider in this release)."
         ),
     ),
@@ -165,7 +166,8 @@ def eval(
     api_key: Optional[str] = typer.Option(
         None,
         help=(
-            "Sarvam API key override (prompt_stability/prompt_stability_uplift; "
+            "Sarvam API key override (prompt_stability/prompt_stability_uplift/"
+            "answer_quality/answer_quality_uplift; "
             "future providers planned via PRs)."
         ),
     ),
@@ -173,7 +175,7 @@ def eval(
         True,
         help=(
             "Preprocess text with normalize+codemix before eval "
-            "(retrieval/prompt_stability only; uplift evals compare raw vs normalized automatically)."
+            "(retrieval/prompt_stability/answer_quality only; uplift evals compare raw vs normalized automatically)."
         ),
     ),
     dialect_dataset: Optional[Path] = typer.Option(

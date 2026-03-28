@@ -11,6 +11,14 @@ from .rag import RagDocument, RagQuery
 
 
 @dataclass(frozen=True)
+class RagAnswerCase:
+    question: str
+    expected_answer: str
+    context_doc_ids: list[str]
+    meta: dict[str, Any] | None = None
+
+
+@dataclass(frozen=True)
 class RagDataset:
     name: str
     docs: list[RagDocument]
@@ -63,6 +71,24 @@ def load_rag_queries_jsonl(path: str | Path) -> list[RagQuery]:
     return out
 
 
+def load_rag_answer_cases_jsonl(path: str | Path) -> list[RagAnswerCase]:
+    p = Path(path)
+    out: list[RagAnswerCase] = []
+    for rec in _iter_jsonl(p):
+        context_doc_ids = rec.get("context_doc_ids", [])
+        if not isinstance(context_doc_ids, list):
+            context_doc_ids = []
+        out.append(
+            RagAnswerCase(
+                question=str(rec.get("question", "") or ""),
+                expected_answer=str(rec.get("expected_answer", "") or ""),
+                context_doc_ids=[str(x) for x in context_doc_ids if str(x or "").strip()],
+                meta=(rec.get("meta") if isinstance(rec.get("meta"), dict) else {}),
+            )
+        )
+    return out
+
+
 def load_vernacular_facts_tiny(*, query_pack: str = "default") -> RagDataset:
     """
     Load a tiny curated India-focused vernacular snippets dataset (docs + queries).
@@ -103,6 +129,10 @@ def load_vernacular_facts_tiny(*, query_pack: str = "default") -> RagDataset:
     else:
         name = "vernacular_facts_tiny_codemix_hard"
     return RagDataset(name=name, docs=docs, queries=queries, source="packaged")
+
+
+def load_vernacular_facts_tiny_answer_cases() -> list[RagAnswerCase]:
+    return load_rag_answer_cases_jsonl(packaged_data_path("vernacular_facts_tiny_answer_cases.jsonl"))
 
 
 def _download(url: str, dest: Path) -> None:

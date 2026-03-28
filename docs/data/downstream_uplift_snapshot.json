@@ -1,11 +1,12 @@
 {
-  "generated_at_utc": "2026-03-28T07:02:30.929642Z",
+  "generated_at_utc": "2026-03-28T07:20:12.901724Z",
   "environment": {
     "python": "3.13.5",
     "platform": "macOS-26.3-arm64-arm-64bit-Mach-O"
   },
   "metric_definitions": {
     "retrieval_uplift": "Top-k retrieval recall delta from run_retrieval_uplift_eval: compares raw queries vs OVAK-normalized queries on packaged retrieval query packs.",
+    "answer_quality_uplift": "Short-answer quality delta from run_answer_quality_uplift_eval: compares Sarvam answers under raw questions vs OVAK-normalized questions using packaged gold contexts.",
     "prompt_stability_uplift": "Pairwise semantic similarity delta from run_prompt_stability_uplift_eval: compares raw prompts vs OVAK-normalized prompts for the configured Sarvam model."
   },
   "snapshot_config": {
@@ -20,6 +21,11 @@
       5
     ],
     "embedding_model_requested": "ai4bharat/indic-bert",
+    "answer_quality": {
+      "included": true,
+      "model": "sarvam-m",
+      "cache_dir": null
+    },
     "prompt_stability": {
       "included": true,
       "model": "sarvam-m",
@@ -144,6 +150,40 @@
           }
         }
       }
+    },
+    "answer_quality_uplift": {
+      "model": "sarvam-m",
+      "embedding_model_requested": "ai4bharat/indic-bert",
+      "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+      "raw_metrics": {
+        "exact_match_rate": 1.0,
+        "mean_answer_similarity": 0.5564120658673346,
+        "min_answer_similarity": -0.0009964518249034882
+      },
+      "normalized_metrics": {
+        "exact_match_rate": 1.0,
+        "mean_answer_similarity": 0.5352889974601567,
+        "min_answer_similarity": -0.02137642726302147
+      },
+      "answer_quality_uplift": {
+        "exact_match_rate": {
+          "raw": 1.0,
+          "normalized": 1.0,
+          "absolute_uplift": 0.0
+        },
+        "mean_answer_similarity": {
+          "raw": 0.5564120658673346,
+          "normalized": 0.5352889974601567,
+          "absolute_uplift": -0.021123068407177925
+        },
+        "min_answer_similarity": {
+          "raw": -0.0009964518249034882,
+          "normalized": -0.02137642726302147,
+          "absolute_uplift": -0.02037997543811798
+        }
+      },
+      "raw_used_cache_n": 8,
+      "normalized_used_cache_n": 8
     },
     "prompt_stability_uplift": {
       "model": "sarvam-m",

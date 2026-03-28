@@ -48,12 +48,49 @@ def main() -> None:
         default="ai4bharat/indic-bert",
         help="Embedding model requested for retrieval uplift.",
     )
+    ap.add_argument(
+        "--include-prompt-stability",
+        action="store_true",
+        help="Also snapshot prompt-stability uplift (requires Sarvam + eval dependencies).",
+    )
+    ap.add_argument(
+        "--prompt-model",
+        default="sarvam-m",
+        help="Sarvam model for prompt-stability uplift.",
+    )
+    ap.add_argument(
+        "--prompt-n-variants",
+        type=int,
+        default=10,
+        help="Number of prompt variants for prompt-stability uplift.",
+    )
+    ap.add_argument(
+        "--prompt-base-question-gu",
+        default="અમદાવાદમાં શિયાળામાં કઈ ખાસ વાનગી લોકપ્રિય છે?",
+        help="Gujarati base question for prompt-stability uplift.",
+    )
+    ap.add_argument(
+        "--prompt-cache-dir",
+        default="",
+        help="Optional cache directory override for prompt-stability uplift.",
+    )
+    ap.add_argument(
+        "--api-key",
+        default="",
+        help="Optional Sarvam API key override for prompt-stability uplift.",
+    )
     args = ap.parse_args()
 
     payload = snapshot_downstream_uplift(
         retrieval_query_packs=_parse_csv(args.retrieval_query_packs),
         k_values=_parse_int_csv(args.k_values),
         embedding_model=str(args.embedding_model),
+        include_prompt_stability=bool(args.include_prompt_stability),
+        prompt_model=str(args.prompt_model),
+        prompt_n_variants=int(args.prompt_n_variants),
+        prompt_base_question_gu=str(args.prompt_base_question_gu),
+        prompt_cache_dir=Path(args.prompt_cache_dir) if str(args.prompt_cache_dir).strip() else None,
+        api_key=str(args.api_key).strip() or None,
     )
 
     out_path = Path(args.output)

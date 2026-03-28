@@ -87,10 +87,13 @@ For retrieval uplift, query preprocessing is intentionally conservative:
 This avoids inflating negative uplift by transliterating English retrieval prompts that should remain
 in Latin script.
 
-To snapshot these packaged retrieval uplift baselines into a committed JSON artifact:
+To snapshot these packaged downstream uplift baselines into a committed JSON artifact:
 
 ```bash
 python3 scripts/snapshot_downstream_uplift_metrics.py --output docs/data/downstream_uplift_snapshot.json
+python3 scripts/snapshot_downstream_uplift_metrics.py \
+  --output docs/data/downstream_uplift_snapshot.json \
+  --include-prompt-stability
 ```
 
 Current downstream snapshot (`docs/data/downstream_uplift_snapshot.json`):
@@ -100,6 +103,23 @@ Current downstream snapshot (`docs/data/downstream_uplift_snapshot.json`):
 | `default` | `1.0` | `1.0` | `1.0` | `1.0` | English-first baseline; no expected uplift |
 | `codemix` | `1.0` | `1.0` | `1.0` | `1.0` | Light code-mix pack; structurally useful but still easy |
 | `codemix_hard` | `0.8` | `1.0` | `0.9` | `1.0` | First packaged retrieval pack with non-trivial uplift (`+0.2` @1, `+0.1` @3) |
+
+Prompt-stability snapshot details from the same artifact:
+
+- model: `sarvam-m`
+- variants: `10`
+- raw `mean_offdiag`: `0.8718`
+- normalized `mean_offdiag`: `0.8907`
+- uplift `mean_offdiag`: `+0.0189`
+- raw `ref_min`: `0.8024`
+- normalized `ref_min`: `0.8826`
+- uplift `ref_min`: `+0.0802`
+
+The prompt-stability snapshot requires:
+
+- Sarvam API access
+- eval dependencies installed
+- cached prompt-stability generations or a live Sarvam run
 
 ## Quality / Coverage (Gujarati Baseline Eval)
 

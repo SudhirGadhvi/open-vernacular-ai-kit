@@ -46,7 +46,7 @@ def _compact_prompt_stability_uplift(result: dict[str, Any]) -> dict[str, Any]:
 def _compact_answer_quality_uplift(result: dict[str, Any]) -> dict[str, Any]:
     raw_eval = result["raw_eval"]
     normalized_eval = result["normalized_eval"]
-    return {
+    payload = {
         "model": str(result["model"]),
         "answer_case_pack": str(result["answer_case_pack"]),
         "embedding_model_requested": str(result["embedding_model_requested"]),
@@ -57,6 +57,20 @@ def _compact_answer_quality_uplift(result: dict[str, Any]) -> dict[str, Any]:
         "raw_used_cache_n": int(raw_eval["used_cache_n"]),
         "normalized_used_cache_n": int(normalized_eval["used_cache_n"]),
     }
+    case_packs = result.get("case_packs")
+    case_pack_results = result.get("case_pack_results")
+    if isinstance(case_packs, list) and isinstance(case_pack_results, dict):
+        payload["case_packs"] = list(case_packs)
+        payload["per_pack"] = {
+            str(pack): {
+                "raw_metrics": dict(case_pack_results[pack]["raw_eval"]["metrics"]),
+                "normalized_metrics": dict(case_pack_results[pack]["normalized_eval"]["metrics"]),
+                "answer_quality_uplift": dict(case_pack_results[pack]["answer_quality_uplift"]),
+            }
+            for pack in case_packs
+            if pack in case_pack_results
+        }
+    return payload
 
 
 def snapshot_downstream_uplift(
@@ -66,7 +80,7 @@ def snapshot_downstream_uplift(
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
     include_answer_quality: bool = False,
     answer_model: str = "sarvam-m",
-    answer_case_pack: str = "abstention",
+    answer_case_pack: str = "suite",
     answer_cache_dir: Optional[Path] = None,
     include_prompt_stability: bool = False,
     prompt_model: str = "sarvam-m",

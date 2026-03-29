@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-29T17:15:15.598597Z",
+  "generated_at_utc": "2026-03-29T17:23:45.123205Z",
   "environment": {
     "python": "3.13.5",
     "platform": "macOS-26.3-arm64-arm-64bit-Mach-O"
@@ -24,7 +24,7 @@
     "answer_quality": {
       "included": true,
       "model": "sarvam-m",
-      "answer_case_pack": "abstention",
+      "answer_case_pack": "suite",
       "cache_dir": null
     },
     "prompt_stability": {
@@ -154,38 +154,102 @@
     },
     "answer_quality_uplift": {
       "model": "sarvam-m",
-      "answer_case_pack": "abstention",
+      "answer_case_pack": "suite",
       "embedding_model_requested": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "raw_metrics": {
-        "exact_match_rate": 0.9,
-        "mean_answer_similarity": 0.1588984439149499,
+        "exact_match_rate": 0.9545454545454546,
+        "mean_answer_similarity": 0.3582076800309799,
         "min_answer_similarity": 0.02452225051820278
       },
       "normalized_metrics": {
         "exact_match_rate": 1.0,
-        "mean_answer_similarity": 0.17458641454577445,
-        "min_answer_similarity": 0.10013232380151749
+        "mean_answer_similarity": 0.3684973450038921,
+        "min_answer_similarity": -0.007157428190112114
       },
       "answer_quality_uplift": {
         "exact_match_rate": {
-          "raw": 0.9,
+          "raw": 0.9545454545454546,
           "normalized": 1.0,
-          "absolute_uplift": 0.09999999999999998
+          "absolute_uplift": 0.045454545454545414
         },
         "mean_answer_similarity": {
-          "raw": 0.1588984439149499,
-          "normalized": 0.17458641454577445,
-          "absolute_uplift": 0.015687970630824555
+          "raw": 0.3582076800309799,
+          "normalized": 0.3684973450038921,
+          "absolute_uplift": 0.010289664972912171
         },
         "min_answer_similarity": {
           "raw": 0.02452225051820278,
-          "normalized": 0.10013232380151749,
-          "absolute_uplift": 0.0756100732833147
+          "normalized": -0.007157428190112114,
+          "absolute_uplift": -0.031679678708314896
         }
       },
-      "raw_used_cache_n": 10,
-      "normalized_used_cache_n": 10
+      "raw_used_cache_n": 22,
+      "normalized_used_cache_n": 22,
+      "case_packs": [
+        "distractor",
+        "abstention"
+      ],
+      "per_pack": {
+        "distractor": {
+          "raw_metrics": {
+            "exact_match_rate": 1.0,
+            "mean_answer_similarity": 0.5242987101276716,
+            "min_answer_similarity": 0.03543016314506531
+          },
+          "normalized_metrics": {
+            "exact_match_rate": 1.0,
+            "mean_answer_similarity": 0.5300897870523235,
+            "min_answer_similarity": -0.007157428190112114
+          },
+          "answer_quality_uplift": {
+            "exact_match_rate": {
+              "raw": 1.0,
+              "normalized": 1.0,
+              "absolute_uplift": 0.0
+            },
+            "mean_answer_similarity": {
+              "raw": 0.5242987101276716,
+              "normalized": 0.5300897870523235,
+              "absolute_uplift": 0.005791076924651861
+            },
+            "min_answer_similarity": {
+              "raw": 0.03543016314506531,
+              "normalized": -0.007157428190112114,
+              "absolute_uplift": -0.04258759133517742
+            }
+          }
+        },
+        "abstention": {
+          "raw_metrics": {
+            "exact_match_rate": 0.9,
+            "mean_answer_similarity": 0.1588984439149499,
+            "min_answer_similarity": 0.02452225051820278
+          },
+          "normalized_metrics": {
+            "exact_match_rate": 1.0,
+            "mean_answer_similarity": 0.17458641454577445,
+            "min_answer_similarity": 0.10013232380151749
+          },
+          "answer_quality_uplift": {
+            "exact_match_rate": {
+              "raw": 0.9,
+              "normalized": 1.0,
+              "absolute_uplift": 0.09999999999999998
+            },
+            "mean_answer_similarity": {
+              "raw": 0.1588984439149499,
+              "normalized": 0.17458641454577445,
+              "absolute_uplift": 0.015687970630824555
+            },
+            "min_answer_similarity": {
+              "raw": 0.02452225051820278,
+              "normalized": 0.10013232380151749,
+              "absolute_uplift": 0.0756100732833147
+            }
+          }
+        }
+      }
     },
     "prompt_stability_uplift": {
       "model": "sarvam-m",

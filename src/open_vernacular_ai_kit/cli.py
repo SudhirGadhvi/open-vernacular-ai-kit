@@ -147,7 +147,7 @@ def eval(
     answer_case_pack: str = typer.Option(
         "default",
         help=(
-            "Answer-quality case pack: default, hard, distractor, or abstention "
+            "Answer-quality case pack: default, hard, distractor, abstention, or suite "
             "(answer_quality/answer_quality_uplift)."
         ),
     ),

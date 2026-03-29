@@ -173,6 +173,88 @@ def test_run_answer_quality_uplift_eval_compares_raw_vs_normalized(monkeypatch) 
     assert res["answer_quality_uplift"]["mean_answer_similarity"]["absolute_uplift"] == pytest.approx(0.18)
 
 
+def test_run_answer_quality_suite_uplift_eval_aggregates_case_packs(monkeypatch) -> None:
+    def _fake_run_answer_quality_uplift_eval(*, model, embedding_model, cache_dir, api_key, answer_case_pack):
+        if answer_case_pack == "distractor":
+            return {
+                "dataset": "answer_quality_uplift",
+                "model": model,
+                "answer_case_pack": "distractor",
+                "embedding_model_used": embedding_model,
+                "raw_eval": {
+                    "n_cases": 4,
+                    "used_cache_n": 4,
+                    "metrics": {
+                        "exact_match_rate": 1.0,
+                        "mean_answer_similarity": 0.6,
+                        "min_answer_similarity": 0.2,
+                    },
+                },
+                "normalized_eval": {
+                    "n_cases": 4,
+                    "used_cache_n": 4,
+                    "metrics": {
+                        "exact_match_rate": 1.0,
+                        "mean_answer_similarity": 0.7,
+                        "min_answer_similarity": 0.3,
+                    },
+                },
+                "answer_quality_uplift": {
+                    "exact_match_rate": {"raw": 1.0, "normalized": 1.0, "absolute_uplift": 0.0},
+                    "mean_answer_similarity": {"raw": 0.6, "normalized": 0.7, "absolute_uplift": 0.1},
+                    "min_answer_similarity": {"raw": 0.2, "normalized": 0.3, "absolute_uplift": 0.1},
+                },
+            }
+        if answer_case_pack == "abstention":
+            return {
+                "dataset": "answer_quality_uplift",
+                "model": model,
+                "answer_case_pack": "abstention",
+                "embedding_model_used": embedding_model,
+                "raw_eval": {
+                    "n_cases": 6,
+                    "used_cache_n": 6,
+                    "metrics": {
+                        "exact_match_rate": 0.5,
+                        "mean_answer_similarity": 0.2,
+                        "min_answer_similarity": 0.1,
+                    },
+                },
+                "normalized_eval": {
+                    "n_cases": 6,
+                    "used_cache_n": 6,
+                    "metrics": {
+                        "exact_match_rate": 1.0,
+                        "mean_answer_similarity": 0.4,
+                        "min_answer_similarity": 0.15,
+                    },
+                },
+                "answer_quality_uplift": {
+                    "exact_match_rate": {"raw": 0.5, "normalized": 1.0, "absolute_uplift": 0.5},
+                    "mean_answer_similarity": {"raw": 0.2, "normalized": 0.4, "absolute_uplift": 0.2},
+                    "min_answer_similarity": {"raw": 0.1, "normalized": 0.15, "absolute_uplift": 0.05},
+                },
+            }
+        raise AssertionError(f"unexpected case pack: {answer_case_pack}")
+
+    monkeypatch.setattr(eval_harness, "run_answer_quality_uplift_eval", _fake_run_answer_quality_uplift_eval)
+
+    res = eval_harness.run_answer_quality_suite_uplift_eval(
+        model="sarvam-m",
+        embedding_model="test-model",
+    )
+
+    assert res["answer_case_pack"] == "suite"
+    assert res["case_packs"] == ["distractor", "abstention"]
+    assert res["raw_eval"]["n_cases"] == 10
+    assert res["normalized_eval"]["used_cache_n"] == 10
+    assert res["raw_eval"]["metrics"]["exact_match_rate"] == pytest.approx(0.7)
+    assert res["normalized_eval"]["metrics"]["exact_match_rate"] == pytest.approx(1.0)
+    assert res["answer_quality_uplift"]["exact_match_rate"]["absolute_uplift"] == pytest.approx(0.3)
+    assert res["raw_eval"]["metrics"]["min_answer_similarity"] == pytest.approx(0.1)
+    assert res["normalized_eval"]["metrics"]["min_answer_similarity"] == pytest.approx(0.15)
+
+
 def test_answer_matches_expected_allows_short_label_inside_longer_output() -> None:
     assert eval_harness._answer_matches_expected("Gujarati", "The answer is Gujarati language.")
     assert not eval_harness._answer_matches_expected("Gujarati", "Hindi")

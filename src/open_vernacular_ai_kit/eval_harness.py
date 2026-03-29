@@ -1117,6 +1117,14 @@ def run_answer_quality_uplift_eval(
     api_key: Optional[str] = None,
     answer_case_pack: str = "default",
 ) -> dict[str, Any]:
+    if str(answer_case_pack).strip().lower() == "suite":
+        return run_answer_quality_suite_uplift_eval(
+            model=model,
+            embedding_model=embedding_model,
+            cache_dir=cache_dir,
+            api_key=api_key,
+        )
+
     raw_eval = run_answer_quality_eval(
         model=model,
         embedding_model=embedding_model,
@@ -1143,6 +1151,93 @@ def run_answer_quality_uplift_eval(
         "embedding_model_used": normalized_eval["embedding_model_used"],
         "raw_eval": raw_eval,
         "normalized_eval": normalized_eval,
+        "answer_quality_uplift": {
+            "exact_match_rate": _metric_delta(
+                float(normalized_metrics["exact_match_rate"]),
+                float(raw_metrics["exact_match_rate"]),
+            ),
+            "mean_answer_similarity": _metric_delta(
+                float(normalized_metrics["mean_answer_similarity"]),
+                float(raw_metrics["mean_answer_similarity"]),
+            ),
+            "min_answer_similarity": _metric_delta(
+                float(normalized_metrics["min_answer_similarity"]),
+                float(raw_metrics["min_answer_similarity"]),
+            ),
+        },
+    }
+
+
+def run_answer_quality_suite_uplift_eval(
+    *,
+    model: str = "sarvam-m",
+    embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
+    cache_dir: Optional[Path] = None,
+    api_key: Optional[str] = None,
+) -> dict[str, Any]:
+    case_packs = ("distractor", "abstention")
+    per_pack: dict[str, Any] = {}
+    for pack in case_packs:
+        per_pack[pack] = run_answer_quality_uplift_eval(
+            model=model,
+            embedding_model=embedding_model,
+            cache_dir=cache_dir,
+            api_key=api_key,
+            answer_case_pack=pack,
+        )
+
+    def _weighted_metric(side: str, metric: str) -> float:
+        total_cases = sum(int(per_pack[pack][side]["n_cases"]) for pack in case_packs)
+        if total_cases <= 0:
+            return 0.0
+        weighted_sum = sum(
+            float(per_pack[pack][side]["metrics"][metric]) * int(per_pack[pack][side]["n_cases"])
+            for pack in case_packs
+        )
+        return weighted_sum / total_cases
+
+    def _min_metric(side: str, metric: str) -> float:
+        values = [float(per_pack[pack][side]["metrics"][metric]) for pack in case_packs]
+        return min(values) if values else 0.0
+
+    raw_eval = {
+        "dataset": "answer_quality",
+        "model": model,
+        "answer_case_pack": "suite",
+        "n_cases": sum(int(per_pack[pack]["raw_eval"]["n_cases"]) for pack in case_packs),
+        "used_cache_n": sum(int(per_pack[pack]["raw_eval"]["used_cache_n"]) for pack in case_packs),
+        "metrics": {
+            "exact_match_rate": _weighted_metric("raw_eval", "exact_match_rate"),
+            "mean_answer_similarity": _weighted_metric("raw_eval", "mean_answer_similarity"),
+            "min_answer_similarity": _min_metric("raw_eval", "min_answer_similarity"),
+        },
+    }
+    normalized_eval = {
+        "dataset": "answer_quality",
+        "model": model,
+        "answer_case_pack": "suite",
+        "n_cases": sum(int(per_pack[pack]["normalized_eval"]["n_cases"]) for pack in case_packs),
+        "used_cache_n": sum(int(per_pack[pack]["normalized_eval"]["used_cache_n"]) for pack in case_packs),
+        "metrics": {
+            "exact_match_rate": _weighted_metric("normalized_eval", "exact_match_rate"),
+            "mean_answer_similarity": _weighted_metric("normalized_eval", "mean_answer_similarity"),
+            "min_answer_similarity": _min_metric("normalized_eval", "min_answer_similarity"),
+        },
+    }
+    raw_metrics = raw_eval["metrics"]
+    normalized_metrics = normalized_eval["metrics"]
+    return {
+        "dataset": "answer_quality_uplift",
+        "model": model,
+        "answer_case_pack": "suite",
+        "case_packs": list(case_packs),
+        "embedding_model_requested": embedding_model,
+        "embedding_model_used": next(
+            str(per_pack[pack]["embedding_model_used"]) for pack in case_packs if per_pack.get(pack)
+        ),
+        "raw_eval": raw_eval,
+        "normalized_eval": normalized_eval,
+        "case_pack_results": per_pack,
         "answer_quality_uplift": {
             "exact_match_rate": _metric_delta(
                 float(normalized_metrics["exact_match_rate"]),

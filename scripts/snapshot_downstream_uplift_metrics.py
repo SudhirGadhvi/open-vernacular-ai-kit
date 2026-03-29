@@ -60,8 +60,8 @@ def main() -> None:
     )
     ap.add_argument(
         "--answer-case-pack",
-        default="abstention",
-        help="Answer-quality case pack: default, hard, distractor, or abstention.",
+        default="suite",
+        help="Answer-quality case pack: default, hard, distractor, abstention, or suite.",
     )
     ap.add_argument(
         "--answer-cache-dir",

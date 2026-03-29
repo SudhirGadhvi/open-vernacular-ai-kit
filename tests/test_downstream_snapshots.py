@@ -130,16 +130,33 @@ def test_snapshot_downstream_uplift_can_include_answer_quality(monkeypatch) -> N
             "dataset": "answer_quality_uplift",
             "model": kwargs["model"],
             "answer_case_pack": kwargs["answer_case_pack"],
+            "case_packs": ["distractor", "abstention"] if kwargs["answer_case_pack"] == "suite" else None,
             "embedding_model_requested": kwargs["embedding_model"],
             "embedding_model_used": "test-model",
             "raw_eval": {
                 "used_cache_n": 4,
-                "metrics": {"exact_match_rate": 0.5, "mean_answer_similarity": 0.7},
+                "metrics": {"exact_match_rate": 0.5, "mean_answer_similarity": 0.7, "min_answer_similarity": 0.4},
             },
             "normalized_eval": {
                 "used_cache_n": 4,
-                "metrics": {"exact_match_rate": 0.75, "mean_answer_similarity": 0.85},
+                "metrics": {"exact_match_rate": 0.75, "mean_answer_similarity": 0.85, "min_answer_similarity": 0.5},
             },
+            "case_pack_results": (
+                {
+                    "distractor": {
+                        "raw_eval": {"metrics": {"exact_match_rate": 1.0, "mean_answer_similarity": 0.8, "min_answer_similarity": 0.6}},
+                        "normalized_eval": {"metrics": {"exact_match_rate": 1.0, "mean_answer_similarity": 0.9, "min_answer_similarity": 0.7}},
+                        "answer_quality_uplift": {"exact_match_rate": {"raw": 1.0, "normalized": 1.0, "absolute_uplift": 0.0}},
+                    },
+                    "abstention": {
+                        "raw_eval": {"metrics": {"exact_match_rate": 0.1, "mean_answer_similarity": 0.2, "min_answer_similarity": 0.1}},
+                        "normalized_eval": {"metrics": {"exact_match_rate": 0.5, "mean_answer_similarity": 0.4, "min_answer_similarity": 0.2}},
+                        "answer_quality_uplift": {"exact_match_rate": {"raw": 0.1, "normalized": 0.5, "absolute_uplift": 0.4}},
+                    },
+                }
+                if kwargs["answer_case_pack"] == "suite"
+                else None
+            ),
             "answer_quality_uplift": {
                 "exact_match_rate": {"raw": 0.5, "normalized": 0.75, "absolute_uplift": 0.25},
                 "mean_answer_similarity": {
@@ -155,15 +172,19 @@ def test_snapshot_downstream_uplift_can_include_answer_quality(monkeypatch) -> N
         retrieval_query_packs=("default",),
         include_answer_quality=True,
         answer_model="sarvam-m",
-        answer_case_pack="hard",
+        answer_case_pack="suite",
     )
 
     assert payload["snapshot_config"]["answer_quality"]["included"] is True
     assert payload["snapshot_config"]["answer_quality"]["model"] == "sarvam-m"
-    assert payload["snapshot_config"]["answer_quality"]["answer_case_pack"] == "hard"
+    assert payload["snapshot_config"]["answer_quality"]["answer_case_pack"] == "suite"
     assert (
         payload["downstream_uplift_metrics"]["answer_quality_uplift"]["answer_quality_uplift"][
             "exact_match_rate"
         ]["absolute_uplift"]
         == 0.25
     )
+    assert payload["downstream_uplift_metrics"]["answer_quality_uplift"]["case_packs"] == [
+        "distractor",
+        "abstention",
+    ]

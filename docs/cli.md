@@ -37,6 +37,7 @@ gck eval --dataset answer_quality_uplift
 gck eval --dataset answer_quality_uplift --answer-case-pack hard
 gck eval --dataset answer_quality_uplift --answer-case-pack distractor
 gck eval --dataset answer_quality_uplift --answer-case-pack abstention
+gck eval --dataset answer_quality_uplift --answer-case-pack suite
 ```
 
 The packaged `language_sentences` dataset currently contains `120` exact-match Hindi and Gujarati
@@ -52,6 +53,7 @@ For downstream-quality checks, use:
 - `--answer-case-pack hard`: uses the harder phrase-answer benchmark pack instead of the easier label-answer pack
 - `--answer-case-pack distractor`: uses the preferred multi-doc distractor answer-quality pack
 - `--answer-case-pack abstention`: uses unsupported-fact cases where the correct answer is `UNKNOWN`
+- `--answer-case-pack suite`: runs the combined release-facing answer benchmark over `distractor` + `abstention`
 
 Note: eval dependencies are optional; install with `pip install -e ".[eval]"`.
 

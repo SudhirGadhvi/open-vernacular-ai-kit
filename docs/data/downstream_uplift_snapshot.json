@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-29T17:03:43.583195Z",
+  "generated_at_utc": "2026-03-29T17:15:15.598597Z",
   "environment": {
     "python": "3.13.5",
     "platform": "macOS-26.3-arm64-arm-64bit-Mach-O"
@@ -20,11 +20,11 @@
       3,
       5
     ],
-    "embedding_model_requested": "ai4bharat/indic-bert",
+    "embedding_model_requested": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
     "answer_quality": {
       "included": true,
       "model": "sarvam-m",
-      "answer_case_pack": "distractor",
+      "answer_case_pack": "abstention",
       "cache_dir": null
     },
     "prompt_stability": {
@@ -39,7 +39,7 @@
     "retrieval_uplift": {
       "default": {
         "retrieval_query_pack": "default",
-        "embedding_model_requested": "ai4bharat/indic-bert",
+        "embedding_model_requested": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         "k_values": [
           1,
@@ -77,7 +77,7 @@
       },
       "codemix": {
         "retrieval_query_pack": "codemix",
-        "embedding_model_requested": "ai4bharat/indic-bert",
+        "embedding_model_requested": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         "k_values": [
           1,
@@ -115,7 +115,7 @@
       },
       "codemix_hard": {
         "retrieval_query_pack": "codemix_hard",
-        "embedding_model_requested": "ai4bharat/indic-bert",
+        "embedding_model_requested": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
         "k_values": [
           1,
@@ -154,43 +154,43 @@
     },
     "answer_quality_uplift": {
       "model": "sarvam-m",
-      "answer_case_pack": "distractor",
-      "embedding_model_requested": "ai4bharat/indic-bert",
+      "answer_case_pack": "abstention",
+      "embedding_model_requested": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "raw_metrics": {
-        "exact_match_rate": 1.0,
-        "mean_answer_similarity": 0.5242987101276716,
-        "min_answer_similarity": 0.03543016314506531
+        "exact_match_rate": 0.9,
+        "mean_answer_similarity": 0.1588984439149499,
+        "min_answer_similarity": 0.02452225051820278
       },
       "normalized_metrics": {
         "exact_match_rate": 1.0,
-        "mean_answer_similarity": 0.5300897870523235,
-        "min_answer_similarity": -0.007157428190112114
+        "mean_answer_similarity": 0.17458641454577445,
+        "min_answer_similarity": 0.10013232380151749
       },
       "answer_quality_uplift": {
         "exact_match_rate": {
-          "raw": 1.0,
+          "raw": 0.9,
           "normalized": 1.0,
-          "absolute_uplift": 0.0
+          "absolute_uplift": 0.09999999999999998
         },
         "mean_answer_similarity": {
-          "raw": 0.5242987101276716,
-          "normalized": 0.5300897870523235,
-          "absolute_uplift": 0.005791076924651861
+          "raw": 0.1588984439149499,
+          "normalized": 0.17458641454577445,
+          "absolute_uplift": 0.015687970630824555
         },
         "min_answer_similarity": {
-          "raw": 0.03543016314506531,
-          "normalized": -0.007157428190112114,
-          "absolute_uplift": -0.04258759133517742
+          "raw": 0.02452225051820278,
+          "normalized": 0.10013232380151749,
+          "absolute_uplift": 0.0756100732833147
         }
       },
-      "raw_used_cache_n": 12,
-      "normalized_used_cache_n": 12
+      "raw_used_cache_n": 10,
+      "normalized_used_cache_n": 10
     },
     "prompt_stability_uplift": {
       "model": "sarvam-m",
       "n_variants": 10,
-      "embedding_model_requested": "ai4bharat/indic-bert",
+      "embedding_model_requested": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "raw_pairwise_similarity": {
         "mean_offdiag": 0.8717888474464417,

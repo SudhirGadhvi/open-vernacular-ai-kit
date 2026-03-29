@@ -146,7 +146,10 @@ def eval(
     ),
     answer_case_pack: str = typer.Option(
         "default",
-        help="Answer-quality case pack: default, hard, or distractor (answer_quality/answer_quality_uplift).",
+        help=(
+            "Answer-quality case pack: default, hard, distractor, or abstention "
+            "(answer_quality/answer_quality_uplift)."
+        ),
     ),
     embedding_model: str = typer.Option(
         "ai4bharat/indic-bert",

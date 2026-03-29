@@ -83,6 +83,7 @@ gck eval --dataset prompt_stability_uplift --n-variants 10
 gck eval --dataset answer_quality_uplift
 gck eval --dataset answer_quality_uplift --answer-case-pack hard
 gck eval --dataset answer_quality_uplift --answer-case-pack distractor
+gck eval --dataset answer_quality_uplift --answer-case-pack abstention
 ```
 
 These compare raw vs OVAK-normalized inputs and report absolute uplift deltas:
@@ -140,13 +141,20 @@ The prompt-stability snapshot requires:
 - eval dependencies installed
 - cached prompt-stability generations or a live Sarvam run
 
-The answer-quality uplift benchmark now supports three packaged case packs:
+The answer-quality uplift benchmark now supports four packaged case packs:
 
 - `default`: easier label-answer cases such as language names
 - `hard`: phrase-answer cases that require reading the gold context more precisely
 - `distractor`: multi-doc distractor cases that force answer selection from semantically similar contexts
+- `abstention`: unsupported-fact cases where the correct answer is `UNKNOWN`
 
-The distractor pack is now the preferred one for tracking real prompt-conditioning gains.
+Use them differently:
+
+- `distractor`: better for answer selection under semantically similar contexts
+- `abstention`: better for breaking exact-match saturation and measuring whether normalization reduces unsupported guesses
+
+The abstention pack is now the preferred default for the committed downstream snapshot because it is
+the first packaged answer-quality pack with non-saturated exact-match.
 
 The answer-quality uplift benchmark uses a packaged QA set with:
 
@@ -160,16 +168,18 @@ Current answer-quality snapshot details from the same artifact:
 
 - model: `sarvam-m`
 - answer case pack: see `snapshot_config.answer_quality.answer_case_pack` in the committed snapshot
-- raw `exact_match_rate`: `1.0`
+- raw `exact_match_rate`: `0.9`
 - normalized `exact_match_rate`: `1.0`
-- raw `mean_answer_similarity`: `0.5243`
-- normalized `mean_answer_similarity`: `0.5301`
-- uplift `mean_answer_similarity`: `+0.0058`
-- uplift `min_answer_similarity`: `-0.0426`
+- uplift `exact_match_rate`: `+0.1`
+- raw `mean_answer_similarity`: `0.1589`
+- normalized `mean_answer_similarity`: `0.1746`
+- uplift `mean_answer_similarity`: `+0.0157`
+- uplift `min_answer_similarity`: `+0.0756`
 
 Interpretation rule:
 
-- if exact-match is still saturated, prefer the distractor pack metrics over the old default pack
+- if exact-match is saturated, prefer `distractor` or `abstention` over the old default pack
+- if you need a single release-facing answer-quality number, prefer `abstention`
 - treat small similarity changes as directional only
 - this benchmark is still less mature than retrieval uplift
 

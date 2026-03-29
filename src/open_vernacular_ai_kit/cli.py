@@ -144,6 +144,10 @@ def eval(
         "default",
         help="Retrieval query pack: default, codemix, or codemix_hard (retrieval/retrieval_uplift).",
     ),
+    answer_case_pack: str = typer.Option(
+        "default",
+        help="Answer-quality case pack: default or hard (answer_quality/answer_quality_uplift).",
+    ),
     embedding_model: str = typer.Option(
         "ai4bharat/indic-bert",
         help=(
@@ -230,6 +234,7 @@ def eval(
             translit_mode=translit_mode,
             k=k,
             retrieval_query_pack=retrieval_query_pack,
+            answer_case_pack=answer_case_pack,
             embedding_model=embedding_model,
             sarvam_model=sarvam_model,
             n_variants=n_variants,

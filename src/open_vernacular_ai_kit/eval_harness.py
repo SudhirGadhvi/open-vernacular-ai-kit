@@ -981,6 +981,7 @@ def run_answer_quality_eval(
     cache_dir: Optional[Path] = None,
     api_key: Optional[str] = None,
     preprocess_question: bool = True,
+    answer_case_pack: str = "default",
 ) -> dict[str, Any]:
     """
     Downstream answer-quality benchmark:
@@ -1008,7 +1009,7 @@ def run_answer_quality_eval(
         )
 
     ds = load_vernacular_facts_tiny(query_pack="default")
-    answer_cases = load_vernacular_facts_tiny_answer_cases()
+    answer_cases = load_vernacular_facts_tiny_answer_cases(case_pack=answer_case_pack)
     docs_by_id = {doc.doc_id: doc for doc in ds.docs}
     cache_root = cache_dir or (_default_cache_dir() / "eval-cache" / "answer-quality")
 
@@ -1088,6 +1089,7 @@ def run_answer_quality_eval(
     return {
         "dataset": "answer_quality",
         "model": model,
+        "answer_case_pack": str(answer_case_pack),
         "embedding_model_requested": embedding_model,
         "embedding_model_used": used_model,
         "cache_dir": str(cache_root),
@@ -1113,6 +1115,7 @@ def run_answer_quality_uplift_eval(
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
     cache_dir: Optional[Path] = None,
     api_key: Optional[str] = None,
+    answer_case_pack: str = "default",
 ) -> dict[str, Any]:
     raw_eval = run_answer_quality_eval(
         model=model,
@@ -1120,6 +1123,7 @@ def run_answer_quality_uplift_eval(
         cache_dir=cache_dir,
         api_key=api_key,
         preprocess_question=False,
+        answer_case_pack=answer_case_pack,
     )
     normalized_eval = run_answer_quality_eval(
         model=model,
@@ -1127,12 +1131,14 @@ def run_answer_quality_uplift_eval(
         cache_dir=cache_dir,
         api_key=api_key,
         preprocess_question=True,
+        answer_case_pack=answer_case_pack,
     )
     raw_metrics = raw_eval["metrics"]
     normalized_metrics = normalized_eval["metrics"]
     return {
         "dataset": "answer_quality_uplift",
         "model": model,
+        "answer_case_pack": str(answer_case_pack),
         "embedding_model_requested": embedding_model,
         "embedding_model_used": normalized_eval["embedding_model_used"],
         "raw_eval": raw_eval,
@@ -1367,6 +1373,7 @@ def run_eval(
     aggressive_normalize: bool = False,
     k: int = 5,
     retrieval_query_pack: str = "default",
+    answer_case_pack: str = "default",
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
     sarvam_model: str = "sarvam-m",
     n_variants: int = 10,
@@ -1439,12 +1446,14 @@ def run_eval(
             embedding_model=embedding_model,
             api_key=api_key,
             preprocess_question=preprocess,
+            answer_case_pack=answer_case_pack,
         )
     if dataset in {"answer_quality_uplift", "answer-quality-uplift"}:
         return run_answer_quality_uplift_eval(
             model=sarvam_model,
             embedding_model=embedding_model,
             api_key=api_key,
+            answer_case_pack=answer_case_pack,
         )
     if dataset in {"dialect_id", "dialect-id"}:
         return run_dialect_id_eval(

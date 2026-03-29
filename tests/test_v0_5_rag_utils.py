@@ -110,6 +110,13 @@ def test_load_vernacular_facts_tiny_distractor_answer_cases() -> None:
     assert rows[0].meta
 
 
+def test_load_vernacular_facts_tiny_abstention_answer_cases() -> None:
+    rows = load_vernacular_facts_tiny_answer_cases(case_pack="abstention")
+    assert len(rows) >= 10
+    assert all(row.expected_answer == "UNKNOWN" for row in rows)
+    assert len(rows[0].context_doc_ids) >= 3
+
+
 def test_load_vernacular_facts_tiny_rejects_unknown_answer_case_pack() -> None:
     with pytest.raises(ValueError, match="case_pack must be one of"):
         load_vernacular_facts_tiny_answer_cases(case_pack="unknown-pack")

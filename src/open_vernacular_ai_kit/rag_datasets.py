@@ -137,10 +137,11 @@ def load_vernacular_facts_tiny_answer_cases(*, case_pack: str = "default") -> li
         "default": "vernacular_facts_tiny_answer_cases.jsonl",
         "hard": "vernacular_facts_tiny_answer_cases_hard.jsonl",
         "distractor": "vernacular_facts_tiny_answer_cases_distractor.jsonl",
+        "abstention": "vernacular_facts_tiny_answer_cases_abstention.jsonl",
     }
     filename = case_pack_map.get(pack)
     if filename is None:
-        raise ValueError("case_pack must be one of: default, hard, distractor")
+        raise ValueError("case_pack must be one of: default, hard, distractor, abstention")
     return load_rag_answer_cases_jsonl(packaged_data_path(filename))
 
 

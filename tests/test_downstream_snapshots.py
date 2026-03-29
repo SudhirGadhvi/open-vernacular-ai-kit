@@ -129,6 +129,7 @@ def test_snapshot_downstream_uplift_can_include_answer_quality(monkeypatch) -> N
         lambda **kwargs: {
             "dataset": "answer_quality_uplift",
             "model": kwargs["model"],
+            "answer_case_pack": kwargs["answer_case_pack"],
             "embedding_model_requested": kwargs["embedding_model"],
             "embedding_model_used": "test-model",
             "raw_eval": {
@@ -154,10 +155,12 @@ def test_snapshot_downstream_uplift_can_include_answer_quality(monkeypatch) -> N
         retrieval_query_packs=("default",),
         include_answer_quality=True,
         answer_model="sarvam-m",
+        answer_case_pack="hard",
     )
 
     assert payload["snapshot_config"]["answer_quality"]["included"] is True
     assert payload["snapshot_config"]["answer_quality"]["model"] == "sarvam-m"
+    assert payload["snapshot_config"]["answer_quality"]["answer_case_pack"] == "hard"
     assert (
         payload["downstream_uplift_metrics"]["answer_quality_uplift"]["answer_quality_uplift"][
             "exact_match_rate"

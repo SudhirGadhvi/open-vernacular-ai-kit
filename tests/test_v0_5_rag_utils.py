@@ -94,3 +94,15 @@ def test_load_vernacular_facts_tiny_answer_cases() -> None:
     assert len(rows) >= 8
     assert rows[0].expected_answer
     assert rows[0].context_doc_ids
+
+
+def test_load_vernacular_facts_tiny_hard_answer_cases() -> None:
+    rows = load_vernacular_facts_tiny_answer_cases(case_pack="hard")
+    assert len(rows) >= 10
+    assert " " in rows[0].expected_answer
+    assert rows[0].meta
+
+
+def test_load_vernacular_facts_tiny_rejects_unknown_answer_case_pack() -> None:
+    with pytest.raises(ValueError, match="case_pack must be one of"):
+        load_vernacular_facts_tiny_answer_cases(case_pack="unknown-pack")

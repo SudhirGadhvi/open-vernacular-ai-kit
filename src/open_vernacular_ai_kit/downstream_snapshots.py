@@ -48,6 +48,7 @@ def _compact_answer_quality_uplift(result: dict[str, Any]) -> dict[str, Any]:
     normalized_eval = result["normalized_eval"]
     return {
         "model": str(result["model"]),
+        "answer_case_pack": str(result["answer_case_pack"]),
         "embedding_model_requested": str(result["embedding_model_requested"]),
         "embedding_model_used": str(result["embedding_model_used"]),
         "raw_metrics": dict(raw_eval["metrics"]),
@@ -65,6 +66,7 @@ def snapshot_downstream_uplift(
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
     include_answer_quality: bool = False,
     answer_model: str = "sarvam-m",
+    answer_case_pack: str = "hard",
     answer_cache_dir: Optional[Path] = None,
     include_prompt_stability: bool = False,
     prompt_model: str = "sarvam-m",
@@ -105,6 +107,7 @@ def snapshot_downstream_uplift(
     if include_answer_quality:
         answer_result = run_answer_quality_uplift_eval(
             model=answer_model,
+            answer_case_pack=answer_case_pack,
             embedding_model=embedding_model,
             cache_dir=answer_cache_dir,
             api_key=api_key,
@@ -117,6 +120,7 @@ def snapshot_downstream_uplift(
         snapshot_config["answer_quality"] = {
             "included": True,
             "model": answer_model,
+            "answer_case_pack": answer_case_pack,
             "cache_dir": str(answer_cache_dir) if answer_cache_dir else None,
         }
     else:

@@ -59,6 +59,11 @@ def main() -> None:
         help="Sarvam model for answer-quality uplift.",
     )
     ap.add_argument(
+        "--answer-case-pack",
+        default="hard",
+        help="Answer-quality case pack: default or hard.",
+    )
+    ap.add_argument(
         "--answer-cache-dir",
         default="",
         help="Optional cache directory override for answer-quality uplift.",
@@ -102,6 +107,7 @@ def main() -> None:
         embedding_model=str(args.embedding_model),
         include_answer_quality=bool(args.include_answer_quality),
         answer_model=str(args.answer_model),
+        answer_case_pack=str(args.answer_case_pack),
         answer_cache_dir=Path(args.answer_cache_dir) if str(args.answer_cache_dir).strip() else None,
         include_prompt_stability=bool(args.include_prompt_stability),
         prompt_model=str(args.prompt_model),

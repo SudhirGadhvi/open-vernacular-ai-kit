@@ -34,6 +34,7 @@ gck eval --dataset retrieval_uplift --retrieval-query-pack codemix --k 5
 gck eval --dataset retrieval_uplift --retrieval-query-pack codemix_hard --k 5
 gck eval --dataset prompt_stability_uplift --n-variants 10
 gck eval --dataset answer_quality_uplift
+gck eval --dataset answer_quality_uplift --answer-case-pack hard
 ```
 
 The packaged `language_sentences` dataset currently contains `120` exact-match Hindi and Gujarati
@@ -46,6 +47,7 @@ For downstream-quality checks, use:
 - `--retrieval-query-pack codemix_hard`: uses the harder noisy/code-mixed retrieval pack
 - `prompt_stability_uplift`: compares Sarvam prompt-stability with raw prompts vs OVAK-normalized prompts
 - `answer_quality_uplift`: compares short-answer quality with raw questions vs OVAK-normalized questions using packaged gold contexts
+- `--answer-case-pack hard`: uses the harder phrase-answer benchmark pack instead of the easier label-answer pack
 
 Note: eval dependencies are optional; install with `pip install -e ".[eval]"`.
 

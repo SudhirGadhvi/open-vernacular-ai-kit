@@ -67,6 +67,7 @@ gck eval --dataset retrieval_uplift --retrieval-query-pack codemix --k 5
 gck eval --dataset retrieval_uplift --retrieval-query-pack codemix_hard --k 5
 gck eval --dataset prompt_stability_uplift --n-variants 10
 gck eval --dataset answer_quality_uplift
+gck eval --dataset answer_quality_uplift --answer-case-pack hard
 ```
 
 These compare raw vs OVAK-normalized inputs and report absolute uplift deltas:
@@ -124,7 +125,14 @@ The prompt-stability snapshot requires:
 - eval dependencies installed
 - cached prompt-stability generations or a live Sarvam run
 
-The answer-quality uplift benchmark uses a packaged tiny QA set with:
+The answer-quality uplift benchmark now supports two packaged case packs:
+
+- `default`: easier label-answer cases such as language names
+- `hard`: phrase-answer cases that require reading the gold context more precisely
+
+The harder pack is the right one for tracking real prompt-conditioning gains.
+
+The answer-quality uplift benchmark uses a packaged QA set with:
 
 - gold context doc ids
 - short expected English answers
@@ -135,14 +143,17 @@ This keeps the benchmark focused on downstream prompt conditioning instead of re
 Current answer-quality snapshot details from the same artifact:
 
 - model: `sarvam-m`
+- answer case pack: see `snapshot_config.answer_quality.answer_case_pack` in the committed snapshot
 - raw `exact_match_rate`: `1.0`
 - normalized `exact_match_rate`: `1.0`
-- raw `mean_answer_similarity`: `0.5564`
-- normalized `mean_answer_similarity`: `0.5353`
-- uplift `mean_answer_similarity`: `-0.0211`
+- raw `mean_answer_similarity`: `0.5263`
+- normalized `mean_answer_similarity`: `0.5070`
+- uplift `mean_answer_similarity`: `-0.0193`
+- uplift `min_answer_similarity`: `+0.0335`
 
-That means the benchmark is now real and reproducible, but the current packaged answer set is
-already saturated on exact-match and does not yet show positive semantic uplift from normalization.
+That means the harder phrase-answer pack is a better benchmark shape than the old label-only pack,
+but it still does not produce positive exact-match uplift yet. The benchmark is now materially more
+useful, but not finished.
 
 ## Quality / Coverage (Gujarati Baseline Eval)
 

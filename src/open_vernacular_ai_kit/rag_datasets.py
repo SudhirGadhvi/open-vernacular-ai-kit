@@ -131,8 +131,16 @@ def load_vernacular_facts_tiny(*, query_pack: str = "default") -> RagDataset:
     return RagDataset(name=name, docs=docs, queries=queries, source="packaged")
 
 
-def load_vernacular_facts_tiny_answer_cases() -> list[RagAnswerCase]:
-    return load_rag_answer_cases_jsonl(packaged_data_path("vernacular_facts_tiny_answer_cases.jsonl"))
+def load_vernacular_facts_tiny_answer_cases(*, case_pack: str = "default") -> list[RagAnswerCase]:
+    pack = str(case_pack or "default").strip().lower()
+    case_pack_map = {
+        "default": "vernacular_facts_tiny_answer_cases.jsonl",
+        "hard": "vernacular_facts_tiny_answer_cases_hard.jsonl",
+    }
+    filename = case_pack_map.get(pack)
+    if filename is None:
+        raise ValueError("case_pack must be one of: default, hard")
+    return load_rag_answer_cases_jsonl(packaged_data_path(filename))
 
 
 def _download(url: str, dest: Path) -> None:

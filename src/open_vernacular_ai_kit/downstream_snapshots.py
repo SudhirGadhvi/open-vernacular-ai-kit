@@ -66,7 +66,7 @@ def snapshot_downstream_uplift(
     embedding_model: str = _DEFAULT_EMBEDDING_MODEL,
     include_answer_quality: bool = False,
     answer_model: str = "sarvam-m",
-    answer_case_pack: str = "hard",
+    answer_case_pack: str = "distractor",
     answer_cache_dir: Optional[Path] = None,
     include_prompt_stability: bool = False,
     prompt_model: str = "sarvam-m",

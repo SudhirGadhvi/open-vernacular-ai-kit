@@ -82,6 +82,7 @@ gck eval --dataset retrieval_uplift --retrieval-query-pack codemix_hard --k 5
 gck eval --dataset prompt_stability_uplift --n-variants 10
 gck eval --dataset answer_quality_uplift
 gck eval --dataset answer_quality_uplift --answer-case-pack hard
+gck eval --dataset answer_quality_uplift --answer-case-pack distractor
 ```
 
 These compare raw vs OVAK-normalized inputs and report absolute uplift deltas:
@@ -139,12 +140,13 @@ The prompt-stability snapshot requires:
 - eval dependencies installed
 - cached prompt-stability generations or a live Sarvam run
 
-The answer-quality uplift benchmark now supports two packaged case packs:
+The answer-quality uplift benchmark now supports three packaged case packs:
 
 - `default`: easier label-answer cases such as language names
 - `hard`: phrase-answer cases that require reading the gold context more precisely
+- `distractor`: multi-doc distractor cases that force answer selection from semantically similar contexts
 
-The harder pack is the right one for tracking real prompt-conditioning gains.
+The distractor pack is now the preferred one for tracking real prompt-conditioning gains.
 
 The answer-quality uplift benchmark uses a packaged QA set with:
 
@@ -160,14 +162,16 @@ Current answer-quality snapshot details from the same artifact:
 - answer case pack: see `snapshot_config.answer_quality.answer_case_pack` in the committed snapshot
 - raw `exact_match_rate`: `1.0`
 - normalized `exact_match_rate`: `1.0`
-- raw `mean_answer_similarity`: `0.5263`
-- normalized `mean_answer_similarity`: `0.5070`
-- uplift `mean_answer_similarity`: `-0.0193`
-- uplift `min_answer_similarity`: `+0.0335`
+- raw `mean_answer_similarity`: `0.5243`
+- normalized `mean_answer_similarity`: `0.5301`
+- uplift `mean_answer_similarity`: `+0.0058`
+- uplift `min_answer_similarity`: `-0.0426`
 
-That means the harder phrase-answer pack is a better benchmark shape than the old label-only pack,
-but it still does not produce positive exact-match uplift yet. The benchmark is now materially more
-useful, but not finished.
+Interpretation rule:
+
+- if exact-match is still saturated, prefer the distractor pack metrics over the old default pack
+- treat small similarity changes as directional only
+- this benchmark is still less mature than retrieval uplift
 
 ## Quality / Coverage (Gujarati Baseline Eval)
 

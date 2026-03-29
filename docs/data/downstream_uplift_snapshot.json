@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-03-29T08:27:02.193258Z",
+  "generated_at_utc": "2026-03-29T17:03:43.583195Z",
   "environment": {
     "python": "3.13.5",
     "platform": "macOS-26.3-arm64-arm-64bit-Mach-O"
@@ -24,7 +24,7 @@
     "answer_quality": {
       "included": true,
       "model": "sarvam-m",
-      "answer_case_pack": "hard",
+      "answer_case_pack": "distractor",
       "cache_dir": null
     },
     "prompt_stability": {
@@ -154,18 +154,18 @@
     },
     "answer_quality_uplift": {
       "model": "sarvam-m",
-      "answer_case_pack": "hard",
+      "answer_case_pack": "distractor",
       "embedding_model_requested": "ai4bharat/indic-bert",
       "embedding_model_used": "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
       "raw_metrics": {
         "exact_match_rate": 1.0,
-        "mean_answer_similarity": 0.5263260543346405,
-        "min_answer_similarity": 0.37316709756851196
+        "mean_answer_similarity": 0.5242987101276716,
+        "min_answer_similarity": 0.03543016314506531
       },
       "normalized_metrics": {
         "exact_match_rate": 1.0,
-        "mean_answer_similarity": 0.5070028662681579,
-        "min_answer_similarity": 0.4066951870918274
+        "mean_answer_similarity": 0.5300897870523235,
+        "min_answer_similarity": -0.007157428190112114
       },
       "answer_quality_uplift": {
         "exact_match_rate": {
@@ -174,18 +174,18 @@
           "absolute_uplift": 0.0
         },
         "mean_answer_similarity": {
-          "raw": 0.5263260543346405,
-          "normalized": 0.5070028662681579,
-          "absolute_uplift": -0.01932318806648259
+          "raw": 0.5242987101276716,
+          "normalized": 0.5300897870523235,
+          "absolute_uplift": 0.005791076924651861
         },
         "min_answer_similarity": {
-          "raw": 0.37316709756851196,
-          "normalized": 0.4066951870918274,
-          "absolute_uplift": 0.03352808952331543
+          "raw": 0.03543016314506531,
+          "normalized": -0.007157428190112114,
+          "absolute_uplift": -0.04258759133517742
         }
       },
-      "raw_used_cache_n": 0,
-      "normalized_used_cache_n": 0
+      "raw_used_cache_n": 12,
+      "normalized_used_cache_n": 12
     },
     "prompt_stability_uplift": {
       "model": "sarvam-m",

@@ -57,6 +57,20 @@ The packaged dataset currently contains `120` exact-match sentence cases:
 - `56` Hindi textbook/dialog-derived cases
 - `64` Gujarati grammar and support-style cases
 
+## Dialect Regression Guard
+
+For packaged Gujarati dialect detection and normalization regressions, run:
+
+```bash
+gck eval --dataset dialect_id
+gck eval --dataset dialect_normalization
+```
+
+Current packaged dialect eval coverage:
+
+- `dialect_id`: `14` labeled examples across `kathiawadi`, `surati`, and `standard`
+- `dialect_normalization`: `10` rule-backed examples across `kathiawadi` and `surati`
+
 ## Downstream Uplift Benchmarks
 
 To measure whether normalization improves downstream behavior rather than just token-level quality, run:

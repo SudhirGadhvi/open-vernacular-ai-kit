@@ -212,12 +212,17 @@ Run eval (downloads public Gujlish eval CSVs into `~/.cache/open-vernacular-ai-k
 gck eval --dataset gujlish --report eval/out/report.json
 ```
 
-Dialect evals (uses a tiny packaged JSONL by default, or provide your own):
+Dialect evals (uses packaged JSONL baselines by default, or provide your own):
 
 ```bash
 gck eval --dataset dialect_id
 gck eval --dataset dialect_normalization
 ```
+
+Current packaged dialect eval coverage:
+
+- `dialect_id`: `14` labeled examples across `kathiawadi`, `surati`, and `standard`
+- `dialect_normalization`: `10` rule-backed examples across `kathiawadi` and `surati`
 
 ## API Service (FastAPI)
 

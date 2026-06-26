@@ -11,6 +11,8 @@ theme:
 nav:
   - Home: index.md
   - What We Solve: what-we-solve.md
+  - Case Studies:
+      - Gujarati Support + Ecommerce: case-studies/gujarati-support-ecommerce.md
   - Install: install.md
   - CLI: cli.md
   - API Service: api-service.md

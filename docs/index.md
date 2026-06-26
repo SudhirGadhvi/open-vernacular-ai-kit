@@ -13,11 +13,12 @@ Core promise:
 
 Quick links:
 
-- What we solve: `docs/what-we-solve.md`
-- Install: `docs/install.md`
-- CLI: `docs/cli.md`
-- API Service: `docs/api-service.md`
-- Deploy: `docs/deploy.md`
-- SDK: `docs/sdk.md`
-- North-star metrics: `docs/north-star-metrics.md`
-- Cookbook: `docs/cookbook/`
+- What we solve: [what-we-solve.md](what-we-solve.md)
+- Gujarati support/ecommerce case study: [case-studies/gujarati-support-ecommerce.md](case-studies/gujarati-support-ecommerce.md)
+- Install: [install.md](install.md)
+- CLI: [cli.md](cli.md)
+- API Service: [api-service.md](api-service.md)
+- Deploy: [deploy.md](deploy.md)
+- SDK: [sdk.md](sdk.md)
+- North-star metrics: [north-star-metrics.md](north-star-metrics.md)
+- Cookbook: [cookbook](cookbook/integrations.md)

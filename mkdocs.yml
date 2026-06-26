@@ -18,6 +18,7 @@ nav:
   - API Service: api-service.md
   - API Quickstart: api-quickstart.md
   - Deploy: deploy.md
+  - Hindi Beta: hindi-beta.md
   - SDK: sdk.md
   - Config Schema: config-schema.md
   - North-Star Metrics: north-star-metrics.md

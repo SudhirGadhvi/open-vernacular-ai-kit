@@ -57,6 +57,9 @@ The packaged dataset currently contains `120` exact-match sentence cases:
 - `56` Hindi textbook/dialog-derived cases
 - `64` Gujarati grammar and support-style cases
 
+The Hindi beta profile also has rendered support/ecommerce code-mix coverage. See
+[Hindi Beta](hindi-beta.md) for current examples and focused validation commands.
+
 ## Dialect Regression Guard
 
 For packaged Gujarati dialect detection and normalization regressions, run:

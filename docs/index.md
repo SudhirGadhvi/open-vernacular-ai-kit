@@ -20,6 +20,7 @@ Quick links:
 - API Service: [api-service.md](api-service.md)
 - API Quickstart: [api-quickstart.md](api-quickstart.md)
 - Deploy: [deploy.md](deploy.md)
+- Hindi Beta: [hindi-beta.md](hindi-beta.md)
 - SDK: [sdk.md](sdk.md)
 - North-star metrics: [north-star-metrics.md](north-star-metrics.md)
 - Cookbook: [cookbook](cookbook/integrations.md)

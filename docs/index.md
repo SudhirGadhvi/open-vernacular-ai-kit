@@ -18,6 +18,7 @@ Quick links:
 - Install: [install.md](install.md)
 - CLI: [cli.md](cli.md)
 - API Service: [api-service.md](api-service.md)
+- API Quickstart: [api-quickstart.md](api-quickstart.md)
 - Deploy: [deploy.md](deploy.md)
 - SDK: [sdk.md](sdk.md)
 - North-star metrics: [north-star-metrics.md](north-star-metrics.md)

@@ -39,6 +39,7 @@ It cleans noisy mixed-script chat text before downstream LLM, retrieval, and sup
 ## Developer Adoption Assets
 
 - Integration snippets (OpenAI, LangChain, RAG): `docs/cookbook/integrations.md`
+- API service quickstart: `docs/api-quickstart.md`
 - Gujarati support/ecommerce case study: `docs/case-studies/gujarati-support-ecommerce.md`
 - Batch CLI recipes (support + ecommerce): `docs/cookbook/batch-cli-recipes.md`
 - Sarvam teacher mining for offline language improvement: `docs/cookbook/sarvam-teacher.md`

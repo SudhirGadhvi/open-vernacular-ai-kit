@@ -16,6 +16,7 @@ nav:
   - Install: install.md
   - CLI: cli.md
   - API Service: api-service.md
+  - API Quickstart: api-quickstart.md
   - Deploy: deploy.md
   - SDK: sdk.md
   - Config Schema: config-schema.md

@@ -2,6 +2,9 @@
 
 This page covers minimal deployment options for the FastAPI wrapper.
 
+Before deploying, run the local health and codemix smoke checks in
+[API Quickstart](api-quickstart.md).
+
 ## Docker image (local build)
 
 ```bash

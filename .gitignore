@@ -18,9 +18,9 @@ venv/
 
 # Local caches / outputs
 eval/out/
+site/
 *.log
 
 # Local task list (keep private/uncommitted)
 TODO.md
 TODO.txt
-

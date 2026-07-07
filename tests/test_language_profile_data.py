@@ -178,6 +178,23 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert hi.default_exceptions["aj"] == "आज"
     assert hi.default_exceptions["tk"] == "तक"
     assert hi.default_exceptions["baad"] == "बाद"
+    assert hi.default_exceptions["nhi"] == "नहीं"
+    assert hi.default_exceptions["hua"] == "हुआ"
+    assert hi.default_exceptions["aaya"] == "आया"
+    assert hi.default_exceptions["krna"] == "करना"
+    assert hi.default_exceptions["kr"] == "कर"
+    assert hi.default_exceptions["rha"] == "रहा"
+    assert hi.default_exceptions["bheja"] == "भेजा"
+    assert hi.default_exceptions["dikh"] == "दिख"
+    assert hi.default_exceptions["utha"] == "उठा"
+    assert hi.default_exceptions["koi"] == "कोई"
+    assert hi.default_exceptions["dusra"] == "दूसरा"
+    assert hi.default_exceptions["mangwana"] == "मंगवाना"
+    assert hi.default_exceptions["chahta"] == "चाहता"
+    assert hi.default_exceptions["bhi"] == "भी"
+    assert hi.default_exceptions["hi"] == "ही"
+    assert hi.default_exceptions["us"] == "उस"
+    assert hi.default_exceptions["ya"] == "या"
     assert "galat" in hi.common_roman_tokens
     assert "batayiye" in hi.common_roman_tokens
     assert "kyon" in hi.common_roman_tokens
@@ -192,7 +209,25 @@ def test_language_profiles_load_from_packaged_data() -> None:
     assert "dopahar" in hi.common_roman_tokens
     assert "baar" in hi.common_roman_tokens
     assert "do" in hi.common_roman_tokens
+    assert "nhi" in hi.common_roman_tokens
+    assert "hua" in hi.common_roman_tokens
+    assert "aaya" in hi.common_roman_tokens
+    assert "krna" in hi.common_roman_tokens
+    assert "kr" in hi.common_roman_tokens
+    assert "rha" in hi.common_roman_tokens
+    assert "bheja" in hi.common_roman_tokens
+    assert "dikh" in hi.common_roman_tokens
+    assert "utha" in hi.common_roman_tokens
+    assert "koi" in hi.common_roman_tokens
+    assert "dusra" in hi.common_roman_tokens
+    assert "mangwana" in hi.common_roman_tokens
+    assert "chahta" in hi.common_roman_tokens
+    assert "bhi" in hi.common_roman_tokens
     assert "dobara" in hi.context_roman_tokens
+    assert "ya" in hi.context_roman_tokens
+    assert "bhi" in hi.context_roman_tokens
+    assert "hi" in hi.context_roman_tokens
+    assert "us" in hi.context_roman_tokens
     assert "abhi" in hi.context_roman_tokens
     assert "niche" in hi.context_roman_tokens
     assert "isliye" in hi.context_roman_tokens

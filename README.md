@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/SudhirGadhvi/open-vernacular-ai-kit/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/SudhirGadhvi/open-vernacular-ai-kit/actions/workflows/ci.yml)
 [![Docs](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://sudhirgadhvi.github.io/open-vernacular-ai-kit/)
-[![Version](https://img.shields.io/badge/version-1.3.0-brightgreen)](pyproject.toml)
+[![Version](https://img.shields.io/badge/version-1.4.0-brightgreen)](pyproject.toml)
 [![Python](https://img.shields.io/badge/python-3.10%2B-blue)](pyproject.toml)
  
  `open-vernacular-ai-kit` is an open-source SDK + CLI for cleaning up Indian vernacular-English code-mixed
@@ -33,11 +33,17 @@ This project is a production-oriented normalization layer for India-focused AI a
 It cleans noisy mixed-script chat text before downstream LLM, retrieval, and support workflows.
 
 - Product positioning + landscape matrix: `docs/what-we-solve.md`
+- Gujarati support/ecommerce case study: `docs/case-studies/gujarati-support-ecommerce.md`
 - North-star metrics definitions and measurement method: `docs/north-star-metrics.md`
 
 ## Developer Adoption Assets
 
 - Integration snippets (OpenAI, LangChain, RAG): `docs/cookbook/integrations.md`
+- API service quickstart: `docs/api-quickstart.md`
+- Hindi beta readiness notes: `docs/hindi-beta.md`
+- Gujarati support/ecommerce case study: `docs/case-studies/gujarati-support-ecommerce.md`
+- vNext release readiness: `docs/release-readiness.md`
+- v1.4.0 release notes: `docs/releases/v1.4.0.md`
 - Batch CLI recipes (support + ecommerce): `docs/cookbook/batch-cli-recipes.md`
 - Sarvam teacher mining for offline language improvement: `docs/cookbook/sarvam-teacher.md`
 - Before/after LLM uplift notebook: `notebooks/before_after_llm_output.ipynb`

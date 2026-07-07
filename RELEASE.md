@@ -36,6 +36,7 @@ git push origin v1.1.0
 
 ## Release Checklist
 
+- [ ] vNext readiness note reviewed: `docs/release-readiness.md`
 - [ ] Changelog/release notes reviewed
 - [ ] CI green on `main`
 - [ ] Docs updated for user-facing changes

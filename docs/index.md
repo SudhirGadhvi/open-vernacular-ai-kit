@@ -23,4 +23,5 @@ Quick links:
 - Hindi Beta: [hindi-beta.md](hindi-beta.md)
 - SDK: [sdk.md](sdk.md)
 - North-star metrics: [north-star-metrics.md](north-star-metrics.md)
+- Release readiness: [release-readiness.md](release-readiness.md)
 - Cookbook: [cookbook](cookbook/integrations.md)

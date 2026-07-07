@@ -45,3 +45,6 @@ This project is the normalization layer before chat, RAG, classification, or tra
 
 `open-vernacular-ai-kit` is the production-facing vernacular normalization layer for India-focused AI
 applications: lightweight, testable, and pipeline-friendly.
+
+For a concrete Gujarati-first support and ecommerce rollout pattern, see the
+[Gujarati support and ecommerce case study](case-studies/gujarati-support-ecommerce.md).

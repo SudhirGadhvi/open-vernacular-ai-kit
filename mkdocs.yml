@@ -11,13 +11,20 @@ theme:
 nav:
   - Home: index.md
   - What We Solve: what-we-solve.md
+  - Case Studies:
+      - Gujarati Support + Ecommerce: case-studies/gujarati-support-ecommerce.md
   - Install: install.md
   - CLI: cli.md
   - API Service: api-service.md
+  - API Quickstart: api-quickstart.md
   - Deploy: deploy.md
+  - Hindi Beta: hindi-beta.md
   - SDK: sdk.md
   - Config Schema: config-schema.md
   - North-Star Metrics: north-star-metrics.md
+  - Release Readiness: release-readiness.md
+  - Releases:
+      - v1.4.0: releases/v1.4.0.md
   - Cookbook:
       - Integration Examples: cookbook/integrations.md
       - WhatsApp Cleanup: cookbook/whatsapp.md

@@ -2,6 +2,9 @@
 
 The project includes an optional FastAPI wrapper for serving normalization and codemix endpoints.
 
+For a copy-paste local, Docker, and Python-client smoke path, see
+[API Quickstart](api-quickstart.md).
+
 ## Install
 
 ```bash

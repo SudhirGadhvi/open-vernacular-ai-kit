@@ -42,6 +42,7 @@ It cleans noisy mixed-script chat text before downstream LLM, retrieval, and sup
 - API service quickstart: `docs/api-quickstart.md`
 - Hindi beta readiness notes: `docs/hindi-beta.md`
 - Gujarati support/ecommerce case study: `docs/case-studies/gujarati-support-ecommerce.md`
+- vNext release readiness: `docs/release-readiness.md`
 - Batch CLI recipes (support + ecommerce): `docs/cookbook/batch-cli-recipes.md`
 - Sarvam teacher mining for offline language improvement: `docs/cookbook/sarvam-teacher.md`
 - Before/after LLM uplift notebook: `notebooks/before_after_llm_output.ipynb`

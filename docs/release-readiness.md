@@ -1,10 +1,9 @@
 # vNext Release Readiness
 
-This page tracks the current release candidate story after `v1.3.0`. It is a preparation note, not a
-version bump or release tag.
+This page tracks the current release candidate story after `v1.3.0`.
 
 Latest published release on GitHub: `v1.3.0`.
-Current package version on `develop`: `1.3.0`.
+Current release-prep target: `v1.4.0`.
 
 ## Candidate Theme
 
@@ -63,8 +62,8 @@ or live model generations.
 
 ## Release PR Checklist
 
-- [ ] Confirm whether the target is `v1.4.0`, `v1.3.1`, or a prerelease tag.
-- [ ] Update `pyproject.toml` and `src/open_vernacular_ai_kit/__init__.py` to the intended version.
+- [x] Confirm whether the target is `v1.4.0`, `v1.3.1`, or a prerelease tag.
+- [x] Update `pyproject.toml` and `src/open_vernacular_ai_kit/__init__.py` to the intended version.
 - [ ] Keep `CodeMixConfig` JSON roundtrip compatibility unchanged.
 - [ ] Confirm `allow_remote_models=False` remains the default.
 - [ ] Run the release validation commands above.

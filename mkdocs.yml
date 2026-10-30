@@ -23,6 +23,8 @@ nav:
   - Config Schema: config-schema.md
   - North-Star Metrics: north-star-metrics.md
   - Release Readiness: release-readiness.md
+  - Releases:
+      - v1.4.0: releases/v1.4.0.md
   - Cookbook:
       - Integration Examples: cookbook/integrations.md
       - WhatsApp Cleanup: cookbook/whatsapp.md

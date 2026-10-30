@@ -24,4 +24,5 @@ Quick links:
 - SDK: [sdk.md](sdk.md)
 - North-star metrics: [north-star-metrics.md](north-star-metrics.md)
 - Release readiness: [release-readiness.md](release-readiness.md)
+- v1.4.0 release notes: [releases/v1.4.0.md](releases/v1.4.0.md)
 - Cookbook: [cookbook](cookbook/integrations.md)
